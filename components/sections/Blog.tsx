@@ -21,8 +21,8 @@ export function Blog() {
 
       <div className="blog-scroll hide-scroll">
         <div className="blog-scroll-inner">
-          {blogPosts.map((b) => (
-            <Link key={b.href} href={b.href} className="blog-card">
+          {blogPosts.slice(0, 4).map((b) => (
+            <Link key={b.slug} href={`/blog/${b.slug}`} className="blog-card">
               <div className="blog-img">
                 <Image src={b.image} alt={b.title} width={400} height={300} />
               </div>

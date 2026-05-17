@@ -4,7 +4,7 @@ import { categories } from "@/lib/data/categories";
 
 export function Categories() {
   return (
-    <section className="section-wrap" style={{ paddingTop: "5rem" }}>
+    <section className="section-wrap section-wrap--lead">
       <div className="container">
         <div className="section-head">
           <h2>دسته‌بندی‌ها</h2>
