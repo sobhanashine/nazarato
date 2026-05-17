@@ -59,7 +59,18 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
     >
       <div className="mobile-menu-head">
         <span className="mobile-menu-brand">
-          <span className="brand-mark" aria-hidden="true">ن</span>
+          <span className="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="brandGradMm" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stopColor="#5BE6B2" />
+                  <stop offset="1" stopColor="#7B89FF" />
+                </linearGradient>
+              </defs>
+              <path d="M8 6h24a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H17l-6 5a1 1 0 0 1-1.6-.8V30H8a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4Z" fill="url(#brandGradMm)" />
+              <path d="M20 12.2l2.18 4.42 4.88.71-3.53 3.44.83 4.86L20 23.34l-4.36 2.29.83-4.86-3.53-3.44 4.88-.71L20 12.2Z" fill="#06231b" />
+            </svg>
+          </span>
           <span>نظراتو</span>
         </span>
         <button
@@ -87,8 +98,8 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
       </nav>
 
       <div className="mobile-menu-foot">
-        <Link href="/business" className="btn-biz">
-          برای کمپانی‌ها
+        <Link href="/login" className="btn-biz">
+          ورود
         </Link>
         <div className="mobile-menu-socials">
           <a href="#" aria-label="اینستاگرام"><InstagramIcon /></a>
