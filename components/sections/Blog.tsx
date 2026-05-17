@@ -8,14 +8,14 @@ export function Blog() {
     <section className="section-wrap">
       <div className="container">
         <div className="section-head">
-          <h2>بلاگ ما</h2>
-          <div className="section-meta">
-            <p>ببین این مطالب بدردت میخوره یا نه.</p>
+          <div className="section-head-row">
+            <h2>بلاگ ما</h2>
             <Link href="/blog" className="see-all">
               <span>تمامی بلاگ‌ها</span>
               <ArrowLeftIcon />
             </Link>
           </div>
+          <p className="section-desc">ببین این مطالب بدردت میخوره یا نه.</p>
         </div>
       </div>
 

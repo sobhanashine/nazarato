@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Vazirmatn } from "next/font/google";
+import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -20,7 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fa" dir="rtl" className={vazirmatn.variable}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <MobileTabBar />
+      </body>
     </html>
   );
 }

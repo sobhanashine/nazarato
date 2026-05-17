@@ -1,0 +1,449 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e4]:
+      - link "نظراتو" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: نظراتو
+      - button "باز کردن منو" [ref=e8] [cursor=pointer]:
+        - img [ref=e9]
+  - generic [ref=e13]:
+    - generic [ref=e14]: پلتفرم نظرات واقعی ایرانیان
+    - heading "اعتماد کن، تجربه کن قبل از خرید، نظر بقیه رو بخون." [level=1] [ref=e16]:
+      - text: اعتماد کن،
+      - strong [ref=e17]: تجربه کن
+      - generic [ref=e18]: قبل از خرید، نظر بقیه رو بخون.
+    - generic [ref=e19]:
+      - textbox "جستجو" [ref=e20]:
+        - /placeholder: کسب و کار، فروشگاه یا دسته‌بندی...
+      - generic:
+        - img
+    - generic "جستجوهای پرطرفدار" [ref=e21]:
+      - generic [ref=e22]: "پرطرفدار:"
+      - link "آرایشگاه" [ref=e23] [cursor=pointer]:
+        - /url: /search?q=%D8%A2%D8%B1%D8%A7%DB%8C%D8%B4%DA%AF%D8%A7%D9%87
+      - link "کافه" [ref=e24] [cursor=pointer]:
+        - /url: /search?q=%DA%A9%D8%A7%D9%81%D9%87
+      - link "تعمیرگاه" [ref=e25] [cursor=pointer]:
+        - /url: /search?q=%D8%AA%D8%B9%D9%85%DB%8C%D8%B1%DA%AF%D8%A7%D9%87
+      - link "کلینیک پوست" [ref=e26] [cursor=pointer]:
+        - /url: /search?q=%DA%A9%D9%84%DB%8C%D9%86%DB%8C%DA%A9%20%D9%BE%D9%88%D8%B3%D8%AA
+      - link "رستوران" [ref=e27] [cursor=pointer]:
+        - /url: /search?q=%D8%B1%D8%B3%D8%AA%D9%88%D8%B1%D8%A7%D9%86
+    - list "آمار پلتفرم" [ref=e28]:
+      - listitem [ref=e29]:
+        - generic [ref=e30]: ۱۲٬۴۲۸
+        - generic [ref=e31]: نظر تایید شده
+      - listitem [ref=e32]:
+        - generic [ref=e33]: ۳٬۴۲۰
+        - generic [ref=e34]: کسب‌وکار
+      - listitem [ref=e35]:
+        - generic [ref=e36]: ۹۸٪
+        - generic [ref=e37]: رضایت کاربران
+  - main [ref=e38]:
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - heading "دسته‌بندی‌ها" [level=2] [ref=e42]
+        - generic [ref=e43]:
+          - paragraph [ref=e44]: مشاهده دسته‌بندی‌های پربازدید.
+          - link "تمامی دسته‌بندی‌ها" [ref=e45] [cursor=pointer]:
+            - /url: /categories
+            - generic [ref=e46]: تمامی دسته‌بندی‌ها
+            - img [ref=e47]
+      - generic [ref=e49]:
+        - link "فناوری شرکت‌های فناوری اطلاعات، استارتاپ‌های ایرانی و پلتفرم‌های دیجیتال" [ref=e50] [cursor=pointer]:
+          - /url: /categories/technology
+          - img [ref=e52]
+          - heading "فناوری" [level=5] [ref=e56]
+          - paragraph [ref=e57]: شرکت‌های فناوری اطلاعات، استارتاپ‌های ایرانی و پلتفرم‌های دیجیتال
+        - link "رستوران بهترین رستوران‌ها، کافه‌ها، فست‌فودها و تجربه‌های غذایی" [ref=e58] [cursor=pointer]:
+          - /url: /categories/restaurant
+          - img [ref=e60]
+          - heading "رستوران" [level=5] [ref=e63]
+          - paragraph [ref=e64]: بهترین رستوران‌ها، کافه‌ها، فست‌فودها و تجربه‌های غذایی
+        - link "آموزش موسسات آموزشی، دوره‌های آنلاین، مدارس و دانشگاه‌ها" [ref=e65] [cursor=pointer]:
+          - /url: /categories/education
+          - img [ref=e67]
+          - heading "آموزش" [level=5] [ref=e70]
+          - paragraph [ref=e71]: موسسات آموزشی، دوره‌های آنلاین، مدارس و دانشگاه‌ها
+        - link "سلامت خدمات درمانی، داروخانه‌ها، کلینیک‌ها و پزشکان متخصص" [ref=e72] [cursor=pointer]:
+          - /url: /categories/health
+          - img [ref=e74]
+          - heading "سلامت" [level=5] [ref=e77]
+          - paragraph [ref=e78]: خدمات درمانی، داروخانه‌ها، کلینیک‌ها و پزشکان متخصص
+    - generic [ref=e80]:
+      - generic [ref=e81]:
+        - heading "نظرات اخیر فروشگاه‌های آنلاین" [level=2] [ref=e82]:
+          - text: نظرات
+          - strong [ref=e83]: اخیر
+          - text: فروشگاه‌های آنلاین
+        - generic [ref=e84]:
+          - paragraph [ref=e85]: آخرین نظرات ثبت‌شده توسط کاربران درباره فروشگاه‌های آنلاین.
+          - link "تمامی نظرات" [ref=e86] [cursor=pointer]:
+            - /url: /reviews
+            - generic [ref=e87]: تمامی نظرات
+            - img [ref=e88]
+      - generic [ref=e90]:
+        - article [ref=e91]:
+          - generic [ref=e92]:
+            - generic [ref=e93]:
+              - generic [ref=e94]:
+                - text: س
+                - generic "کاربر تایید شده" [ref=e95]:
+                  - img [ref=e96]
+              - generic [ref=e98]:
+                - generic [ref=e99]: سارا احمدی
+                - link "دیجی‌کالا" [ref=e100] [cursor=pointer]:
+                  - /url: /company/digikala
+            - generic "5 از ۵" [ref=e101]:
+              - generic [ref=e102]: ۵٫۰
+              - generic [ref=e103]: /
+              - generic [ref=e104]: ۵
+          - generic [ref=e105]:
+            - img [ref=e106]
+            - img [ref=e108]
+            - img [ref=e110]
+            - img [ref=e112]
+            - img [ref=e114]
+          - paragraph [ref=e116]: خرید از دیجی‌کالا همیشه تجربه خوبی بوده. ارسال سریع، بسته‌بندی عالی و پشتیبانی پاسخگو. واقعاً راضی‌ام.
+          - generic [ref=e117]:
+            - generic [ref=e118]: ۲ روز پیش
+            - generic [ref=e119] [cursor=pointer]:
+              - img [ref=e120]
+              - text: مفید بود
+        - article [ref=e123]:
+          - generic [ref=e124]:
+            - generic [ref=e125]:
+              - generic [ref=e126]:
+                - text: ن
+                - generic "کاربر تایید شده" [ref=e127]:
+                  - img [ref=e128]
+              - generic [ref=e130]:
+                - generic [ref=e131]: نیلوفر حسینی
+                - link "مانتو سارا" [ref=e132] [cursor=pointer]:
+                  - /url: /shop/manto_sara
+            - generic "5 از ۵" [ref=e133]:
+              - generic [ref=e134]: ۵٫۰
+              - generic [ref=e135]: /
+              - generic [ref=e136]: ۵
+          - generic [ref=e137]:
+            - img [ref=e138]
+            - img [ref=e140]
+            - img [ref=e142]
+            - img [ref=e144]
+            - img [ref=e146]
+          - paragraph [ref=e148]: کیفیت پارچه عالی و دوخت تمیز. سایزبندی دقیق بود و دقیقاً همون رنگی که عکسش رو دیده بودم رسید. حتماً دوباره خرید می‌کنم.
+          - generic [ref=e149]:
+            - generic [ref=e150]: ۳ روز پیش
+            - generic [ref=e151] [cursor=pointer]:
+              - img [ref=e152]
+              - text: مفید بود
+        - article [ref=e155]:
+          - generic [ref=e156]:
+            - generic [ref=e157]:
+              - generic [ref=e158]:
+                - text: ز
+                - generic "کاربر تایید شده" [ref=e159]:
+                  - img [ref=e160]
+              - generic [ref=e162]:
+                - generic [ref=e163]: زهرا موسوی
+                - link "کیک خونگی آرزو" [ref=e164] [cursor=pointer]:
+                  - /url: /shop/arezoo_cake
+            - generic "5 از ۵" [ref=e165]:
+              - generic [ref=e166]: ۵٫۰
+              - generic [ref=e167]: /
+              - generic [ref=e168]: ۵
+          - generic [ref=e169]:
+            - img [ref=e170]
+            - img [ref=e172]
+            - img [ref=e174]
+            - img [ref=e176]
+            - img [ref=e178]
+          - paragraph [ref=e180]: کیک تولد سفارش دادم، خیلی خوشمزه و تازه بود. تزئین هم دقیقاً مطابق سفارش انجام شد. ممنون از خانم آرزو.
+          - generic [ref=e181]:
+            - generic [ref=e182]: ۴ روز پیش
+            - generic [ref=e183] [cursor=pointer]:
+              - img [ref=e184]
+              - text: مفید بود
+        - article [ref=e187]:
+          - generic [ref=e188]:
+            - generic [ref=e189]:
+              - generic [ref=e190]:
+                - text: ع
+                - generic "کاربر تایید شده" [ref=e191]:
+                  - img [ref=e192]
+              - generic [ref=e194]:
+                - generic [ref=e195]: علی کریمی
+                - link "گجت‌شاپ" [ref=e196] [cursor=pointer]:
+                  - /url: /shop/gadget_shop_ir
+            - generic "4 از ۵" [ref=e197]:
+              - generic [ref=e198]: ۴٫۰
+              - generic [ref=e199]: /
+              - generic [ref=e200]: ۵
+          - generic [ref=e201]:
+            - img [ref=e202]
+            - img [ref=e204]
+            - img [ref=e206]
+            - img [ref=e208]
+            - img [ref=e210]
+          - paragraph [ref=e212]: هندزفری اصل و گارانتی‌دار خریدم. ارسال سریع و قیمت مناسب. فقط بسته‌بندی می‌تونست بهتر باشه.
+          - generic [ref=e213]:
+            - generic [ref=e214]: ۵ روز پیش
+            - generic [ref=e215] [cursor=pointer]:
+              - img [ref=e216]
+              - text: مفید بود
+        - article [ref=e219]:
+          - generic [ref=e220]:
+            - generic [ref=e221]:
+              - generic [ref=e222]:
+                - text: م
+                - generic "کاربر تایید شده" [ref=e223]:
+                  - img [ref=e224]
+              - generic [ref=e226]:
+                - generic [ref=e227]: محمد رضایی
+                - link "آرایشی ریحانه" [ref=e228] [cursor=pointer]:
+                  - /url: /shop/reyhaneh_beauty
+            - generic "4 از ۵" [ref=e229]:
+              - generic [ref=e230]: ۴٫۰
+              - generic [ref=e231]: /
+              - generic [ref=e232]: ۵
+          - generic [ref=e233]:
+            - img [ref=e234]
+            - img [ref=e236]
+            - img [ref=e238]
+            - img [ref=e240]
+            - img [ref=e242]
+          - paragraph [ref=e244]: محصولات اصل و قیمت مناسب. تنوع برندها خوبه ولی کاش پیج پاسخگوتر باشه به سوالات قبل از خرید.
+          - generic [ref=e245]:
+            - generic [ref=e246]: ۱ هفته پیش
+            - generic [ref=e247] [cursor=pointer]:
+              - img [ref=e248]
+              - text: مفید بود
+        - article [ref=e251]:
+          - generic [ref=e252]:
+            - generic [ref=e253]:
+              - generic [ref=e254]:
+                - text: ر
+                - generic "کاربر تایید شده" [ref=e255]:
+                  - img [ref=e256]
+              - generic [ref=e258]:
+                - generic [ref=e259]: رضا جعفری
+                - link "خانه زیبای من" [ref=e260] [cursor=pointer]:
+                  - /url: /shop/my_beautiful_home
+            - generic "5 از ۵" [ref=e261]:
+              - generic [ref=e262]: ۵٫۰
+              - generic [ref=e263]: /
+              - generic [ref=e264]: ۵
+          - generic [ref=e265]:
+            - img [ref=e266]
+            - img [ref=e268]
+            - img [ref=e270]
+            - img [ref=e272]
+            - img [ref=e274]
+          - paragraph [ref=e276]: چند تا قاب دکوری و گلدون سفارش دادم. کیفیت ساخت بالا و بسته‌بندی فوق‌العاده. دقیقاً همونی بود که می‌خواستم.
+          - generic [ref=e277]:
+            - generic [ref=e278]: ۱ هفته پیش
+            - generic [ref=e279] [cursor=pointer]:
+              - img [ref=e280]
+              - text: مفید بود
+    - generic [ref=e284]:
+      - generic [ref=e285]:
+        - heading "فروشگاه‌های اینستاگرامی" [level=2] [ref=e286]:
+          - text: فروشگاه‌های
+          - strong [ref=e287]: اینستاگرامی
+        - generic [ref=e288]:
+          - paragraph [ref=e289]: بهترین فروشگاه‌های اینستاگرامی بر اساس نظرات واقعی.
+          - link "تمامی فروشگاه‌ها" [ref=e290] [cursor=pointer]:
+            - /url: /instagram-shops
+            - generic [ref=e291]: تمامی فروشگاه‌ها
+            - img [ref=e292]
+      - generic [ref=e294]:
+        - button "همه" [ref=e295] [cursor=pointer]
+        - button "پوشاک" [ref=e296] [cursor=pointer]
+        - button "غذا و شیرینی" [ref=e297] [cursor=pointer]
+        - button "زیبایی و آرایشی" [ref=e298] [cursor=pointer]
+        - button "دکوراسیون" [ref=e299] [cursor=pointer]
+        - button "دیجیتال" [ref=e300] [cursor=pointer]
+      - generic [ref=e301]:
+        - link "م مانتو سارا فروشگاه تایید شده @manto_sara ۴.۸ (۳۲۵ نظر)" [ref=e302] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e304]: م
+          - generic [ref=e305]:
+            - generic [ref=e306]:
+              - text: مانتو سارا
+              - generic "فروشگاه تایید شده" [ref=e307]:
+                - img [ref=e308]
+            - generic [ref=e311]: "@manto_sara"
+            - generic [ref=e312]:
+              - img [ref=e313]
+              - generic [ref=e315]: ۴.۸
+              - generic [ref=e316]: (۳۲۵ نظر)
+        - link "ل لباس مجلسی نیکا فروشگاه تایید شده @nika_fashion ۴.۶ (۱۸۹ نظر)" [ref=e317] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e319]: ل
+          - generic [ref=e320]:
+            - generic [ref=e321]:
+              - text: لباس مجلسی نیکا
+              - generic "فروشگاه تایید شده" [ref=e322]:
+                - img [ref=e323]
+            - generic [ref=e326]: "@nika_fashion"
+            - generic [ref=e327]:
+              - img [ref=e328]
+              - generic [ref=e330]: ۴.۶
+              - generic [ref=e331]: (۱۸۹ نظر)
+        - link "ک کیک خونگی آرزو فروشگاه تایید شده @arezoo_cake ۴.۹ (۴۵۶ نظر)" [ref=e332] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e334]: ک
+          - generic [ref=e335]:
+            - generic [ref=e336]:
+              - text: کیک خونگی آرزو
+              - generic "فروشگاه تایید شده" [ref=e337]:
+                - img [ref=e338]
+            - generic [ref=e341]: "@arezoo_cake"
+            - generic [ref=e342]:
+              - img [ref=e343]
+              - generic [ref=e345]: ۴.۹
+              - generic [ref=e346]: (۴۵۶ نظر)
+        - link "غ غذای خانگی مامان فروشگاه تایید شده @maman_food_ir ۴.۷ (۲۱۲ نظر)" [ref=e347] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e349]: غ
+          - generic [ref=e350]:
+            - generic [ref=e351]:
+              - text: غذای خانگی مامان
+              - generic "فروشگاه تایید شده" [ref=e352]:
+                - img [ref=e353]
+            - generic [ref=e356]: "@maman_food_ir"
+            - generic [ref=e357]:
+              - img [ref=e358]
+              - generic [ref=e360]: ۴.۷
+              - generic [ref=e361]: (۲۱۲ نظر)
+        - link "آ آرایشی ریحانه فروشگاه تایید شده @reyhaneh_beauty ۴.۵ (۳۷۸ نظر)" [ref=e362] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e364]: آ
+          - generic [ref=e365]:
+            - generic [ref=e366]:
+              - text: آرایشی ریحانه
+              - generic "فروشگاه تایید شده" [ref=e367]:
+                - img [ref=e368]
+            - generic [ref=e371]: "@reyhaneh_beauty"
+            - generic [ref=e372]:
+              - img [ref=e373]
+              - generic [ref=e375]: ۴.۵
+              - generic [ref=e376]: (۳۷۸ نظر)
+        - link "پ پوست و مو گلاره فروشگاه تایید شده @golareh_skin ۴.۳ (۱۵۶ نظر)" [ref=e377] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e379]: پ
+          - generic [ref=e380]:
+            - generic [ref=e381]:
+              - text: پوست و مو گلاره
+              - generic "فروشگاه تایید شده" [ref=e382]:
+                - img [ref=e383]
+            - generic [ref=e386]: "@golareh_skin"
+            - generic [ref=e387]:
+              - img [ref=e388]
+              - generic [ref=e390]: ۴.۳
+              - generic [ref=e391]: (۱۵۶ نظر)
+        - link "خ خانه زیبای من فروشگاه تایید شده @my_beautiful_home ۴.۴ (۲۸۹ نظر)" [ref=e392] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e394]: خ
+          - generic [ref=e395]:
+            - generic [ref=e396]:
+              - text: خانه زیبای من
+              - generic "فروشگاه تایید شده" [ref=e397]:
+                - img [ref=e398]
+            - generic [ref=e401]: "@my_beautiful_home"
+            - generic [ref=e402]:
+              - img [ref=e403]
+              - generic [ref=e405]: ۴.۴
+              - generic [ref=e406]: (۲۸۹ نظر)
+        - link "گ گجت‌شاپ فروشگاه تایید شده @gadget_shop_ir ۴.۶ (۴۱۲ نظر)" [ref=e407] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=e409]: گ
+          - generic [ref=e410]:
+            - generic [ref=e411]:
+              - text: گجت‌شاپ
+              - generic "فروشگاه تایید شده" [ref=e412]:
+                - img [ref=e413]
+            - generic [ref=e416]: "@gadget_shop_ir"
+            - generic [ref=e417]:
+              - img [ref=e418]
+              - generic [ref=e420]: ۴.۶
+              - generic [ref=e421]: (۴۱۲ نظر)
+    - generic [ref=e422]:
+      - generic [ref=e424]:
+        - heading "بلاگ ما" [level=2] [ref=e425]
+        - generic [ref=e426]:
+          - paragraph [ref=e427]: ببین این مطالب بدردت میخوره یا نه.
+          - link "تمامی بلاگ‌ها" [ref=e428] [cursor=pointer]:
+            - /url: /blog
+            - generic [ref=e429]: تمامی بلاگ‌ها
+            - img [ref=e430]
+      - generic [ref=e433]:
+        - link "چطور بهترین کسب‌وکار را انتخاب کنیم ۱۲ اردیبهشت ۱۴۰۳ چطور بهترین کسب‌وکار را انتخاب کنیم راهنمایی برای انتخاب هوشمندانه‌تر بر اساس نظرات واقعی مشتریان" [ref=e434] [cursor=pointer]:
+          - /url: /blog/how-to-choose-the-best-business
+          - img "چطور بهترین کسب‌وکار را انتخاب کنیم" [ref=e436]
+          - generic [ref=e437]:
+            - paragraph [ref=e438]: ۱۲ اردیبهشت ۱۴۰۳
+            - heading "چطور بهترین کسب‌وکار را انتخاب کنیم" [level=5] [ref=e439]
+            - paragraph [ref=e440]: راهنمایی برای انتخاب هوشمندانه‌تر بر اساس نظرات واقعی مشتریان
+        - link "راهنمای کامل خواندن نظرات آنلاین ۸ اردیبهشت ۱۴۰۳ راهنمای کامل خواندن نظرات آنلاین نکاتی که پیش از اعتماد به نظرات آنلاین باید بدانید" [ref=e441] [cursor=pointer]:
+          - /url: /blog/complete-guide-to-online-reviews
+          - img "راهنمای کامل خواندن نظرات آنلاین" [ref=e443]
+          - generic [ref=e444]:
+            - paragraph [ref=e445]: ۸ اردیبهشت ۱۴۰۳
+            - heading "راهنمای کامل خواندن نظرات آنلاین" [level=5] [ref=e446]
+            - paragraph [ref=e447]: نکاتی که پیش از اعتماد به نظرات آنلاین باید بدانید
+        - link "اهمیت نظرات مشتریان در دنیای دیجیتال ۳ اردیبهشت ۱۴۰۳ اهمیت نظرات مشتریان در دنیای دیجیتال چرا نظرات کاربران برای رشد کسب‌وکارها حیاتی است و چه تأثیری روی تصمیم خرید دارد" [ref=e448] [cursor=pointer]:
+          - /url: /blog/importance-of-customer-reviews
+          - img "اهمیت نظرات مشتریان در دنیای دیجیتال" [ref=e450]
+          - generic [ref=e451]:
+            - paragraph [ref=e452]: ۳ اردیبهشت ۱۴۰۳
+            - heading "اهمیت نظرات مشتریان در دنیای دیجیتال" [level=5] [ref=e453]
+            - paragraph [ref=e454]: چرا نظرات کاربران برای رشد کسب‌وکارها حیاتی است و چه تأثیری روی تصمیم خرید دارد
+        - link "بهترین برندهای ایرانی در سال ۱۴۰۳ ۲۸ فروردین ۱۴۰۳ بهترین برندهای ایرانی در سال ۱۴۰۳ معرفی برترین برندهای داخلی بر اساس رضایت مشتریان و کیفیت محصولات" [ref=e455] [cursor=pointer]:
+          - /url: /blog/best-iranian-brands-1403
+          - img "بهترین برندهای ایرانی در سال ۱۴۰۳" [ref=e457]
+          - generic [ref=e458]:
+            - paragraph [ref=e459]: ۲۸ فروردین ۱۴۰۳
+            - heading "بهترین برندهای ایرانی در سال ۱۴۰۳" [level=5] [ref=e460]
+            - paragraph [ref=e461]: معرفی برترین برندهای داخلی بر اساس رضایت مشتریان و کیفیت محصولات
+  - contentinfo [ref=e462]:
+    - generic [ref=e463]:
+      - generic [ref=e464]:
+        - heading "مارا دنبال کنید" [level=5] [ref=e465]
+        - generic [ref=e466]:
+          - link "اینستاگرام" [ref=e467] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e468]
+          - link "توییتر" [ref=e470] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e471]
+          - link "فیسبوک" [ref=e473] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e474]
+          - link "لینکدین" [ref=e476] [cursor=pointer]:
+            - /url: "#"
+            - img [ref=e477]
+      - paragraph [ref=e480]: © تمامی حقوق برای nazarato.ir محفوظ است.
+  - navigation "ناوبری پایین":
+    - generic [ref=e481]:
+      - link "خانه" [ref=e482] [cursor=pointer]:
+        - /url: /
+        - img [ref=e484]
+        - generic [ref=e486]: خانه
+      - link "دسته‌ها" [ref=e487] [cursor=pointer]:
+        - /url: /categories
+        - img [ref=e489]
+        - generic [ref=e494]: دسته‌ها
+      - link "نوشتن نظر" [ref=e495] [cursor=pointer]:
+        - /url: /write-review
+        - img [ref=e497]
+      - link "ذخیره" [ref=e499] [cursor=pointer]:
+        - /url: /saved
+        - img [ref=e501]
+        - generic [ref=e503]: ذخیره
+      - link "پروفایل" [ref=e504] [cursor=pointer]:
+        - /url: /profile
+        - img [ref=e506]
+        - generic [ref=e509]: پروفایل
+  - button "Open Next.js Dev Tools" [ref=e515] [cursor=pointer]:
+    - img [ref=e516]

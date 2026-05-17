@@ -7,14 +7,14 @@ export function Categories() {
     <section className="section-wrap section-wrap--lead">
       <div className="container">
         <div className="section-head">
-          <h2>دسته‌بندی‌ها</h2>
-          <div className="section-meta">
-            <p>مشاهده دسته‌بندی‌های پربازدید.</p>
+          <div className="section-head-row">
+            <h2>دسته‌بندی‌ها</h2>
             <Link href="/categories" className="see-all">
               <span>تمامی دسته‌بندی‌ها</span>
               <ArrowLeftIcon />
             </Link>
           </div>
+          <p className="section-desc">مشاهده دسته‌بندی‌های پربازدید.</p>
         </div>
 
         <div className="grid-4">
