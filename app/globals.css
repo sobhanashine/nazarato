@@ -196,20 +196,30 @@ img { display: block; }
 .menu-trigger svg { width: 22px; height: 22px; }
 @media (min-width: 768px) { .menu-trigger { display: none; } }
 
-/* Mobile menu — full-screen green-dark overlay */
+/* Mobile menu — full-screen green-dark overlay (portaled into <body>) */
 .mobile-menu {
   position: fixed;
-  inset: 0;
-  z-index: 200;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 9999;
   background: var(--green-dark);
   color: #fff;
   display: flex;
   flex-direction: column;
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   transform: translateY(-12px);
   transition: opacity 0.28s ease, transform 0.32s ease, visibility 0.28s;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
+.mobile-menu[data-open="true"] { pointer-events: auto; }
 .mobile-menu[data-open="true"] {
   opacity: 1;
   visibility: visible;
