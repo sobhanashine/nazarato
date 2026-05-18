@@ -60,7 +60,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
       aria-hidden={!open}
       aria-label="منوی اصلی"
     >
-      <div className="flex justify-between items-center h-[72px] px-5 border-b border-glass-border relative z-[1]">
+      <div className="mobile-menu-top flex justify-between items-center h-[72px] px-5 border-b border-glass-border relative z-[1]">
         <span className="inline-flex items-center gap-2.5 text-strong text-[1.15rem] font-bold">
           <span className="brand-mark inline-block w-[38px] h-[38px]" aria-hidden="true">
             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">

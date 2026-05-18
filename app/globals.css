@@ -185,6 +185,16 @@ body::after {
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .site-header { background: rgba(8, 11, 20, 0.92); }
 }
+/* PWA standalone: nudge header below the status bar / notch */
+@media (display-mode: standalone) {
+  .site-header {
+    height: calc(72px + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+  }
+}
+@media (display-mode: standalone) and (min-width: 640px) {
+  .site-header { height: calc(80px + env(safe-area-inset-top)); }
+}
 /* Brand mark — drop-shadow glow on the speech-bubble icon */
 .brand-mark { filter: drop-shadow(0 6px 16px rgba(91, 230, 178, 0.45)); }
 .brand-mark svg { width: 100%; height: 100%; display: block; }
@@ -266,6 +276,13 @@ body::after {
   -webkit-overflow-scrolling: touch;
 }
 .mobile-menu[data-open="true"] { pointer-events: auto; opacity: 1; visibility: visible; transform: translateY(0); }
+/* PWA standalone: push the menu's top bar below the status bar */
+@media (display-mode: standalone) {
+  .mobile-menu-top {
+    height: calc(72px + env(safe-area-inset-top)) !important;
+    padding-top: env(safe-area-inset-top);
+  }
+}
 .mobile-menu::before {
   content: '';
   position: absolute;
