@@ -7,6 +7,9 @@ import {
   TwitterIcon,
 } from "@/components/icons";
 
+const socBtnLight =
+  "flex items-center justify-center w-10 h-10 rounded-full text-muted transition-colors duration-200 hover:bg-glass-hover hover:text-mint";
+
 function Block({ block }: { block: ContentBlock }) {
   switch (block.type) {
     case "subhead":
@@ -68,7 +71,7 @@ export function PostContent({ post }: { post: BlogPost }) {
 
   return (
     <>
-      <div className="container post-header">
+      <div className="container mb-8 md:mb-12">
         <h2 className="post-title">{post.title}</h2>
         <div className="blog-meta">
           <div className="blog-meta-author">
@@ -91,24 +94,26 @@ export function PostContent({ post }: { post: BlogPost }) {
         </div>
       </div>
 
-      <div className="container post-body">
+      <div className="container mb-8">
         {paragraphBlocks.map((b, i) => <Block key={i} block={b} />)}
       </div>
 
       {restBlocks.map((b, i) => <Block key={i} block={b} />)}
 
       <div className="container">
-        <div className="share-block">
-          <div className="share-left">
-            <p className="share-text">این مطلب‌رو برای بقیه بفرست!</p>
-            <div className="socials">
-              <a href="#" className="soc-btn light" aria-label="اینستاگرام"><InstagramIcon /></a>
-              <a href="#" className="soc-btn light" aria-label="توییتر"><TwitterIcon /></a>
-              <a href="#" className="soc-btn light" aria-label="فیسبوک"><FacebookIcon /></a>
-              <a href="#" className="soc-btn light" aria-label="لینکدین"><LinkedInIcon /></a>
+        <div className="flex flex-col gap-4 py-6 border-t border-b border-glass-border mb-12 lg:flex-row lg:justify-between lg:items-center lg:gap-0 lg:py-8 lg:mb-16 lg:w-5/6 lg:mx-auto">
+          <div className="flex flex-col items-center gap-4 md:flex-row md:gap-8">
+            <p className="text-[15px] font-medium leading-[1.75] text-strong">
+              این مطلب‌رو برای بقیه بفرست!
+            </p>
+            <div className="flex gap-[0.2rem]">
+              <a href="#" className={socBtnLight} aria-label="اینستاگرام"><InstagramIcon /></a>
+              <a href="#" className={socBtnLight} aria-label="توییتر"><TwitterIcon /></a>
+              <a href="#" className={socBtnLight} aria-label="فیسبوک"><FacebookIcon /></a>
+              <a href="#" className={socBtnLight} aria-label="لینکدین"><LinkedInIcon /></a>
             </div>
           </div>
-          <div className="share-tags">
+          <div className="flex flex-wrap items-center gap-2 mx-auto w-fit md:mx-0">
             {post.tags.map((t) => (
               <span key={t} className="tag-badge">{t}</span>
             ))}

@@ -12,10 +12,17 @@ const navItems = [
 export function Header() {
   return (
     <header className="site-header">
-      <div className="header-bar">
-        <div className="container header-inner">
-          <Link href="/" className="brand" aria-label="نظراتو">
-            <span className="brand-mark" aria-hidden="true">
+      <div className="w-full h-[72px] sm:h-20 flex items-center">
+        <div className="container flex flex-row justify-between items-center gap-4 h-full">
+          <Link
+            href="/"
+            aria-label="نظراتو"
+            className="inline-flex items-center gap-2.5 text-strong shrink-0"
+          >
+            <span
+              className="brand-mark hidden md:inline-block w-[38px] h-[38px]"
+              aria-hidden="true"
+            >
               <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                   <linearGradient id="brandGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
@@ -33,11 +40,13 @@ export function Header() {
                 />
               </svg>
             </span>
-            <span className="brand-word">نظراتو</span>
+            <span className="text-[1.18rem] font-extrabold text-strong -tracking-[0.02em]">
+              نظراتو
+            </span>
           </Link>
 
-          <nav className="site-nav" aria-label="ناوبری اصلی">
-            <ul>
+          <nav aria-label="ناوبری اصلی" className="hidden md:block">
+            <ul className="flex items-center gap-7 list-none py-[0.45rem] px-5 bg-glass border border-glass-border rounded-full backdrop-blur-[14px] backdrop-saturate-[160%]">
               {navItems.map((item) => (
                 <li key={item.href}>
                   <NavLink href={item.href}>{item.label}</NavLink>
@@ -46,8 +55,10 @@ export function Header() {
             </ul>
           </nav>
 
-          <div className="header-actions">
-            <Link href="/login" className="btn-biz">ورود</Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href="/login" className="btn-biz hidden md:inline-flex">
+              ورود
+            </Link>
             <MobileMenu items={navItems} />
           </div>
         </div>

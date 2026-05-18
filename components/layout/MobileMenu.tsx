@@ -15,6 +15,9 @@ import {
 
 type NavItem = { href: string; label: string };
 
+const glassButtonClasses =
+  "inline-flex items-center justify-center w-[42px] h-[42px] rounded-xl bg-glass-strong backdrop-blur-[12px] backdrop-saturate-[160%] text-strong border border-glass-border cursor-pointer transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi [&_svg]:w-[22px] [&_svg]:h-[22px]";
+
 export function MobileMenu({ items }: { items: NavItem[] }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -57,9 +60,9 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
       aria-hidden={!open}
       aria-label="منوی اصلی"
     >
-      <div className="mobile-menu-head">
-        <span className="mobile-menu-brand">
-          <span className="brand-mark" aria-hidden="true">
+      <div className="flex justify-between items-center h-[72px] px-5 border-b border-glass-border relative z-[1]">
+        <span className="inline-flex items-center gap-2.5 text-strong text-[1.15rem] font-bold">
+          <span className="brand-mark inline-block w-[38px] h-[38px]" aria-hidden="true">
             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="brandGradMm" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
@@ -75,7 +78,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         </span>
         <button
           type="button"
-          className="mobile-menu-close"
+          className={glassButtonClasses}
           aria-label="بستن منو"
           onClick={() => setOpen(false)}
         >
@@ -97,15 +100,26 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         ))}
       </nav>
 
-      <div className="mobile-menu-foot">
-        <Link href="/login" className="btn-biz">
+      <div className="px-5 pt-6 pb-8 border-t border-glass-border flex flex-col gap-5 relative z-[1]">
+        <Link href="/login" className="btn-biz mobile-menu-foot-cta">
           ورود
         </Link>
-        <div className="mobile-menu-socials">
-          <a href="#" aria-label="اینستاگرام"><InstagramIcon /></a>
-          <a href="#" aria-label="توییتر"><TwitterIcon /></a>
-          <a href="#" aria-label="فیسبوک"><FacebookIcon /></a>
-          <a href="#" aria-label="لینکدین"><LinkedInIcon /></a>
+        <div className="flex items-center justify-center gap-3">
+          {[
+            { Icon: InstagramIcon, label: "اینستاگرام" },
+            { Icon: TwitterIcon, label: "توییتر" },
+            { Icon: FacebookIcon, label: "فیسبوک" },
+            { Icon: LinkedInIcon, label: "لینکدین" },
+          ].map(({ Icon, label }) => (
+            <a
+              key={label}
+              href="#"
+              aria-label={label}
+              className="grid place-items-center w-10 h-10 rounded-full bg-glass-strong border border-glass-border text-strong transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi [&_svg]:w-4 [&_svg]:h-4"
+            >
+              <Icon />
+            </a>
+          ))}
         </div>
       </div>
     </div>
@@ -115,7 +129,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
     <>
       <button
         type="button"
-        className="menu-trigger"
+        className={`md:hidden ${glassButtonClasses}`}
         aria-label="باز کردن منو"
         aria-expanded={open}
         onClick={() => setOpen(true)}

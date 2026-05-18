@@ -24,16 +24,16 @@ export default function BlogListPage() {
       <PageBanner title="صفحه بلاگ!" subtitle="بلاگ‌هارو نگاه کن و ببین کدوم بدردت میخوره!" />
 
       <div className="container">
-        <div className="blog-layout">
-          <main className="blog-main">
-            <div className="filter-row">
+        <div className="flex flex-col gap-8 mb-16 lg:flex-row-reverse lg:justify-between lg:gap-12 lg:mb-20">
+          <main className="w-full lg:w-[58%]">
+            <div className="mb-6 lg:hidden">
               <button className="btn-filter" type="button">
                 <span>فیلترها</span>
                 <FilterIcon />
               </button>
             </div>
 
-            <div className="post-stack">
+            <div className="flex flex-col gap-8">
               {blogPosts.map((post) => (
                 <PostCard key={post.slug} post={post} />
               ))}
