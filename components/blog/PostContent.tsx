@@ -58,6 +58,13 @@ function Block({ block }: { block: ContentBlock }) {
           </div>
         </div>
       );
+    case "html":
+      return (
+        <div
+          className="wp-content"
+          dangerouslySetInnerHTML={{ __html: block.html }}
+        />
+      );
   }
 }
 

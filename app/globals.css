@@ -448,6 +448,14 @@ body::after {
   50%      { box-shadow: 0 0 0 8px rgba(91, 230, 178, 0.06), 0 0 18px rgba(91, 230, 178, 0.9); }
 }
 
+@keyframes pwa-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="pwa-slide-up"] { animation: none !important; }
+}
+
 .search-box {
   position: relative;
   width: 100%;
@@ -769,6 +777,42 @@ body::after {
 @media (min-width: 768px) { .post-para { font-size: 1.0625rem; line-height: 1.85; } }
 .post-para + .post-para { margin-top: 1.5rem; }
 
+.wp-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-inline: 1rem;
+  color: var(--text);
+}
+.wp-content > * + * { margin-top: 1.25rem; }
+.wp-content p { font-size: 1rem; line-height: 2; }
+@media (min-width: 768px) { .wp-content p { font-size: 1.0625rem; line-height: 1.85; } }
+.wp-content h2, .wp-content h3, .wp-content h4 { color: var(--text-strong); font-weight: 600; line-height: 1.4; }
+.wp-content h2 { font-size: 1.5rem; margin-top: 2rem; }
+.wp-content h3 { font-size: 1.25rem; margin-top: 1.75rem; }
+.wp-content h4 { font-size: 1.0625rem; margin-top: 1.5rem; }
+.wp-content a { color: var(--mint); text-decoration: underline; text-underline-offset: 3px; }
+.wp-content ul, .wp-content ol { padding-inline-start: 1.5rem; }
+.wp-content ul { list-style: disc; }
+.wp-content ol { list-style: decimal; }
+.wp-content li + li { margin-top: 0.5rem; }
+.wp-content blockquote {
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(91, 230, 178, 0.12), rgba(91, 230, 178, 0.04));
+  border-inline-start: 4px solid var(--mint);
+  border-radius: 14px;
+  font-style: italic;
+}
+.wp-content img { max-width: 100%; height: auto; border-radius: 14px; }
+.wp-content pre {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  overflow-x: auto;
+  direction: ltr;
+}
+.wp-content code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.95em; }
+
 .quote-block {
   padding: 1.5rem;
   background: linear-gradient(135deg, rgba(91, 230, 178, 0.12), rgba(91, 230, 178, 0.04));
@@ -883,5 +927,11 @@ body::after {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.16); background-clip: padding-box; }
+
+/* Mobile / touch devices: hide native scrollbars (browser handles momentum scroll) */
+@media (max-width: 767px), (pointer: coarse) {
+  html { scrollbar-width: none; -ms-overflow-style: none; }
+  *::-webkit-scrollbar { width: 0; height: 0; display: none; }
+}
 
 ::selection { background: rgba(91, 230, 178, 0.35); color: #fff; }

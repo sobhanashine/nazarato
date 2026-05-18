@@ -14,7 +14,7 @@ function Stars({ rating }: { rating: Review["rating"] }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <span
           key={i}
-          className={`star-chip w-[22px] h-[22px] rounded-md grid place-items-center shrink-0 [&>svg]:w-3 [&>svg]:h-3 [&>svg]:[fill:currentColor] ${
+          className={`star-chip w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] rounded-md grid place-items-center shrink-0 [&>svg]:w-[11px] [&>svg]:h-[11px] sm:[&>svg]:w-3 sm:[&>svg]:h-3 [&>svg]:[fill:currentColor] ${
             i < rating
               ? "is-on border border-transparent [&>svg]:text-[#1a0f00]"
               : "bg-white/[0.04] border border-glass-border [&>svg]:text-white/[0.18]"
@@ -59,8 +59,8 @@ export function RecentReviews() {
               key={r.id}
               className="glass flex flex-col gap-[0.85rem] p-6 transition-[transform,background,border-color] duration-300 min-w-0 h-full hover:-translate-y-[3px] hover:bg-glass-hover hover:border-glass-border-hi"
             >
-              <div className="flex items-start justify-between gap-3 min-w-0">
-                <div className="flex items-center gap-3 min-w-0 flex-auto">
+              <div className="flex flex-col items-start gap-2.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 min-w-0">
+                <div className="flex items-center gap-3 min-w-0 w-full sm:flex-auto sm:w-auto">
                   <div
                     className="relative w-11 h-11 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_12px_rgba(0,0,0,0.35)]"
                     style={{ background: r.user.color }}
@@ -93,14 +93,14 @@ export function RecentReviews() {
               <p className="text-[0.88rem] leading-[1.8] text-strong opacity-[0.86] line-clamp-3 min-h-[calc(0.88rem*1.8*3)] flex-1">
                 {r.text}
               </p>
-              <div className="flex items-center justify-between gap-2 pt-3 border-t border-glass-border mt-auto">
-                <span className="review-date text-[0.75rem] text-muted whitespace-nowrap">
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 pt-3 border-t border-glass-border mt-auto">
+                <span className="review-date text-[0.75rem] text-muted whitespace-nowrap shrink-0">
                   {r.date}
                 </span>
-                <div className="inline-flex items-center gap-2">
+                <div className="inline-flex items-center gap-1 sm:gap-1.5 shrink-0 min-w-0">
                   <button
                     type="button"
-                    className="inline-flex items-center gap-[0.35rem] px-2.5 py-1 text-[0.75rem] font-medium text-muted bg-transparent border border-transparent rounded-full cursor-pointer transition-[color,background,border-color] duration-200 hover:text-mint hover:bg-mint/10 hover:border-mint/25 [&>svg]:w-[13px] [&>svg]:h-[13px] [&>svg]:shrink-0"
+                    className="inline-flex items-center gap-[0.3rem] px-2 py-1 text-[0.72rem] sm:text-[0.75rem] font-medium text-muted whitespace-nowrap bg-transparent border border-transparent rounded-full cursor-pointer transition-[color,background,border-color] duration-200 hover:text-mint hover:bg-mint/10 hover:border-mint/25 [&>svg]:w-[12px] [&>svg]:h-[12px] sm:[&>svg]:w-[13px] sm:[&>svg]:h-[13px] [&>svg]:shrink-0"
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                       <path d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1z" />
@@ -111,7 +111,7 @@ export function RecentReviews() {
                   <button
                     type="button"
                     aria-label="گزارش تخلف"
-                    className="inline-flex items-center gap-[0.35rem] px-2.5 py-1 text-[0.75rem] font-medium text-[#FF7A8E] bg-transparent border border-transparent rounded-full cursor-pointer transition-[color,background,border-color] duration-200 hover:text-[#FF8FA0] hover:bg-[rgba(232,72,88,0.10)] hover:border-[rgba(232,72,88,0.35)] [&>svg]:w-[13px] [&>svg]:h-[13px] [&>svg]:shrink-0"
+                    className="inline-flex items-center gap-[0.3rem] px-2 py-1 text-[0.72rem] sm:text-[0.75rem] font-medium text-[#FF7A8E] whitespace-nowrap bg-transparent border border-transparent rounded-full cursor-pointer transition-[color,background,border-color] duration-200 hover:text-[#FF8FA0] hover:bg-[rgba(232,72,88,0.10)] hover:border-[rgba(232,72,88,0.35)] [&>svg]:w-[12px] [&>svg]:h-[12px] sm:[&>svg]:w-[13px] sm:[&>svg]:h-[13px] [&>svg]:shrink-0"
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                       <path d="M4 21V4l8 2 8-2v12l-8 2-8-2" />
