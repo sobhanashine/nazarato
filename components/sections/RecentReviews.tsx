@@ -1,28 +1,65 @@
 import Link from "next/link";
-import { ArrowLeftIcon, StarIcon } from "@/components/icons";
+import { ArrowLeftIcon } from "@/components/icons";
 import { recentReviews, type Review } from "@/lib/data/reviews";
 
+const STAR_PATH =
+  "m12 16.3-3.7 2.825q-.275.225-.6.213t-.575-.188-.387-.475-.013-.65L8.15 13.4l-3.625-2.575q-.3-.2-.375-.525t.025-.6.35-.488.6-.212H9.6l1.45-4.8q.125-.35.388-.538T12 3.475t.563.188.387.537L14.4 9h4.475q.35 0 .6.213t.35.487.025.6-.375.525L15.85 13.4l1.425 4.625q.125.35-.012.65t-.388.475-.575.188-.6-.213z";
+
+type StarPalette = { light: string; mid: string; dark: string; glow: string };
+const STAR_PALETTES: Record<Review["rating"], StarPalette> = {
+  5: { light: "#A8FFD6", mid: "#5BE6B2", dark: "#1E9A6F", glow: "rgba(91, 230, 178, 0.55)" },
+  4: { light: "#E2F8A0", mid: "#BFE85B", dark: "#6FA82A", glow: "rgba(191, 232, 91, 0.55)" },
+  3: { light: "#FFE0A0", mid: "#F5C144", dark: "#B07A12", glow: "rgba(245, 193, 68, 0.55)" },
+  2: { light: "#FFD0A8", mid: "#FF9A52", dark: "#C25A18", glow: "rgba(255, 154, 82, 0.55)" },
+  1: { light: "#FFC1C9", mid: "#FF7A8E", dark: "#B23446", glow: "rgba(255, 122, 142, 0.6)" },
+};
+
 function Stars({ rating }: { rating: Review["rating"] }) {
+  const palette = STAR_PALETTES[rating];
+  const gradId = `star-grad-${rating}`;
   return (
     <div
-      className="review-stars flex gap-[3px] shrink-0 self-start"
+      className="review-stars-plain flex gap-[2px] shrink-0"
       data-rating={rating}
       dir="ltr"
       role="img"
       aria-label={`${rating} از ۵`}
     >
-      {Array.from({ length: 5 }).map((_, i) => (
-        <span
-          key={i}
-          className={`star-chip w-[20px] h-[20px] sm:w-[22px] sm:h-[22px] rounded-md grid place-items-center shrink-0 [&>svg]:w-[11px] [&>svg]:h-[11px] sm:[&>svg]:w-3 sm:[&>svg]:h-3 [&>svg]:[fill:currentColor] ${
-            i < rating
-              ? "is-on border border-transparent [&>svg]:text-[#1a0f00]"
-              : "bg-white/[0.04] border border-glass-border [&>svg]:text-white/[0.18]"
-          }`}
-        >
-          <StarIcon />
-        </span>
-      ))}
+      {Array.from({ length: 5 }).map((_, i) => {
+        const lit = i < rating;
+        return (
+          <svg
+            key={i}
+            viewBox="0 0 24 24"
+            className="w-[18px] h-[18px] sm:w-5 sm:h-5 shrink-0"
+            style={
+              lit
+                ? { filter: `drop-shadow(0 0 6px ${palette.glow})` }
+                : { opacity: 0.4 }
+            }
+            aria-hidden
+          >
+            <defs>
+              <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor={palette.light} />
+                <stop offset="55%" stopColor={palette.mid} />
+                <stop offset="100%" stopColor={palette.dark} />
+              </linearGradient>
+            </defs>
+            {lit ? (
+              <path d={STAR_PATH} fill={`url(#${gradId})`} />
+            ) : (
+              <path
+                d={STAR_PATH}
+                fill="none"
+                stroke={palette.mid}
+                strokeWidth="1.2"
+                strokeLinejoin="round"
+              />
+            )}
+          </svg>
+        );
+      })}
     </div>
   );
 }
@@ -49,7 +86,7 @@ export function RecentReviews() {
             </Link>
           </div>
           <p className="text-[13px] sm:text-[14.5px] text-muted leading-[1.6]">
-            آخرین نظرات ثبت‌شده توسط کاربران درباره فروشگاه‌های آنلاین.
+            ثبت‌شده توسط کاربران.
           </p>
         </div>
 
@@ -57,21 +94,21 @@ export function RecentReviews() {
           {recentReviews.map((r) => (
             <article
               key={r.id}
-              className="glass flex flex-col gap-[0.85rem] p-6 transition-[transform,background,border-color] duration-300 min-w-0 h-full hover:-translate-y-[3px] hover:bg-glass-hover hover:border-glass-border-hi"
+              className="glass review-card flex flex-col gap-[0.85rem] p-3.5 sm:p-6 transition-[transform,background,border-color,box-shadow] duration-300 min-w-0 h-full hover:-translate-y-[3px] hover:border-glass-border-hi"
             >
-              <div className="flex flex-col items-start gap-2.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 min-w-0">
-                <div className="flex items-center gap-3 min-w-0 w-full sm:flex-auto sm:w-auto">
+              <div className="flex flex-row items-center justify-between gap-3 min-w-0">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div
-                    className="relative w-11 h-11 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_4px_12px_rgba(0,0,0,0.35)]"
-                    style={{ background: r.user.color }}
+                    className="relative w-12 h-12 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0 shadow-[0_6px_18px_-4px_rgba(0,0,0,0.45),0_0_24px_-4px_var(--avatar-glow,rgba(255,122,142,0.35))]"
+                    style={{ background: r.user.color, ["--avatar-glow" as string]: r.user.color }}
                   >
                     {r.user.initial}
                     <span
-                      className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-mint text-[#06231b] grid place-items-center shadow-[0_0_0_2px_#0a0e18,0_0_10px_rgba(91,230,178,0.6)] [&_svg]:w-2.5 [&_svg]:h-2.5"
+                      className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-mint text-[#06231b] grid place-items-center shadow-[0_0_0_2px_#161e27,0_0_10px_rgba(91,230,178,0.7)]"
                       aria-label="کاربر تایید شده"
                       title="کاربر تایید شده"
                     >
-                      <svg viewBox="0 0 12 12" aria-hidden>
+                      <svg viewBox="0 0 12 12" className="w-2.5 h-2.5" aria-hidden>
                         <path d="M2.5 6.2l2.4 2.3 4.6-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     </span>
@@ -100,24 +137,13 @@ export function RecentReviews() {
                 <div className="inline-flex items-center gap-1 sm:gap-1.5 shrink-0 min-w-0">
                   <button
                     type="button"
-                    className="inline-flex items-center gap-[0.3rem] px-2 py-1 text-[0.72rem] sm:text-[0.75rem] font-medium text-muted whitespace-nowrap bg-transparent border border-transparent rounded-full cursor-pointer transition-[color,background,border-color] duration-200 hover:text-mint hover:bg-mint/10 hover:border-mint/25 [&>svg]:w-[12px] [&>svg]:h-[12px] sm:[&>svg]:w-[13px] sm:[&>svg]:h-[13px] [&>svg]:shrink-0"
+                    className="inline-flex items-center gap-[0.3rem] text-[0.72rem] sm:text-[0.75rem] font-medium text-muted whitespace-nowrap bg-transparent border border-transparent rounded-full cursor-pointer [&>svg]:w-[12px] [&>svg]:h-[12px] sm:[&>svg]:w-[13px] sm:[&>svg]:h-[13px] [&>svg]:shrink-0"
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                       <path d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1z" />
                       <path d="M7 11l4-8a2 2 0 0 1 3 1.7V9h5a2 2 0 0 1 2 2.3l-1.4 7A2 2 0 0 1 17.6 20H7" />
                     </svg>
                     مفید بود
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="گزارش تخلف"
-                    className="inline-flex items-center gap-[0.3rem] px-2 py-1 text-[0.72rem] sm:text-[0.75rem] font-medium text-[#FF7A8E] whitespace-nowrap bg-transparent border border-transparent rounded-full cursor-pointer transition-[color,background,border-color] duration-200 hover:text-[#FF8FA0] hover:bg-[rgba(232,72,88,0.10)] hover:border-[rgba(232,72,88,0.35)] [&>svg]:w-[12px] [&>svg]:h-[12px] sm:[&>svg]:w-[13px] sm:[&>svg]:h-[13px] [&>svg]:shrink-0"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                      <path d="M4 21V4l8 2 8-2v12l-8 2-8-2" />
-                      <path d="M4 21V13" />
-                    </svg>
-                    گزارش تخلف
                   </button>
                 </div>
               </div>

@@ -150,6 +150,33 @@ body::after {
   position: relative;
 }
 
+/* Review card — soft diagonal gradient + lifted shadow.
+   Overrides .glass background; keeps blur/border for surface coherence. */
+.review-card {
+  background:
+    linear-gradient(155deg,
+      rgba(123, 137, 255, 0.07) 0%,
+      rgba(255, 255, 255, 0.035) 38%,
+      rgba(91, 230, 178, 0.045) 100%),
+    linear-gradient(180deg, rgba(20, 26, 42, 0.55), rgba(12, 16, 28, 0.55));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    -22px 22px 40px -18px rgba(0, 0, 0, 0.55),
+    -12px 12px 24px -14px rgba(91, 230, 178, 0.10);
+}
+.review-card:hover {
+  background:
+    linear-gradient(155deg,
+      rgba(123, 137, 255, 0.10) 0%,
+      rgba(255, 255, 255, 0.05) 38%,
+      rgba(91, 230, 178, 0.07) 100%),
+    linear-gradient(180deg, rgba(24, 30, 48, 0.6), rgba(14, 18, 32, 0.6));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    -28px 28px 50px -20px rgba(0, 0, 0, 0.6),
+    -14px 14px 28px -14px rgba(91, 230, 178, 0.16);
+}
+
 /* ── Container — uses margin-inline so Tailwind mb-* utilities still apply ── */
 .container {
   width: 100%;
