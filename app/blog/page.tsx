@@ -7,14 +7,28 @@ import { PostCard } from "@/components/blog/PostCard";
 import { BlogSidebar } from "@/components/blog/BlogSidebar";
 import { Pagination } from "@/components/blog/Pagination";
 import { FilterIcon } from "@/components/icons";
-import { blogPosts } from "@/lib/data/blog-posts";
+import { blogPosts as fallbackPosts } from "@/lib/data/blog-posts";
+import type { BlogPost } from "@/lib/data/blog-posts";
+import { fetchPostsFromWp, isWpEnabled } from "@/lib/wp";
 
 export const metadata: Metadata = {
   title: "بلاگ‌ها – نظراتو",
   description: "بلاگ‌های نظراتو – راهنما، تحلیل و معرفی برندهای ایرانی",
 };
 
-export default function BlogListPage() {
+async function loadPosts(): Promise<BlogPost[]> {
+  if (!isWpEnabled) return fallbackPosts;
+  try {
+    return await fetchPostsFromWp();
+  } catch (err) {
+    console.error("[blog] WP fetch failed, using static fallback:", err);
+    return fallbackPosts;
+  }
+}
+
+export default async function BlogListPage() {
+  const posts = await loadPosts();
+
   return (
     <>
       <Header />
@@ -34,12 +48,12 @@ export default function BlogListPage() {
             </div>
 
             <div className="flex flex-col gap-8">
-              {blogPosts.map((post) => (
+              {posts.map((post) => (
                 <PostCard key={post.slug} post={post} />
               ))}
             </div>
 
-            <Pagination totalPages={3} />
+            <Pagination totalPages={Math.max(1, Math.ceil(posts.length / 5))} />
           </main>
 
           <BlogSidebar />

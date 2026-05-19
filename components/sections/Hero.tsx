@@ -8,6 +8,7 @@ const popularSearches = [
   "تعمیرگاه",
   "کلینیک پوست",
   "رستوران",
+  "ورزشی"
 ];
 
 export function Hero() {

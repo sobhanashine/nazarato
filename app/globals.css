@@ -150,6 +150,33 @@ body::after {
   position: relative;
 }
 
+/* Review card — soft diagonal gradient + lifted shadow.
+   Overrides .glass background; keeps blur/border for surface coherence. */
+.review-card {
+  background:
+    linear-gradient(155deg,
+      rgba(123, 137, 255, 0.07) 0%,
+      rgba(255, 255, 255, 0.035) 38%,
+      rgba(91, 230, 178, 0.045) 100%),
+    linear-gradient(180deg, rgba(20, 26, 42, 0.55), rgba(12, 16, 28, 0.55));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    -22px 22px 40px -18px rgba(0, 0, 0, 0.55),
+    -12px 12px 24px -14px rgba(91, 230, 178, 0.10);
+}
+.review-card:hover {
+  background:
+    linear-gradient(155deg,
+      rgba(123, 137, 255, 0.10) 0%,
+      rgba(255, 255, 255, 0.05) 38%,
+      rgba(91, 230, 178, 0.07) 100%),
+    linear-gradient(180deg, rgba(24, 30, 48, 0.6), rgba(14, 18, 32, 0.6));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.08) inset,
+    -28px 28px 50px -20px rgba(0, 0, 0, 0.6),
+    -14px 14px 28px -14px rgba(91, 230, 178, 0.16);
+}
+
 /* ── Container — uses margin-inline so Tailwind mb-* utilities still apply ── */
 .container {
   width: 100%;
@@ -184,6 +211,16 @@ body::after {
 @media (min-width: 640px) { .site-header { height: 80px; } }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .site-header { background: rgba(8, 11, 20, 0.92); }
+}
+/* PWA standalone: nudge header below the status bar / notch */
+@media (display-mode: standalone) {
+  .site-header {
+    height: calc(72px + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+  }
+}
+@media (display-mode: standalone) and (min-width: 640px) {
+  .site-header { height: calc(80px + env(safe-area-inset-top)); }
 }
 /* Brand mark — drop-shadow glow on the speech-bubble icon */
 .brand-mark { filter: drop-shadow(0 6px 16px rgba(91, 230, 178, 0.45)); }
@@ -266,6 +303,13 @@ body::after {
   -webkit-overflow-scrolling: touch;
 }
 .mobile-menu[data-open="true"] { pointer-events: auto; opacity: 1; visibility: visible; transform: translateY(0); }
+/* PWA standalone: push the menu's top bar below the status bar */
+@media (display-mode: standalone) {
+  .mobile-menu-top {
+    height: calc(72px + env(safe-area-inset-top)) !important;
+    padding-top: env(safe-area-inset-top);
+  }
+}
 .mobile-menu::before {
   content: '';
   position: absolute;
@@ -446,6 +490,14 @@ body::after {
 @keyframes pulse {
   0%, 100% { box-shadow: 0 0 0 4px rgba(91, 230, 178, 0.15), 0 0 12px rgba(91, 230, 178, 0.7); }
   50%      { box-shadow: 0 0 0 8px rgba(91, 230, 178, 0.06), 0 0 18px rgba(91, 230, 178, 0.9); }
+}
+
+@keyframes pwa-slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="pwa-slide-up"] { animation: none !important; }
 }
 
 .search-box {
@@ -769,6 +821,42 @@ body::after {
 @media (min-width: 768px) { .post-para { font-size: 1.0625rem; line-height: 1.85; } }
 .post-para + .post-para { margin-top: 1.5rem; }
 
+.wp-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-inline: 1rem;
+  color: var(--text);
+}
+.wp-content > * + * { margin-top: 1.25rem; }
+.wp-content p { font-size: 1rem; line-height: 2; }
+@media (min-width: 768px) { .wp-content p { font-size: 1.0625rem; line-height: 1.85; } }
+.wp-content h2, .wp-content h3, .wp-content h4 { color: var(--text-strong); font-weight: 600; line-height: 1.4; }
+.wp-content h2 { font-size: 1.5rem; margin-top: 2rem; }
+.wp-content h3 { font-size: 1.25rem; margin-top: 1.75rem; }
+.wp-content h4 { font-size: 1.0625rem; margin-top: 1.5rem; }
+.wp-content a { color: var(--mint); text-decoration: underline; text-underline-offset: 3px; }
+.wp-content ul, .wp-content ol { padding-inline-start: 1.5rem; }
+.wp-content ul { list-style: disc; }
+.wp-content ol { list-style: decimal; }
+.wp-content li + li { margin-top: 0.5rem; }
+.wp-content blockquote {
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(91, 230, 178, 0.12), rgba(91, 230, 178, 0.04));
+  border-inline-start: 4px solid var(--mint);
+  border-radius: 14px;
+  font-style: italic;
+}
+.wp-content img { max-width: 100%; height: auto; border-radius: 14px; }
+.wp-content pre {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  overflow-x: auto;
+  direction: ltr;
+}
+.wp-content code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.95em; }
+
 .quote-block {
   padding: 1.5rem;
   background: linear-gradient(135deg, rgba(91, 230, 178, 0.12), rgba(91, 230, 178, 0.04));
@@ -883,5 +971,11 @@ body::after {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.16); background-clip: padding-box; }
+
+/* Mobile / touch devices: hide native scrollbars (browser handles momentum scroll) */
+@media (max-width: 767px), (pointer: coarse) {
+  html { scrollbar-width: none; -ms-overflow-style: none; }
+  *::-webkit-scrollbar { width: 0; height: 0; display: none; }
+}
 
 ::selection { background: rgba(91, 230, 178, 0.35); color: #fff; }

@@ -6,7 +6,8 @@ export type ContentBlock =
   | { type: "quote"; text: string; author: string }
   | { type: "learn-list"; heading: string; items: string[] }
   | { type: "image"; src: string; alt?: string }
-  | { type: "requirements"; heading: string; items: string[] };
+  | { type: "requirements"; heading: string; items: string[] }
+  | { type: "html"; html: string };
 
 export type BlogPost = {
   slug: string;
