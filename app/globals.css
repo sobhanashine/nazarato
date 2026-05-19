@@ -215,12 +215,12 @@ body::after {
 /* PWA standalone: nudge header below the status bar / notch */
 @media (display-mode: standalone) {
   .site-header {
-    height: calc(72px + env(safe-area-inset-top));
-    padding-top: env(safe-area-inset-top);
+    height: calc(72px + env(safe-area-inset-top) + 16px);
+    padding-top: calc(env(safe-area-inset-top) + 16px);
   }
 }
 @media (display-mode: standalone) and (min-width: 640px) {
-  .site-header { height: calc(80px + env(safe-area-inset-top)); }
+  .site-header { height: calc(80px + env(safe-area-inset-top) + 16px); }
 }
 /* Brand mark — drop-shadow glow on the speech-bubble icon */
 .brand-mark { filter: drop-shadow(0 6px 16px rgba(91, 230, 178, 0.45)); }
@@ -306,9 +306,10 @@ body::after {
 /* PWA standalone: push the menu's top bar below the status bar */
 @media (display-mode: standalone) {
   .mobile-menu-top {
-    height: calc(72px + env(safe-area-inset-top)) !important;
-    padding-top: env(safe-area-inset-top);
+    height: calc(72px + env(safe-area-inset-top) + 16px) !important;
+    padding-top: calc(env(safe-area-inset-top) + 16px);
   }
+  .mobile-menu-nav { padding-top: 3rem; }
 }
 .mobile-menu::before {
   content: '';
