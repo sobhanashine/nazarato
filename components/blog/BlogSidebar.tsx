@@ -8,7 +8,7 @@ export function BlogSidebar() {
   const latest = getLatestPosts(3);
 
   return (
-    <aside className="blog-side">
+    <aside className="w-full hidden lg:flex lg:w-[33%] flex-col gap-8">
       <div className="sb-search">
         <input type="text" placeholder="جستجو" />
         <button type="button" aria-label="جستجو">
