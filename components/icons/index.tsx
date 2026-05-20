@@ -105,3 +105,78 @@ export const LinkedInIcon = (props: SVGProps<SVGSVGElement>) => (
     <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z" />
   </svg>
 );
+
+/* ── Line icons (24×24, stroke) — added for the about & contact pages ── */
+
+const lineProps = {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.7,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+
+export const MailIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...lineProps} {...props}>
+    <rect x="2.5" y="4.5" width="19" height="15" rx="3" />
+    <path d="m3.6 7 7.3 5.25a2 2 0 0 0 2.2 0L20.4 7" />
+  </svg>
+);
+
+export const PhoneIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...lineProps} {...props}>
+    <path d="M6.4 3.5h2.7l1.3 4.3-2 1.4a13 13 0 0 0 4.9 4.9l1.4-2 4.3 1.3v2.7a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.4 5.7a2 2 0 0 1 2-2.2Z" />
+  </svg>
+);
+
+export const SendIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...lineProps} {...props}>
+    <path d="M20.5 3.5 11 13" />
+    <path d="M20.5 3.5 14 20.5l-3.2-7.3L3.5 10Z" />
+  </svg>
+);
+
+export const ShieldCheckIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...lineProps} {...props}>
+    <path d="M12 3 5 5.8v5.7c0 4.6 3 7.8 7 9 4-1.2 7-4.4 7-9V5.8Z" />
+    <path d="m9 12 2.2 2.2L15.5 9.8" />
+  </svg>
+);
+
+export const ScaleIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...lineProps} {...props}>
+    <path d="M12 3.5v16M6.5 19.5h11M9 4.4h6M4.5 8h15" />
+    <path d="M4.5 8 2.1 13a3 3 0 0 0 4.8 0Z" />
+    <path d="M19.5 8 17.1 13a3 3 0 0 0 4.8 0Z" />
+  </svg>
+);
+
+export const UsersIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...lineProps} {...props}>
+    <circle cx="9" cy="8" r="3.3" />
+    <path d="M3.5 19.5a5.5 5.5 0 0 1 11 0" />
+    <path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M17.6 14.3a5.5 5.5 0 0 1 2.9 5.2" />
+  </svg>
+);
+
+export const ClockIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...lineProps} {...props}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7v5.2l3.4 2" />
+  </svg>
+);
+
+export const ChatBubbleIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...lineProps} {...props}>
+    <path d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v8a1.5 1.5 0 0 1-1.5 1.5H9.5L5 20.2V16.5H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5Z" />
+  </svg>
+);
+
+export const SparklesIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg {...lineProps} {...props}>
+    <path d="M11.5 4 13.4 9.1 18.5 11l-5.1 1.9L11.5 18l-1.9-5.1L4.5 11l5.1-1.9Z" />
+    <path d="M18.5 4v3.5M20.25 5.75h-3.5" />
+  </svg>
+);
