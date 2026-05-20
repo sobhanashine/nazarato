@@ -342,13 +342,15 @@ Each entry is structured the same way so it scans fast:
 
 #### Blog by tag — `/blog/tag/[slug]` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1
 
-#### About — `/about` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 (because header links to it)
+#### About — `/about` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 (because header links to it)
 - **Purpose**: Trust building. "Who are you? Why should I trust this site?"
 - **Layout (mobile-first)**: hero copy + mission + how we verify reviews + founder note (you're the solo founder — this is a competitive advantage; lean in) + press/social proof if any.
+- See `app/about/page.tsx`: PageBanner, mission + reused `<HeroStats />`, 4-step verification, values grid, founder note, CTA.
 
-#### Contact — `/contact` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0
+#### Contact — `/contact` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0
 - Email + phone + IG handle + a real form (name / email / message) wired to email-or-DB intake.
 - A11y: visible labels (rule `input-labels`), inline validation on blur (rule `inline-validation`).
+- See `app/contact/page.tsx` + `components/contact/ContactForm.tsx`. Form calls the `submitContact` server action (`app/contact/actions.ts`) — boundary-validated. **Pending**: no email/DB delivery yet (action logs submissions); no phone line yet (channels show email + Instagram + response hours).
 
 #### Help / FAQ — `/help` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1
 - Accordion of common questions: "چطور نظر بدم؟", "چرا نظرم تایید نشد؟", "کسب‌وکارم اینجا چطور ثبت میشه؟", "حذف حساب چگونه است؟".
