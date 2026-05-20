@@ -2,17 +2,10 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Container } from "@/components/ui/Container";
-import { PageBanner } from "@/components/ui/PageBanner";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { ContactForm } from "@/components/contact/ContactForm";
-import { GLASS } from "@/components/ui/styles";
-import {
-  ChatBubbleIcon,
-  ClockIcon,
-  InstagramIcon,
-  MailIcon,
-} from "@/components/icons";
+import { ChatBubbleIcon, ClockIcon, InstagramIcon, MailIcon } from "@/components/icons";
 
 export const metadata: Metadata = {
   title: "تماس با ما – نظراتو",
@@ -20,34 +13,46 @@ export const metadata: Metadata = {
     "با تیم نظراتو در تماس باش — سوال، پیشنهاد، گزارش یک نظر یا درخواست همکاری.",
 };
 
+type Accent = "mint" | "lapis" | "saffron";
+
+/** Full literal class strings per accent — keeps the Tailwind scanner happy. */
+const TONE: Record<Accent, { text: string; ring: string; glow: string }> = {
+  mint: { text: "text-mint", ring: "border-mint/25", glow: "bg-mint/15" },
+  lapis: { text: "text-lapis", ring: "border-lapis/25", glow: "bg-lapis/15" },
+  saffron: { text: "text-saffron", ring: "border-saffron/25", glow: "bg-saffron/15" },
+};
+
 type Channel = {
   icon: ReactNode;
   label: string;
   value: string;
   href?: string;
-  hint: string;
+  ltr?: boolean;
+  tone: Accent;
 };
 
 const channels: Channel[] = [
   {
-    icon: <MailIcon />,
-    label: "ایمیل",
+    icon: <MailIcon className="w-6 h-6" />,
+    label: "ارتباط مستقیم",
     value: "info@nazarato.ir",
     href: "mailto:info@nazarato.ir",
-    hint: "برای پیگیری‌های رسمی و همکاری",
+    ltr: true,
+    tone: "mint",
   },
   {
-    icon: <InstagramIcon />,
-    label: "اینستاگرام",
+    icon: <InstagramIcon className="w-5 h-5" />,
+    label: "شبکه اجتماعی",
     value: "@nazarato",
     href: "https://instagram.com/nazarato",
-    hint: "سریع‌ترین راه برای گفت‌وگوی کوتاه",
+    ltr: true,
+    tone: "lapis",
   },
   {
-    icon: <ClockIcon />,
-    label: "ساعات پاسخ‌گویی",
+    icon: <ClockIcon className="w-6 h-6" />,
+    label: "ساعت پاسخ‌گویی",
     value: "شنبه تا چهارشنبه · ۹ تا ۱۷",
-    hint: "پاسخ پیام‌ها معمولاً ظرف ۱ تا ۲ روز کاری",
+    tone: "saffron",
   },
 ];
 
@@ -57,88 +62,91 @@ export default function ContactPage() {
       <Header />
       <Container>
         <Breadcrumb items={[{ label: "خانه", href: "/" }, { label: "تماس با ما" }]} />
-      </Container>
-      <PageBanner
-        title="تماس با ما"
-        subtitle="سوال، پیشنهاد، گزارش یک نظر یا همکاری — هر چی باشه، خوشحال می‌شیم بشنویم."
-      />
 
-      <Container>
-        <div className="flex flex-col gap-8 mb-16 lg:flex-row lg:items-start lg:gap-12 lg:mb-24">
-          {/* ── Form ── */}
-          <main className="w-full lg:w-[58%]">
-            <div className={`${GLASS} p-6 sm:p-8`}>
-              <h1 className="text-[1.25rem] sm:text-[1.45rem] font-extrabold text-strong mb-1.5">
-                برامون پیام بفرست
-              </h1>
-              <p className="text-[13.5px] text-muted leading-[1.8] mb-6">
-                فرم زیر را پر کن؛ پیامت مستقیم به دست تیم نظراتو می‌رسه.
+        <main className="pb-16 lg:pb-24">
+          {/* ── Hero ── */}
+          <section className="pt-10 pb-12 text-center lg:pt-14">
+            <div className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-mint/25 bg-mint/[0.07] px-4 py-1.5 backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-mint" aria-hidden />
+              <span className="text-[13px] font-bold text-mint">پشتیبانی و ارتباط</span>
+            </div>
+            <h1 className="text-[2.25rem] font-black leading-[1.2] tracking-tight text-white sm:text-[3rem]">
+              با ما در تماس باش
+            </h1>
+            <p className="mx-auto mt-5 max-w-[50ch] text-[15px] leading-[1.95] text-muted sm:text-[17px]">
+              سوال، پیشنهاد، گزارش یک نظر یا درخواست همکاری — پیامت را همین‌جا
+              بفرست، زود جواب می‌دهیم.
+            </p>
+          </section>
+
+          {/* ── Form + channels ── */}
+          <div className="grid items-start gap-6 lg:grid-cols-[1fr_360px] lg:gap-8">
+            {/* Form */}
+            <div className="rounded-[1.75rem] border border-glass-border bg-glass p-6 backdrop-blur-xl sm:p-9">
+              <h2 className="mb-1 text-[1.25rem] font-black text-white">فرم تماس</h2>
+              <p className="mb-7 text-[14px] text-muted">
+                همه‌ی فیلدها جز موضوع الزامی هستند.
               </p>
               <ContactForm />
             </div>
-          </main>
 
-          {/* ── Channels ── */}
-          <aside className="w-full lg:w-[42%] flex flex-col gap-4">
-            <h2 className="text-[1.05rem] font-extrabold text-strong px-1">
-              راه‌های دیگر ارتباط
-            </h2>
-
-            {channels.map((c) => {
-              const inner = (
-                <>
-                  <span className="grid place-items-center w-11 h-11 shrink-0 rounded-xl bg-[linear-gradient(135deg,rgba(91,230,178,0.18),rgba(123,137,255,0.18))] border border-glass-border text-mint [&_svg]:w-[22px] [&_svg]:h-[22px]">
-                    {c.icon}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[12.5px] text-muted">{c.label}</span>
-                    <span
-                      className="block text-[15px] font-bold text-strong truncate"
-                      dir={c.label === "ایمیل" || c.label === "اینستاگرام" ? "ltr" : "rtl"}
-                      style={
-                        c.label === "ایمیل" || c.label === "اینستاگرام"
-                          ? { textAlign: "right" }
-                          : undefined
-                      }
+            {/* Channels */}
+            <aside className="flex flex-col gap-4">
+              {channels.map((c) => {
+                const content = (
+                  <div className="relative flex items-start gap-4 overflow-hidden rounded-2xl border border-glass-border bg-glass p-5 backdrop-blur-xl transition-all duration-300 hover:border-glass-border-hi hover:bg-glass-hover">
+                    <div
+                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border bg-black/40 ${TONE[c.tone].ring} ${TONE[c.tone].text}`}
                     >
-                      {c.value}
-                    </span>
-                    <span className="block text-[12px] text-muted mt-1 leading-[1.6]">
-                      {c.hint}
-                    </span>
-                  </span>
-                </>
-              );
+                      {c.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <span className="mb-1 block text-[13px] font-semibold text-muted">
+                        {c.label}
+                      </span>
+                      <span
+                        className="block truncate text-[15px] font-bold text-white"
+                        dir={c.ltr ? "ltr" : "rtl"}
+                      >
+                        {c.value}
+                      </span>
+                    </div>
+                  </div>
+                );
 
-              return c.href ? (
-                <a
-                  key={c.label}
-                  href={c.href}
-                  target={c.href.startsWith("http") ? "_blank" : undefined}
-                  rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className={`${GLASS} flex items-start gap-3.5 p-4 transition-[background,border-color,transform] duration-200 hover:bg-glass-hover hover:border-glass-border-hi hover:-translate-y-[2px]`}
-                >
-                  {inner}
-                </a>
-              ) : (
-                <div key={c.label} className={`${GLASS} flex items-start gap-3.5 p-4`}>
-                  {inner}
+                return c.href ? (
+                  <a
+                    key={c.label}
+                    href={c.href}
+                    target={c.href.startsWith("http") ? "_blank" : undefined}
+                    rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    className="block"
+                  >
+                    {content}
+                  </a>
+                ) : (
+                  <div key={c.label}>{content}</div>
+                );
+              })}
+
+              {/* Reporting note */}
+              <div className="relative flex items-start gap-4 rounded-2xl border border-pomegr/20 bg-pomegr/[0.04] p-5 backdrop-blur-xl">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-pomegr/10 text-pomegr">
+                  <ChatBubbleIcon className="w-5 h-5" />
                 </div>
-              );
-            })}
-
-            {/* Reassurance note */}
-            <div className="flex items-start gap-3 rounded-glass border border-mint/20 bg-mint/[0.06] p-4">
-              <span className="text-mint shrink-0 mt-0.5 [&_svg]:w-[20px] [&_svg]:h-[20px]">
-                <ChatBubbleIcon />
-              </span>
-              <p className="text-[12.5px] text-strong/85 leading-[1.85]">
-                می‌خوای یک نظر را گزارش کنی؟ موضوع پیامت را «گزارش نظر» بذار و لینک
-                صفحه را برامون بفرست تا سریع‌تر بررسی بشه.
-              </p>
-            </div>
-          </aside>
-        </div>
+                <div>
+                  <h3 className="mb-1.5 text-[14px] font-black text-white">
+                    گزارش نقض قوانین
+                  </h3>
+                  <p className="text-[13px] leading-[1.9] text-muted">
+                    برای گزارش یک نظر خاص، شناسه یا لینک مستقیم آن صفحه را در متن
+                    پیام بنویس.
+                  </p>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </main>
       </Container>
       <Footer />
     </>

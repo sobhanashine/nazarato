@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Container } from "@/components/ui/Container";
-import { PageBanner } from "@/components/ui/PageBanner";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
-import { GLASS, BTN_PRIMARY } from "@/components/ui/styles";
+import { BTN_PRIMARY } from "@/components/ui/styles";
 import {
   ChatBubbleIcon,
   PhoneIcon,
@@ -23,93 +21,69 @@ export const metadata: Metadata = {
     "نظراتو یک پلتفرم مستقل برای نظرات واقعی درباره کسب‌وکارها و فروشگاه‌های ایرانی است. درباره مأموریت، روش تأیید نظرات و سازنده‌اش بخوان.",
 };
 
-/** Persian-digit number formatter — deterministic on server & client. */
 const fa = (n: number) => n.toLocaleString("fa-IR");
 
 type Accent = "mint" | "lapis" | "saffron";
 
-const accent: Record<Accent, { chip: string; line: string; bar: string }> = {
-  mint: {
-    chip: "bg-mint/12 border-mint/30 text-mint",
-    line: "from-mint",
-    bar: "bg-mint",
-  },
-  lapis: {
-    chip: "bg-lapis/12 border-lapis/30 text-lapis",
-    line: "from-lapis",
-    bar: "bg-lapis",
-  },
-  saffron: {
-    chip: "bg-saffron/12 border-saffron/30 text-saffron",
-    line: "from-saffron",
-    bar: "bg-saffron",
-  },
+/** Full literal class strings per accent — keeps the Tailwind scanner happy. */
+const TONE: Record<Accent, { text: string; ring: string; glow: string; grad: string }> = {
+  mint: { text: "text-mint", ring: "border-mint/25", glow: "bg-mint/15", grad: "from-mint/[0.12]" },
+  lapis: { text: "text-lapis", ring: "border-lapis/25", glow: "bg-lapis/15", grad: "from-lapis/[0.12]" },
+  saffron: { text: "text-saffron", ring: "border-saffron/25", glow: "bg-saffron/15", grad: "from-saffron/[0.12]" },
 };
 
-type Stat = { value: number; suffix?: string; label: string; tone: Accent };
+const CARD =
+  "rounded-3xl border border-glass-border bg-glass backdrop-blur-xl transition-all duration-300";
 
-const stats: Stat[] = [
-  { value: 12428, label: "نظر تأییدشده", tone: "mint" },
-  { value: 3420, label: "کسب‌وکار ثبت‌شده", tone: "lapis" },
+const stats: { value: number; suffix: string; label: string; tone: Accent }[] = [
+  { value: 12428, suffix: "+", label: "نظر ثبت‌شده", tone: "mint" },
+  { value: 3420, suffix: "+", label: "کسب‌وکار", tone: "lapis" },
   { value: 98, suffix: "٪", label: "رضایت کاربران", tone: "saffron" },
 ];
 
-type Step = { icon: ReactNode; title: string; text: string };
-
-const verifySteps: Step[] = [
+const verifySteps = [
   {
-    icon: <PhoneIcon />,
+    icon: <PhoneIcon className="w-7 h-7" />,
     title: "ثبت با حساب واقعی",
     text: "هر نظر به یک شماره موبایل تأییدشده گره خورده؛ حساب‌های یک‌بارمصرف راه ندارن.",
   },
   {
-    icon: <SparklesIcon />,
+    icon: <SparklesIcon className="w-7 h-7" />,
     title: "بررسی خودکار",
     text: "الگوریتم ما اسپم، نظرات تکراری و زبان توهین‌آمیز را پیش از انتشار علامت می‌زنه.",
   },
   {
-    icon: <UsersIcon />,
+    icon: <UsersIcon className="w-7 h-7" />,
     title: "بازبینی انسانی",
     text: "موارد مشکوک به دست تیم بازبینی می‌رسن — تصمیم نهایی با یک انسانه، نه فقط ماشین.",
   },
   {
-    icon: <ChatBubbleIcon />,
+    icon: <ChatBubbleIcon className="w-7 h-7" />,
     title: "حق پاسخ",
     text: "صاحب هر کسب‌وکار می‌تونه به نظرها پاسخ بده تا گفت‌وگو دوطرفه بمونه.",
   },
 ];
 
-type Value = { icon: ReactNode; title: string; text: string; tone: Accent };
-
-const values: Value[] = [
+const values: { icon: React.ReactNode; title: string; text: string; tone: Accent }[] = [
   {
-    icon: <ShieldCheckIcon />,
+    icon: <ShieldCheckIcon className="w-6 h-6" />,
     title: "شفافیت",
-    text: "نظرات را نمی‌خریم، حذف سفارشی نمی‌کنیم و رتبه‌ها را دستکاری نمی‌کنیم.",
+    text: "نظرات را نمی‌خریم و رتبه‌ها را دستکاری نمی‌کنیم. هر چیزی که می‌بینی، واقعی است.",
     tone: "mint",
   },
   {
-    icon: <ScaleIcon />,
+    icon: <ScaleIcon className="w-6 h-6" />,
     title: "بی‌طرفی",
-    text: "نه طرفِ کاربر، نه طرفِ کسب‌وکار — فقط طرفِ واقعیت می‌ایستیم.",
+    text: "نه طرف کاربر، نه طرف کسب‌وکار. فقط داده‌های واقعی و تجربه‌های تأییدشده.",
     tone: "lapis",
   },
   {
-    icon: <StarIcon />,
-    title: "جامعه‌محور",
-    text: "نظراتو با تجربهٔ واقعی آدم‌ها ساخته می‌شه و برای همون آدم‌هاست.",
+    icon: <StarIcon className="w-6 h-6" />,
+    title: "جامعه‌محوری",
+    text: "یک فضای مستقل که با تجربه واقعی آدم‌ها، برای همان آدم‌ها ساخته می‌شود.",
     tone: "saffron",
   },
 ];
-
-function Eyebrow({ children }: { children: ReactNode }) {
-  return (
-    <p className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[0.08em] text-mint mb-3">
-      <span aria-hidden className="w-5 h-px bg-mint/60" />
-      {children}
-    </p>
-  );
-}
 
 export default function AboutPage() {
   return (
@@ -117,202 +91,178 @@ export default function AboutPage() {
       <Header />
       <Container>
         <Breadcrumb items={[{ label: "خانه", href: "/" }, { label: "درباره ما" }]} />
-      </Container>
-      <PageBanner
-        title="درباره نظراتو"
-        subtitle="یک پلتفرم مستقل برای نظرات واقعی درباره کسب‌وکارها و فروشگاه‌های ایرانی."
-      />
 
-      <Container>
-        <main className="pb-20 lg:pb-28">
-          {/* ── Mission — asymmetric: statement beside live stats ── */}
-          <section className="mb-16 lg:mb-24 grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:gap-12 lg:items-center">
-            <div>
-              <Eyebrow>مأموریت ما</Eyebrow>
-              <h1 className="text-[1.5rem] sm:text-[1.95rem] lg:text-[2.3rem] font-extrabold text-strong leading-[1.55]">
-                قبل از هر خرید یک سؤال ساده در ذهن هست:{" "}
-                <span className="bg-[linear-gradient(135deg,#5BE6B2_0%,#7B89FF_100%)] bg-clip-text text-transparent">
-                  «تجربهٔ بقیه چی بوده؟»
-                </span>
-              </h1>
-              <p className="mt-5 text-[15px] text-muted leading-[2.05] max-w-[60ch]">
-                نظراتو همون جواب را یک‌جا جمع می‌کنه. ما یک پلتفرم مستقل نظرات برای
-                کسب‌وکارها و فروشگاه‌های ایرانی هستیم — از شرکت‌های بزرگ تا پیج‌های
-                اینستاگرامی. هدفمون اینه که نظرات واقعی و بی‌طرف را در دسترس همه بذاریم،
-                بدون فیلترِ تبلیغاتی.
+        <main className="pb-8">
+          {/* ── Hero ── */}
+          <section className="pt-10 pb-14 text-center lg:pt-16 lg:pb-20">
+            <div className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-mint/25 bg-mint/[0.07] px-4 py-1.5 backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-mint" aria-hidden />
+              <span className="text-[13px] font-bold text-mint">درباره نظراتو</span>
+            </div>
+
+            <h1 className="text-[2.5rem] font-black leading-[1.2] tracking-tight text-white sm:text-[3.5rem] lg:text-[4.25rem]">
+              حقیقت محض،
+              <br />
+              <span className="inline-block bg-gradient-to-l from-mint to-lapis bg-clip-text pb-[0.12em] text-transparent">
+                بدون فیلتر.
+              </span>
+            </h1>
+
+            <p className="mx-auto mt-7 max-w-[52ch] text-[16px] leading-[2] text-muted sm:text-[18px]">
+              در فضایی که هر چیزی قابل خریدن است، ما یک پایگاه مستقل برای تجربه‌های
+              واقعی ساخته‌ایم. نظراتو راهی تازه برای اعتماد است.
+            </p>
+          </section>
+
+          {/* ── Stats ── */}
+          <section className="grid gap-4 sm:grid-cols-3 sm:gap-5">
+            {stats.map((s) => (
+              <div
+                key={s.label}
+                className={`${CARD} relative overflow-hidden p-7 text-center hover:border-glass-border-hi hover:bg-glass-hover`}
+              >
+                <div
+                  className={`absolute -top-14 left-1/2 h-32 w-32 -translate-x-1/2 rounded-full ${TONE[s.tone].glow} opacity-60 blur-3xl`}
+                  aria-hidden
+                />
+                <div className="relative">
+                  <div className="flex items-end justify-center gap-1 leading-none">
+                    <span className="text-[2.75rem] font-black text-white sm:text-[3rem]">
+                      {fa(s.value)}
+                    </span>
+                    <span className={`pb-1.5 text-[1.5rem] font-black ${TONE[s.tone].text}`}>
+                      {s.suffix}
+                    </span>
+                  </div>
+                  <div className="mt-3 text-[14px] font-semibold text-muted">{s.label}</div>
+                </div>
+              </div>
+            ))}
+          </section>
+
+          {/* ── How verification works ── */}
+          <section className="py-20 lg:py-28">
+            <div className="mb-12 text-center lg:mb-16">
+              <h2 className="text-[1.85rem] font-black text-white sm:text-[2.25rem]">
+                چطور نظرها را تأیید می‌کنیم؟
+              </h2>
+              <p className="mx-auto mt-4 max-w-[52ch] text-[15px] leading-[1.95] text-muted sm:text-[16px]">
+                هر نظر پیش از انتشار از یک فیلتر چهارمرحله‌ای عبور می‌کند تا فقط
+                تجربه‌های واقعی منتشر شوند.
               </p>
             </div>
 
-            <ul className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 list-none">
-              {stats.map((s) => (
-                <li
-                  key={s.label}
-                  className={`${GLASS} relative overflow-hidden flex flex-col gap-1 px-5 py-4`}
+            <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
+              {verifySteps.map((step, i) => (
+                <div
+                  key={step.title}
+                  className={`${CARD} relative overflow-hidden p-7 hover:border-mint/30 hover:bg-glass-hover sm:p-8`}
                 >
                   <span
+                    className="pointer-events-none absolute top-5 left-7 select-none text-[3.5rem] font-black leading-none text-white/[0.05]"
                     aria-hidden
-                    className={`absolute inset-y-0 right-0 w-[3px] ${accent[s.tone].bar}`}
-                  />
-                  <span className="tabular-nums [font-feature-settings:'ss01'] text-[1.75rem] font-extrabold text-strong leading-none -tracking-[0.01em]">
-                    {fa(s.value)}
-                    {s.suffix ?? ""}
-                  </span>
-                  <span className="text-[12.5px] text-muted">{s.label}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {/* ── How we verify reviews — connected timeline ── */}
-          <section className="mb-16 lg:mb-24">
-            <div className="mb-9">
-              <Eyebrow>اعتماد چطور ساخته می‌شه</Eyebrow>
-              <h2 className="text-[1.35rem] sm:text-[1.7rem] font-extrabold text-strong">
-                مسیر تأیید هر نظر
-              </h2>
-              <p className="mt-2.5 text-[14px] text-muted leading-[1.95] max-w-[58ch]">
-                یک نظر فقط وقتی ارزش داره که واقعی باشه. هر نظر پیش از انتشار از این
-                چهار مرحله رد می‌شه:
-              </p>
-            </div>
-
-            <ol className="relative list-none">
-              {verifySteps.map((step, i) => {
-                const isLast = i === verifySteps.length - 1;
-                return (
-                  <li
-                    key={step.title}
-                    className="relative grid grid-cols-[3rem_1fr] gap-x-5 pb-5 last:pb-0"
                   >
-                    {!isLast && (
-                      <span
-                        aria-hidden
-                        className="absolute right-6 top-12 bottom-0 w-px bg-gradient-to-b from-glass-border-hi to-glass-border"
-                      />
-                    )}
-                    <span className="relative z-[1] self-start grid place-items-center w-12 h-12 rounded-full bg-[linear-gradient(135deg,#5BE6B2,#7B89FF)] text-[#06231b] font-extrabold text-[1.05rem] tabular-nums shadow-[0_6px_18px_-6px_rgba(91,230,178,0.65)]">
-                      {fa(i + 1)}
-                    </span>
-                    <div
-                      className={`${GLASS} p-5 transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi`}
-                    >
-                      <div className="flex items-center gap-2.5 mb-2">
-                        <span className="text-mint [&_svg]:w-[18px] [&_svg]:h-[18px]">
-                          {step.icon}
-                        </span>
-                        <h3 className="text-[15px] font-bold text-strong">
-                          {step.title}
-                        </h3>
-                      </div>
-                      <p className="text-[13px] text-muted leading-[1.95]">
-                        {step.text}
-                      </p>
+                    ۰{fa(i + 1)}
+                  </span>
+                  <div className="relative">
+                    <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-mint/20 bg-mint/[0.08] text-mint">
+                      {step.icon}
                     </div>
-                  </li>
-                );
-              })}
-            </ol>
+                    <h3 className="mb-3 text-[18px] font-black text-white">{step.title}</h3>
+                    <p className="text-[15px] leading-[1.95] text-muted">{step.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
 
-          {/* ── Values — accent-coded cards ── */}
-          <section className="mb-16 lg:mb-24">
-            <div className="mb-9">
-              <Eyebrow>چیزی که بهش پایبندیم</Eyebrow>
-              <h2 className="text-[1.35rem] sm:text-[1.7rem] font-extrabold text-strong">
-                ارزش‌های ما
-              </h2>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
+          {/* ── Values ── */}
+          <section className="-mx-5 border-y border-glass-border bg-black/20 px-5 py-20 sm:-mx-6 sm:px-6 lg:-mx-12 lg:px-12 lg:py-24 xl:-mx-16 xl:px-16">
+            <h2 className="mb-12 text-center text-[1.85rem] font-black text-white sm:text-[2.25rem] lg:mb-16">
+              ارزش‌های ما
+            </h2>
+            <div className="grid gap-5 sm:grid-cols-3">
               {values.map((v) => (
                 <div
                   key={v.title}
-                  className={`${GLASS} relative overflow-hidden flex flex-col gap-3.5 p-6 transition-[background,border-color,transform] duration-200 hover:bg-glass-hover hover:border-glass-border-hi hover:-translate-y-0.5`}
+                  className={`${CARD} group relative overflow-hidden p-7 hover:border-glass-border-hi`}
                 >
-                  <span
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-b ${TONE[v.tone].grad} to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
                     aria-hidden
-                    className={`absolute inset-x-0 top-0 h-px bg-gradient-to-l ${accent[v.tone].line} to-transparent`}
                   />
-                  <span
-                    className={`grid place-items-center w-12 h-12 rounded-2xl border ${accent[v.tone].chip} [&_svg]:w-[24px] [&_svg]:h-[24px]`}
-                  >
-                    {v.icon}
-                  </span>
-                  <h3 className="text-[16px] font-extrabold text-strong">
-                    {v.title}
-                  </h3>
-                  <p className="text-[13.5px] text-muted leading-[1.95]">
-                    {v.text}
-                  </p>
+                  <div className="relative">
+                    <div
+                      className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl border bg-black/40 ${TONE[v.tone].ring} ${TONE[v.tone].text}`}
+                    >
+                      {v.icon}
+                    </div>
+                    <h3 className="mb-2.5 text-[17px] font-black text-white">{v.title}</h3>
+                    <p className="text-[14px] leading-[1.95] text-muted">{v.text}</p>
+                  </div>
                 </div>
               ))}
             </div>
           </section>
 
           {/* ── Founder note ── */}
-          <section className="mb-16 lg:mb-24">
-            <div className="relative overflow-hidden rounded-[1.25rem] border border-glass-border-hi p-7 sm:p-10 backdrop-blur-[22px] backdrop-saturate-[180%] bg-[rgba(15,20,32,0.55)] bg-[linear-gradient(135deg,rgba(91,230,178,0.10),rgba(123,137,255,0.10))] shadow-[var(--shadow-lg)]">
+          <section className="py-20 lg:py-28">
+            <div
+              className={`${CARD} relative mx-auto max-w-[820px] overflow-hidden p-8 sm:p-12`}
+            >
               <div
+                className="absolute -top-24 -right-20 h-64 w-64 rounded-full bg-mint/10 blur-3xl"
                 aria-hidden
-                className="absolute inset-[-40%] pointer-events-none opacity-80 blur-[44px]"
-                style={{
-                  background:
-                    "radial-gradient(circle at 80% 20%, rgba(123,137,255,0.3), transparent 45%)," +
-                    "radial-gradient(circle at 15% 90%, rgba(91,230,178,0.26), transparent 45%)",
-                }}
               />
-              <div className="relative z-[1]">
-                <span
-                  aria-hidden
-                  className="block text-[3.5rem] leading-[0.4] text-mint/50 font-extrabold mb-4 select-none"
-                >
-                  «
-                </span>
-                <Eyebrow>یک یادداشت از بنیان‌گذار</Eyebrow>
-                <p className="text-[15px] sm:text-[17px] text-strong/90 leading-[2.1] max-w-[60ch]">
-                  نظراتو را یک نفر می‌سازه — من. طراحی، کد, تصمیم‌ها و پاسخ به همین
-                  پیام‌ها، همه از یک میز بیرون میاد. این یعنی هیچ لایهٔ شرکتی‌ای بین
-                  تو و کسی که محصول را می‌سازه نیست؛ بازخوردت مستقیم به دست
-                  تصمیم‌گیرنده می‌رسه و معمولاً همون هفته دیده می‌شه. هدفم ساده‌ست:
-                  جایی بسازم که قبل از هر خرید، اولْ سراغش بری.
-                </p>
-                <div className="flex items-center gap-3 mt-6">
-                  <span className="grid place-items-center w-11 h-11 rounded-full bg-[linear-gradient(135deg,#5BE6B2,#7B89FF)] text-[#06231b] font-extrabold shadow-[0_6px_18px_-4px_rgba(91,230,178,0.5)]">
+              <div
+                className="absolute -bottom-24 -left-20 h-64 w-64 rounded-full bg-lapis/10 blur-3xl"
+                aria-hidden
+              />
+              <div className="relative">
+                <span className="text-[14px] font-bold text-mint">یادداشت بنیان‌گذار</span>
+                <h2 className="mt-3 mb-7 text-[1.6rem] font-black text-white sm:text-[2rem]">
+                  چرا نظراتو را ساختم؟
+                </h2>
+                <div className="space-y-5 text-[16px] leading-[2.1] text-muted sm:text-[17px]">
+                  <p>
+                    نظراتو یک استارتاپ بزرگ با سرمایه‌گذار نیست. یک پروژه‌ی مستقل است
+                    که برای حل یک مشکل ساده ساخته شد:{" "}
+                    <strong className="font-bold text-white">
+                      نبودِ نظرهای واقعی و بدون دستکاری
+                    </strong>{" "}
+                    درباره‌ی کسب‌وکارهای ایرانی.
+                  </p>
+                  <p>
+                    وقتی خریدی می‌کنیم، حق داریم بدانیم دیگران چه تجربه‌ای داشته‌اند.
+                    اما خیلی از پلتفرم‌ها نظرهای منفی را پنهان می‌کنند. نظراتو را ساختم
+                    تا یک فضای بی‌طرف بماند؛ جایی که داده‌ها متعلق به خود مردم است.
+                  </p>
+                </div>
+                <div className="mt-9 flex items-center gap-4 border-t border-glass-border pt-7">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-mint to-lapis text-[18px] font-black text-black">
                     س
-                  </span>
-                  <span>
-                    <span className="block text-[14.5px] font-extrabold text-strong">
-                      سبحان
-                    </span>
-                    <span className="block text-[12.5px] text-muted">
-                      بنیان‌گذار نظراتو
-                    </span>
-                  </span>
+                  </div>
+                  <div>
+                    <div className="text-[15px] font-black text-white">سبحان</div>
+                    <div className="text-[13px] font-semibold text-muted">بنیان‌گذار نظراتو</div>
+                  </div>
                 </div>
               </div>
             </div>
           </section>
 
           {/* ── CTA ── */}
-          <section className={`${GLASS} text-center p-8 sm:p-12`}>
-            <h2 className="text-[1.2rem] sm:text-[1.5rem] font-extrabold text-strong mb-2">
-              تجربه‌ات می‌تونه راهنمای یک نفر دیگه باشه
+          <section className="pb-4 text-center">
+            <h2 className="text-[1.85rem] font-black text-white sm:text-[2.25rem]">
+              تجربه‌ات را ثبت کن
             </h2>
-            <p className="text-[14px] text-muted leading-[1.9] max-w-[46ch] mx-auto mb-6">
-              چه تجربهٔ خوب، چه بد — نوشتنش چند دقیقه طول می‌کشه و به دیگران کمک می‌کنه
-              بهتر انتخاب کنن.
+            <p className="mx-auto mt-4 mb-8 max-w-[46ch] text-[15px] leading-[1.95] text-muted sm:text-[16px]">
+              هر نظر — چه مثبت، چه منفی — به یک نفر دیگر کمک می‌کند انتخاب بهتری
+              داشته باشد.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link href="/write-review" className={`${BTN_PRIMARY} py-[0.8rem] px-7 text-[15px]`}>
-                نوشتن نظر
-              </Link>
-              <Link
-                href="/categories"
-                className="inline-flex items-center justify-center py-[0.8rem] px-7 text-[15px] font-bold text-strong rounded-full bg-glass border border-glass-border backdrop-blur-[14px] transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi"
-              >
-                مرور دسته‌بندی‌ها
-              </Link>
-            </div>
+            <Link href="/write-review" className={`${BTN_PRIMARY} px-9 py-3.5 text-[16px]`}>
+              ثبت نظر
+            </Link>
           </section>
         </main>
       </Container>
