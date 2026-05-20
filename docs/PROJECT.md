@@ -23,7 +23,7 @@ non-trivial task starts by reading this file and ends by updating it.
 
 | Path             | Purpose                                                                      |
 | ---------------- | ---------------------------------------------------------------------------- |
-| `app/`           | App Router routes. Currently: `/` (home), `/categories`, `/blog`, `/blog/[slug]`. |
+| `app/`           | App Router routes. Currently: `/` (home), `/about`, `/contact`, `/categories`, `/blog`, `/blog/[slug]`. |
 | `components/`    | Grouped by role: `layout/`, `sections/`, `ui/`, `blog/`, `categories/`, `icons/`, `pwa/`. |
 | `lib/`           | Data layer + integrations. `lib/wp.ts` is the WordPress client.              |
 | `lib/data/`      | Static/sample data: `blog-posts`, `blog-taxonomies`, `categories`, `reviews`, `instagram-shops`. |
@@ -93,6 +93,13 @@ Set globally in `next.config.ts:31-40`:
   `<Backdrop>` renders the ambient aurora/grain layers.
 - Animations: declare `@keyframes` in `globals.css`, apply via `animate-[name_…]`.
 - RTL is assumed; use `ms-*`/`me-*` (logical) over `ml-*`/`mr-*` when adding spacing.
+- Never interpolate Tailwind classes (`text-${tone}`) — the v4 scanner only
+  matches literal strings, so interpolated classes silently never generate.
+  Use a lookup map of full class strings (see the `TONE` record in
+  `app/about/page.tsx` / `app/contact/page.tsx`).
+- Inline SVG icons from `components/icons` carry no intrinsic size; always pass
+  an explicit `className="w-_ h-_"` (or size via a wrapper) — unsized, they
+  fall back to the 300×150 SVG default and break layout.
 
 ### Routing
 
@@ -134,6 +141,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-05-21** — Redesigned `/about` + `/contact`: replaced the faux-terminal English jargon with a clean Persian-first layout, removed every `font-mono` (numbers now render in Vazirmatn too, per request), and dropped each page's opaque `bg-[#02050A]` + local orbs so the global `<Backdrop>` shows through like `/categories` + `/blog`. Bug fixes: missing `/images/noise.png` (404) removed; unsized inline SVGs (`SendIcon` in the submit button, `ChatBubbleIcon` in the report note) given explicit dimensions — they were rendering at the 300×150 SVG default and breaking layout; contact `lg:pt-[240px]` magic-number alignment replaced with a top-aligned grid; mobile-overflowing `translateX`/`translate-y` card offsets removed. Files: `app/about/page.tsx`, `app/contact/page.tsx`, `components/contact/ContactForm.tsx`. See new §2 Styling rules on dynamic Tailwind classes + icon sizing.
 - **2026-05-20** — Removed all hand-written component CSS. `app/globals.css` slimmed 983→~195 lines (Tailwind config + `@keyframes` + `::-webkit-scrollbar` + `.wp-content` only). Every `.glass`/`.hero`/`.site-header`/`.btn-*`/`.post-*`/`.sb-*` etc. class converted to Tailwind utilities in JSX; shared bundles extracted to `components/ui/styles.ts`, new `components/ui/Container.tsx` + `components/layout/Backdrop.tsx`, `components/blog/BlogMeta.tsx` dedupes the author row. Files: `app/globals.css`, `app/layout.tsx`, all of `components/`, `lib/data/categories.tsx`, app pages. Decision: globals.css is config-only — no component classes; pseudo-element decorations become real `aria-hidden` `<div>`s; PWA `display-mode: standalone` is a registered `@custom-variant`.
 - **2026-05-20** — Added `/categories` page: client-side live search + 2-col mobile grid (3/4 cols on sm/lg) of icon+title-only centered cards, 12 categories, with empty state. Extracted `CategoryCard` (`compact` variant = centered icon+title; default = icon+title+desc, used by home `Categories` section). Files: `app/categories/page.tsx`, `components/categories/CategoryBrowser.tsx`, `components/ui/CategoryCard.tsx`, `components/sections/Categories.tsx`, `lib/data/categories.tsx`. Decisions: shared card primitives live in `components/ui/`; interactive page widgets get their own `components/categories/` group and are `"use client"`; home section shows `categories.slice(0,4)` as "popular", `/categories` shows all. Note: an `absolute` icon over an input needs explicit `z-10` — the `glass` class makes the input `position: relative`, which otherwise paints over earlier siblings.
 <!-- project-loop:changelog:end -->

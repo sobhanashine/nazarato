@@ -3,46 +3,47 @@
 import { useId, useRef, useState } from "react";
 import { submitContact } from "@/app/contact/actions";
 import { SendIcon } from "@/components/icons";
-import { BTN_PRIMARY } from "@/components/ui/styles";
 
 type Field = "name" | "email" | "subject" | "message";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MESSAGE_MAX = 2000;
 
-/** Client-side mirror of the server validation in `app/contact/actions.ts`. */
+const fa = (n: number) => n.toLocaleString("fa-IR");
+
 function validateField(field: Field, value: string): string | null {
   const v = value.trim();
   switch (field) {
     case "name":
-      if (v.length === 0) return "نام را وارد کن.";
-      if (v.length < 2) return "نام باید حداقل ۲ حرف باشد.";
-      if (v.length > 80) return "نام خیلی طولانی است.";
+      if (v.length === 0) return "نام الزامی است";
+      if (v.length < 2) return "حداقل ۲ کاراکتر";
+      if (v.length > 80) return "بیش از حد مجاز";
       return null;
     case "email":
-      if (v.length === 0) return "ایمیل را وارد کن.";
-      if (!EMAIL_RE.test(v)) return "ایمیل معتبر نیست (مثال: name@mail.com).";
+      if (v.length === 0) return "ایمیل الزامی است";
+      if (!EMAIL_RE.test(v)) return "فرمت نامعتبر";
       return null;
     case "subject":
-      if (v.length > 120) return "موضوع خیلی طولانی است.";
+      if (v.length > 120) return "بیش از حد مجاز";
       return null;
     case "message":
-      if (v.length === 0) return "متن پیام را وارد کن.";
-      if (v.length < 10) return "پیام باید حداقل ۱۰ کاراکتر باشد.";
-      if (v.length > MESSAGE_MAX) return `پیام نباید بیش از ${MESSAGE_MAX} کاراکتر باشد.`;
+      if (v.length === 0) return "متن پیام الزامی است";
+      if (v.length < 10) return "حداقل ۱۰ کاراکتر";
+      if (v.length > MESSAGE_MAX) return `حداکثر ${fa(MESSAGE_MAX)} کاراکتر`;
       return null;
   }
 }
 
 const FIELD_BASE =
-  "w-full rounded-xl bg-glass border px-4 py-3 text-[15px] text-strong " +
-  "placeholder:text-muted/60 outline-none transition-[border-color,background,box-shadow] duration-200";
+  "w-full rounded-xl border border-glass-border bg-white/[0.03] px-4 py-3.5 text-[16px] text-white " +
+  "placeholder:text-white/25 outline-none transition-all duration-200 backdrop-blur-md";
 const FIELD_OK =
-  "border-glass-border focus:border-mint/55 focus:bg-glass-hover " +
-  "focus:shadow-[0_0_0_3px_rgba(91,230,178,0.12)]";
+  "hover:border-glass-border-hi focus:border-mint focus:bg-mint/[0.06]";
 const FIELD_ERR =
-  "border-pomegr/60 focus:border-pomegr/70 " +
-  "focus:shadow-[0_0_0_3px_rgba(255,107,149,0.14)]";
+  "border-pomegr/55 bg-pomegr/[0.05] focus:border-pomegr placeholder:text-pomegr/30";
+
+const LABEL = "text-[13px] font-bold text-muted";
+const ERR_TEXT = "text-[12px] font-bold text-pomegr";
 
 export function ContactForm() {
   const formId = useId();
@@ -63,7 +64,6 @@ export function ContactForm() {
   ) => {
     const value = e.target.value;
     setValues((v) => ({ ...v, [field]: value }));
-    // Re-validate live only once the field has been blurred once.
     if (touched[field]) {
       setErrors((prev) => ({ ...prev, [field]: validateField(field, value) ?? undefined }));
     }
@@ -78,7 +78,6 @@ export function ContactForm() {
     e.preventDefault();
     setServerError(null);
 
-    // Validate everything; surface all errors at once.
     const allFields: Field[] = ["name", "email", "subject", "message"];
     const nextErrors: Partial<Record<Field, string>> = {};
     for (const f of allFields) {
@@ -89,7 +88,6 @@ export function ContactForm() {
     setTouched({ name: true, email: true, subject: true, message: true });
 
     if (Object.keys(nextErrors).length > 0) {
-      // Move focus to the first invalid control for keyboard/SR users.
       const first = allFields.find((f) => nextErrors[f]);
       if (first) formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)?.focus();
       return;
@@ -111,22 +109,37 @@ export function ContactForm() {
       }
     } catch {
       setStatus("idle");
-      setServerError("ارسال پیام با خطا مواجه شد. اتصال اینترنت را بررسی کن.");
+      setServerError("خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.");
     }
   }
 
   if (status === "success") {
     return (
-      <div className="flex flex-col items-center text-center gap-4 py-10 px-6">
-        <span className="grid place-items-center w-16 h-16 rounded-full bg-mint/15 text-mint shadow-[0_0_0_6px_rgba(91,230,178,0.07),0_0_28px_-6px_rgba(91,230,178,0.6)]">
-          <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="m5 12.5 4.5 4.5L19 7" />
-          </svg>
-        </span>
-        <h3 className="text-[1.15rem] font-extrabold text-strong">پیامت رسید!</h3>
-        <p className="text-sm text-muted leading-[1.85] max-w-[36ch]">
-          ممنون که وقت گذاشتی. تیم نظراتو معمولاً ظرف یک تا دو روز کاری پاسخ می‌ده.
-        </p>
+      <div className="flex flex-col items-center gap-6 py-14 text-center">
+        <div className="relative">
+          <div className="absolute inset-0 rounded-full bg-mint/20 blur-xl" aria-hidden />
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-mint/30 bg-mint/[0.08] text-mint">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-9 w-9"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m5 12.5 4.5 4.5L19 7" />
+            </svg>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-[1.5rem] font-black tracking-tight text-white">
+            پیام شما ارسال شد
+          </h3>
+          <p className="mx-auto max-w-[40ch] text-[15px] leading-[1.9] text-muted">
+            پیامت رسید. تیم پشتیبانی طی ۱ تا ۲ روز کاری جواب می‌دهد.
+          </p>
+        </div>
         <button
           type="button"
           onClick={() => {
@@ -135,7 +148,7 @@ export function ContactForm() {
             setTouched({});
             setStatus("idle");
           }}
-          className="mt-1 text-sm font-semibold text-mint transition-colors duration-200 hover:text-[#7BFFC9]"
+          className="rounded-lg border border-glass-border bg-white/5 px-6 py-2.5 text-[14px] font-bold text-white transition-colors hover:bg-white/10"
         >
           ارسال پیام دیگر
         </button>
@@ -146,64 +159,61 @@ export function ContactForm() {
   const messageLeft = MESSAGE_MAX - values.message.length;
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-      {/* Name */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={`${formId}-name`} className="text-[13.5px] font-semibold text-strong">
-          نام <span className="text-pomegr">*</span>
-        </label>
-        <input
-          id={`${formId}-name`}
-          name="name"
-          type="text"
-          autoComplete="name"
-          value={values.name}
-          onChange={update("name")}
-          onBlur={blur("name")}
-          aria-invalid={errors.name ? true : undefined}
-          aria-describedby={errors.name ? `${formId}-name-err` : undefined}
-          placeholder="نام و نام خانوادگی"
-          className={`${FIELD_BASE} ${errors.name ? FIELD_ERR : FIELD_OK}`}
-        />
-        {errors.name && (
-          <p id={`${formId}-name-err`} className="text-[12.5px] text-pomegr">
-            {errors.name}
-          </p>
-        )}
+    <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-5">
+      <div className="grid gap-5 sm:grid-cols-2">
+        {/* Name */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-baseline justify-between">
+            <label htmlFor={`${formId}-name`} className={LABEL}>
+              نام
+            </label>
+            {errors.name && <span className={ERR_TEXT}>{errors.name}</span>}
+          </div>
+          <input
+            id={`${formId}-name`}
+            name="name"
+            type="text"
+            autoComplete="name"
+            value={values.name}
+            onChange={update("name")}
+            onBlur={blur("name")}
+            placeholder="مثلاً: سبحان"
+            className={`${FIELD_BASE} ${errors.name ? FIELD_ERR : FIELD_OK}`}
+          />
+        </div>
+
+        {/* Email */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-baseline justify-between">
+            <label htmlFor={`${formId}-email`} className={LABEL}>
+              ایمیل
+            </label>
+            {errors.email && <span className={ERR_TEXT}>{errors.email}</span>}
+          </div>
+          <input
+            id={`${formId}-email`}
+            name="email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            dir="ltr"
+            value={values.email}
+            onChange={update("email")}
+            onBlur={blur("email")}
+            placeholder="name@example.com"
+            className={`${FIELD_BASE} text-right ${errors.email ? FIELD_ERR : FIELD_OK}`}
+          />
+        </div>
       </div>
 
-      {/* Email */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={`${formId}-email`} className="text-[13.5px] font-semibold text-strong">
-          ایمیل <span className="text-pomegr">*</span>
-        </label>
-        <input
-          id={`${formId}-email`}
-          name="email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          dir="ltr"
-          value={values.email}
-          onChange={update("email")}
-          onBlur={blur("email")}
-          aria-invalid={errors.email ? true : undefined}
-          aria-describedby={errors.email ? `${formId}-email-err` : undefined}
-          placeholder="name@mail.com"
-          className={`${FIELD_BASE} text-right placeholder:text-left ${errors.email ? FIELD_ERR : FIELD_OK}`}
-        />
-        {errors.email && (
-          <p id={`${formId}-email-err`} className="text-[12.5px] text-pomegr">
-            {errors.email}
-          </p>
-        )}
-      </div>
-
-      {/* Subject (optional) */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={`${formId}-subject`} className="text-[13.5px] font-semibold text-strong">
-          موضوع <span className="text-muted font-normal">(اختیاری)</span>
-        </label>
+      {/* Subject */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-baseline justify-between">
+          <label htmlFor={`${formId}-subject`} className={LABEL}>
+            موضوع <span className="font-medium text-white/30">(اختیاری)</span>
+          </label>
+          {errors.subject && <span className={ERR_TEXT}>{errors.subject}</span>}
+        </div>
         <input
           id={`${formId}-subject`}
           name="subject"
@@ -211,30 +221,25 @@ export function ContactForm() {
           value={values.subject}
           onChange={update("subject")}
           onBlur={blur("subject")}
-          aria-invalid={errors.subject ? true : undefined}
-          aria-describedby={errors.subject ? `${formId}-subject-err` : undefined}
-          placeholder="مثلاً: گزارش یک نظر، همکاری، پیشنهاد…"
+          placeholder="موضوع پیام"
           className={`${FIELD_BASE} ${errors.subject ? FIELD_ERR : FIELD_OK}`}
         />
-        {errors.subject && (
-          <p id={`${formId}-subject-err`} className="text-[12.5px] text-pomegr">
-            {errors.subject}
-          </p>
-        )}
       </div>
 
       {/* Message */}
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-baseline justify-between gap-2">
-          <label htmlFor={`${formId}-message`} className="text-[13.5px] font-semibold text-strong">
-            پیام <span className="text-pomegr">*</span>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-baseline justify-between">
+          <label htmlFor={`${formId}-message`} className={LABEL}>
+            پیام شما
           </label>
-          <span
-            className={`tabular-nums text-[11.5px] ${messageLeft < 0 ? "text-pomegr" : "text-muted"}`}
-            aria-hidden
-          >
-            {messageLeft.toLocaleString("fa-IR")}
-          </span>
+          <div className="flex items-center gap-3">
+            {errors.message && <span className={ERR_TEXT}>{errors.message}</span>}
+            <span
+              className={`text-[12px] tabular-nums ${messageLeft < 0 ? "text-pomegr" : "text-muted/60"}`}
+            >
+              {fa(messageLeft)}
+            </span>
+          </div>
         </div>
         <textarea
           id={`${formId}-message`}
@@ -243,45 +248,34 @@ export function ContactForm() {
           value={values.message}
           onChange={update("message")}
           onBlur={blur("message")}
-          aria-invalid={errors.message ? true : undefined}
-          aria-describedby={errors.message ? `${formId}-message-err` : undefined}
-          placeholder="هرچی دوست داری برامون بنویس…"
-          className={`${FIELD_BASE} resize-y min-h-[120px] leading-[1.85] ${errors.message ? FIELD_ERR : FIELD_OK}`}
+          placeholder="محتوای پیام خود را اینجا بنویس..."
+          className={`${FIELD_BASE} min-h-[140px] resize-y leading-relaxed ${errors.message ? FIELD_ERR : FIELD_OK}`}
         />
-        {errors.message && (
-          <p id={`${formId}-message-err`} className="text-[12.5px] text-pomegr">
-            {errors.message}
-          </p>
-        )}
       </div>
 
       {serverError && (
-        <p
-          role="alert"
-          className="rounded-xl border border-pomegr/40 bg-pomegr/10 px-4 py-3 text-[13px] text-strong"
-        >
+        <div className="flex items-start gap-3 rounded-xl border border-pomegr/30 bg-pomegr/10 p-4 text-[14px] font-medium text-white">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pomegr/20 text-pomegr">
+            !
+          </span>
           {serverError}
-        </p>
+        </div>
       )}
 
       <button
         type="submit"
         disabled={status === "submitting"}
-        className={`${BTN_PRIMARY} py-[0.8rem] px-6 text-[15px] disabled:opacity-60 disabled:cursor-not-allowed [&_svg]:w-[18px] [&_svg]:h-[18px]`}
+        className="group relative flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl bg-white px-8 py-4 text-[16px] font-black whitespace-nowrap text-black transition-all duration-200 hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
       >
         {status === "submitting" ? (
-          "در حال ارسال…"
+          <span className="animate-pulse">در حال ارسال...</span>
         ) : (
           <>
-            <SendIcon />
+            <SendIcon className="h-[18px] w-[18px]" />
             ارسال پیام
           </>
         )}
       </button>
-
-      <p className="text-[12px] text-muted text-center leading-[1.7]">
-        با ارسال این فرم، با بررسی پیام توسط تیم نظراتو موافقت می‌کنی.
-      </p>
     </form>
   );
 }
