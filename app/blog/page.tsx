@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { Container } from "@/components/ui/Container";
 import { PageBanner } from "@/components/ui/PageBanner";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
@@ -32,16 +33,19 @@ export default async function BlogListPage() {
   return (
     <>
       <Header />
-      <div className="container">
+      <Container>
         <Breadcrumb items={[{ label: "خانه", href: "/" }, { label: "بلاگ" }]} />
-      </div>
+      </Container>
       <PageBanner title="صفحه بلاگ!" subtitle="بلاگ‌هارو نگاه کن و ببین کدوم بدردت میخوره!" />
 
-      <div className="container">
+      <Container>
         <div className="flex flex-col gap-8 mb-16 lg:flex-row-reverse lg:justify-between lg:gap-12 lg:mb-20">
           <main className="w-full lg:w-[58%]">
             <div className="mb-6 lg:hidden">
-              <button className="btn-filter" type="button">
+              <button
+                className="inline-flex items-center gap-2 py-[0.65rem] px-4 bg-glass border border-glass-border rounded-xl shadow-[var(--shadow-sm)] backdrop-blur-[18px] backdrop-saturate-[160%] text-strong text-sm font-medium cursor-pointer transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi [&_svg]:w-4 [&_svg]:h-4 [&_svg]:text-mint"
+                type="button"
+              >
                 <span>فیلترها</span>
                 <FilterIcon />
               </button>
@@ -58,7 +62,7 @@ export default async function BlogListPage() {
 
           <BlogSidebar />
         </div>
-      </div>
+      </Container>
       <Footer />
     </>
   );
