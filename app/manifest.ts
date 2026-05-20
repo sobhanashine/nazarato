@@ -17,12 +17,6 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["business", "lifestyle", "shopping"],
     icons: [
       {
-        src: "/icon.svg",
-        sizes: "any",
-        type: "image/svg+xml",
-        purpose: "any",
-      },
-      {
         src: "/icon-192.png",
         sizes: "192x192",
         type: "image/png",
@@ -39,6 +33,26 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
+      },
+      {
+        src: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icon.svg",
+        sizes: "any",
+        type: "image/svg+xml",
+        purpose: "any",
+      },
+    ],
+    screenshots: [
+      {
+        src: "/pwa-banner-mobile.png",
+        sizes: "1080x1920",
+        type: "image/png",
+        label: "نظراتو در موبایل",
       },
     ],
   };

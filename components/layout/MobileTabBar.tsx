@@ -50,7 +50,11 @@ const tabs: Tab[] = [
 ];
 
 const tabItemClass =
-  "tab-item flex flex-col items-center justify-center gap-0.5 py-2 transition-colors duration-200 rounded-[14px] relative [&_svg]:w-[22px] [&_svg]:h-[22px]";
+  "flex flex-col items-center justify-center gap-0.5 py-2 transition-colors duration-200 rounded-[14px] relative [&_svg]:w-[22px] [&_svg]:h-[22px]";
+
+// Active-tab indicator — the mint nub that drops from the bar's top edge.
+const tabActive =
+  "text-strong before:content-[''] before:absolute before:-top-2 before:left-1/2 before:-translate-x-1/2 before:w-[26px] before:h-[3px] before:bg-mint before:rounded-b-full before:shadow-[0_0_12px_rgba(91,230,178,0.7)]";
 
 export function MobileTabBar() {
   const pathname = usePathname();
@@ -68,7 +72,7 @@ export function MobileTabBar() {
             <Link
               key={t.href}
               href={t.href}
-              className={`${tabItemClass} ${active ? "is-active text-strong" : "text-muted"}`}
+              className={`${tabItemClass} ${active ? tabActive : "text-muted"}`}
             >
               <span className="inline-flex" aria-hidden>{t.icon}</span>
               <span className="text-[10.5px] font-medium">{t.label}</span>
@@ -76,8 +80,15 @@ export function MobileTabBar() {
           );
         })}
 
-        <Link href="/write-review" className="tab-fab" aria-label="نوشتن نظر">
-          <span className="tab-fab-glow" aria-hidden />
+        <Link
+          href="/write-review"
+          className="relative w-14 h-14 -mt-6 grid place-items-center rounded-full bg-[linear-gradient(135deg,#5BE6B2_0%,#7B89FF_100%)] text-[#06231b] shadow-[0_12px_30px_-6px_rgba(91,230,178,0.7),0_0_0_4px_rgba(10,13,22,0.8),inset_0_1px_0_rgba(255,255,255,0.45)] transition-[transform,filter] duration-200 active:scale-95 hover:brightness-105"
+          aria-label="نوشتن نظر"
+        >
+          <span
+            aria-hidden
+            className="absolute inset-[-8px] rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
+          />
           <span className="inline-flex [&_svg]:w-[22px] [&_svg]:h-[22px]" aria-hidden>
             <IconPen />
           </span>
@@ -89,7 +100,7 @@ export function MobileTabBar() {
             <Link
               key={t.href}
               href={t.href}
-              className={`${tabItemClass} ${active ? "is-active text-strong" : "text-muted"}`}
+              className={`${tabItemClass} ${active ? tabActive : "text-muted"}`}
             >
               <span className="inline-flex" aria-hidden>{t.icon}</span>
               <span className="text-[10.5px] font-medium">{t.label}</span>

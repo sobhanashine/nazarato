@@ -1,12 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeftIcon } from "@/components/icons";
+import { Container } from "@/components/ui/Container";
+import { GLASS, HIDE_SCROLL } from "@/components/ui/styles";
 import { blogPosts } from "@/lib/data/blog-posts";
 
 export function Blog() {
   return (
     <section className="py-10">
-      <div className="container">
+      <Container>
         <div className="mb-6 md:mb-8">
           <div className="flex items-center justify-between gap-3 mb-1.5">
             <h2 className="text-[0.98rem] sm:text-[1.35rem] lg:text-[1.7rem] font-extrabold text-strong leading-[1.3] -tracking-[0.015em] min-w-0">
@@ -24,15 +26,15 @@ export function Blog() {
             ببین این مطالب بدردت میخوره یا نه.
           </p>
         </div>
-      </div>
+      </Container>
 
-      <div className="overflow-x-auto pb-2 hide-scroll lg:overflow-x-visible">
+      <div className={`overflow-x-auto pb-2 ${HIDE_SCROLL} lg:overflow-x-visible`}>
         <div className="flex gap-5 px-5 py-2 min-w-max sm:px-6 lg:grid lg:grid-cols-4 lg:min-w-0 lg:px-12 lg:max-w-[1280px] lg:mx-auto xl:px-16">
           {blogPosts.slice(0, 4).map((b) => (
             <Link
               key={b.slug}
               href={`/blog/${b.slug}`}
-              className="glass group flex flex-col w-[280px] shrink-0 overflow-hidden transition-[transform,border-color] duration-300 hover:-translate-y-[3px] hover:border-glass-border-hi lg:w-auto lg:shrink"
+              className={`${GLASS} group flex flex-col w-[280px] shrink-0 overflow-hidden transition-[transform,border-color] duration-300 hover:-translate-y-[3px] hover:border-glass-border-hi lg:w-auto lg:shrink`}
             >
               <div className="relative w-full aspect-[4/3] overflow-hidden after:content-[''] after:absolute after:inset-0 after:bg-[linear-gradient(180deg,transparent_50%,rgba(6,8,15,0.55)_100%)] after:pointer-events-none">
                 <Image
@@ -44,7 +46,7 @@ export function Blog() {
                 />
               </div>
               <div className="px-6 pt-5 pb-7">
-                <p className="blog-date text-[0.78rem] text-muted mb-2">{b.date}</p>
+                <p className="tabular-nums text-[0.78rem] text-muted mb-2">{b.date}</p>
                 <h5 className="text-[1.05rem] font-semibold text-strong mb-1.5 whitespace-nowrap overflow-hidden text-ellipsis">
                   {b.title}
                 </h5>

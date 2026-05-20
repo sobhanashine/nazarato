@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { ArrowLeftIcon } from "@/components/icons";
+import { Container } from "@/components/ui/Container";
+import { HIDE_SCROLL } from "@/components/ui/styles";
 import { recentReviews, type Review } from "@/lib/data/reviews";
+
+// Soft diagonal gradient surface — was `.review-card` (overrode `.glass`).
+const reviewCard =
+  "relative border border-glass-border rounded-glass backdrop-blur-[18px] backdrop-saturate-[160%] " +
+  "bg-[linear-gradient(155deg,rgba(123,137,255,0.07)_0%,rgba(255,255,255,0.035)_38%,rgba(91,230,178,0.045)_100%),linear-gradient(180deg,rgba(20,26,42,0.55),rgba(12,16,28,0.55))] " +
+  "shadow-[inset_0_1px_0_rgba(255,255,255,0.06),-22px_22px_40px_-18px_rgba(0,0,0,0.55),-12px_12px_24px_-14px_rgba(91,230,178,0.10)] " +
+  "hover:bg-[linear-gradient(155deg,rgba(123,137,255,0.10)_0%,rgba(255,255,255,0.05)_38%,rgba(91,230,178,0.07)_100%),linear-gradient(180deg,rgba(24,30,48,0.6),rgba(14,18,32,0.6))] " +
+  "hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),-28px_28px_50px_-20px_rgba(0,0,0,0.6),-14px_14px_28px_-14px_rgba(91,230,178,0.16)]";
 
 const STAR_PATH =
   "m12 16.3-3.7 2.825q-.275.225-.6.213t-.575-.188-.387-.475-.013-.65L8.15 13.4l-3.625-2.575q-.3-.2-.375-.525t.025-.6.35-.488.6-.212H9.6l1.45-4.8q.125-.35.388-.538T12 3.475t.563.188.387.537L14.4 9h4.475q.35 0 .6.213t.35.487.025.6-.375.525L15.85 13.4l1.425 4.625q.125.35-.012.65t-.388.475-.575.188-.6-.213z";
@@ -19,7 +29,7 @@ function Stars({ rating }: { rating: Review["rating"] }) {
   const gradId = `star-grad-${rating}`;
   return (
     <div
-      className="review-stars-plain flex gap-[2px] shrink-0"
+      className="flex gap-[2px] shrink-0"
       data-rating={rating}
       dir="ltr"
       role="img"
@@ -67,7 +77,7 @@ function Stars({ rating }: { rating: Review["rating"] }) {
 export function RecentReviews() {
   return (
     <section className="py-10">
-      <div className="container">
+      <Container>
         <div className="mb-6 md:mb-8">
           <div className="flex items-center justify-between gap-3 mb-1.5">
             <h2 className="text-[0.98rem] sm:text-[1.35rem] lg:text-[1.7rem] font-extrabold text-strong leading-[1.3] -tracking-[0.015em] min-w-0">
@@ -90,11 +100,11 @@ export function RecentReviews() {
           </p>
         </div>
 
-        <div className="flex items-stretch gap-4 overflow-x-auto px-5 py-2 -mx-5 [scroll-snap-type:x_mandatory] [scroll-padding-inline:1.25rem] hide-scroll [&>*]:flex-[0_0_85%] [&>*]:max-w-[340px] [&>*]:[scroll-snap-align:start] sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:p-0 sm:m-0 sm:[&>*]:flex-initial sm:[&>*]:max-w-none lg:grid-cols-3">
+        <div className={`flex items-stretch gap-4 overflow-x-auto px-5 py-2 -mx-5 [scroll-snap-type:x_mandatory] [scroll-padding-inline:1.25rem] ${HIDE_SCROLL} [&>*]:flex-[0_0_85%] [&>*]:max-w-[340px] [&>*]:[scroll-snap-align:start] sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:p-0 sm:m-0 sm:[&>*]:flex-initial sm:[&>*]:max-w-none lg:grid-cols-3`}>
           {recentReviews.map((r) => (
             <article
               key={r.id}
-              className="glass review-card flex flex-col gap-[0.85rem] p-3.5 sm:p-6 transition-[transform,background,border-color,box-shadow] duration-300 min-w-0 h-full hover:-translate-y-[3px] hover:border-glass-border-hi"
+              className={`${reviewCard} flex flex-col gap-[0.85rem] p-3.5 sm:p-6 transition-[transform,background,border-color,box-shadow] duration-300 min-w-0 h-full hover:-translate-y-[3px] hover:border-glass-border-hi`}
             >
               <div className="flex flex-row items-center justify-between gap-3 min-w-0">
                 <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -131,7 +141,7 @@ export function RecentReviews() {
                 {r.text}
               </p>
               <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 pt-3 border-t border-glass-border mt-auto">
-                <span className="review-date text-[0.75rem] text-muted whitespace-nowrap shrink-0">
+                <span className="tabular-nums text-[0.75rem] text-muted whitespace-nowrap shrink-0">
                   {r.date}
                 </span>
                 <div className="inline-flex items-center gap-1 sm:gap-1.5 shrink-0 min-w-0">
@@ -150,7 +160,7 @@ export function RecentReviews() {
             </article>
           ))}
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

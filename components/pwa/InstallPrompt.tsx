@@ -37,7 +37,9 @@ function dismissedRecently(): boolean {
 
 export function InstallPrompt() {
   const [visible, setVisible] = useState(false);
-  const [ios, setIos] = useState(false);
+  // Detected once at mount via a lazy initializer — `isIOS()` is SSR-safe and the
+  // value never changes, so no effect/setState is needed.
+  const [ios] = useState(isIOS);
   const [iosSheetOpen, setIosSheetOpen] = useState(false);
   const [deferred, setDeferred] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -61,9 +63,7 @@ export function InstallPrompt() {
     window.addEventListener("appinstalled", onInstalled);
 
     // iOS Safari never fires beforeinstallprompt — surface the banner ourselves.
-    const iosDetected = isIOS();
-    setIos(iosDetected);
-    const t = iosDetected
+    const t = ios
       ? window.setTimeout(() => setVisible(true), SHOW_DELAY_MS)
       : undefined;
 
@@ -72,7 +72,7 @@ export function InstallPrompt() {
       window.removeEventListener("appinstalled", onInstalled);
       if (t) window.clearTimeout(t);
     };
-  }, []);
+  }, [ios]);
 
   const dismiss = () => {
     setVisible(false);

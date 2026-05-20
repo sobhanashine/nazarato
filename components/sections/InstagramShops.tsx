@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowLeftIcon, StarIcon } from "@/components/icons";
+import { Container } from "@/components/ui/Container";
+import { GLASS, HIDE_SCROLL } from "@/components/ui/styles";
 import { instagramShops, nicheTabs, type Niche } from "@/lib/data/instagram-shops";
 
 export function InstagramShops() {
@@ -15,7 +17,7 @@ export function InstagramShops() {
 
   return (
     <section className="py-10">
-      <div className="container">
+      <Container>
         <div className="mb-6 md:mb-8">
           <div className="flex items-center justify-between gap-3 mb-1.5">
             <h2 className="text-[0.98rem] sm:text-[1.35rem] lg:text-[1.7rem] font-extrabold text-strong leading-[1.3] -tracking-[0.015em] min-w-0">
@@ -37,7 +39,7 @@ export function InstagramShops() {
           </p>
         </div>
 
-        <div className="flex gap-2 mb-7 overflow-x-auto pb-2 hide-scroll">
+        <div className={`flex gap-2 mb-7 overflow-x-auto pb-2 ${HIDE_SCROLL}`}>
           {nicheTabs.map((t) => {
             const isActive = active === t.id;
             return (
@@ -57,12 +59,12 @@ export function InstagramShops() {
           })}
         </div>
 
-        <div className="flex gap-4 overflow-x-auto px-5 py-2 -mx-5 [scroll-snap-type:x_mandatory] [scroll-padding-inline:1.25rem] hide-scroll [&>*]:flex-[0_0_82%] [&>*]:max-w-[320px] [&>*]:[scroll-snap-align:start] sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:p-0 sm:m-0 sm:[&>*]:flex-initial sm:[&>*]:max-w-none lg:grid-cols-4">
+        <div className={`flex gap-4 overflow-x-auto px-5 py-2 -mx-5 [scroll-snap-type:x_mandatory] [scroll-padding-inline:1.25rem] ${HIDE_SCROLL} [&>*]:flex-[0_0_82%] [&>*]:max-w-[320px] [&>*]:[scroll-snap-align:start] sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:p-0 sm:m-0 sm:[&>*]:flex-initial sm:[&>*]:max-w-none lg:grid-cols-4`}>
           {visible.map((s) => (
             <Link
               key={s.name}
               href={s.href}
-              className="glass flex items-center gap-4 px-[1.35rem] py-5 cursor-pointer transition-[transform,background,border-color] duration-300 ease-out hover:bg-glass-hover hover:border-glass-border-hi hover:-translate-y-[2px]"
+              className={`${GLASS} flex items-center gap-4 px-[1.35rem] py-5 cursor-pointer transition-[transform,background,border-color] duration-300 ease-out hover:bg-glass-hover hover:border-glass-border-hi hover:-translate-y-[2px]`}
             >
               <div
                 className="w-[60px] h-[60px] rounded-full p-[3px] [background:conic-gradient(from_45deg,#feda75_0%,#fa7e1e_20%,#d62976_45%,#962fbf_70%,#4f5bd5_90%,#feda75_100%)] flex items-center justify-center shrink-0 shadow-[0_4px_14px_rgba(214,41,118,0.35)]"
@@ -93,10 +95,10 @@ export function InstagramShops() {
                 </span>
                 <div className="flex items-center gap-1.5 mt-[2px] [&>svg]:w-[14px] [&>svg]:h-[14px] [&>svg]:text-saffron [&>svg]:shrink-0 [&>svg]:[fill:currentColor] [&>svg]:[filter:drop-shadow(0_0_4px_rgba(245,181,68,0.45))]">
                   <StarIcon />
-                  <span className="ig-score-num text-[0.9rem] font-bold text-strong leading-none">
+                  <span className="tabular-nums text-[0.9rem] font-bold text-strong leading-none">
                     {s.score}
                   </span>
-                  <span className="ig-review-count text-[0.78rem] text-muted font-normal not-italic">
+                  <span className="tabular-nums text-[0.78rem] text-muted font-normal not-italic">
                     ({s.reviews} نظر)
                   </span>
                 </div>
@@ -104,7 +106,7 @@ export function InstagramShops() {
             </Link>
           ))}
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

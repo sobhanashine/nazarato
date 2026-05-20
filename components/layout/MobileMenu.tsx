@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import {
   CloseIcon,
@@ -12,20 +12,33 @@ import {
   MenuIcon,
   TwitterIcon,
 } from "@/components/icons";
+import { BTN_PRIMARY } from "@/components/ui/styles";
 
 type NavItem = { href: string; label: string };
+
+// Hydration-safe "mounted on the client" flag: false during SSR + the hydration
+// render, true thereafter — no effect, no setState-in-effect.
+const noopSubscribe = () => () => {};
+const useMounted = () =>
+  useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
 
 const glassButtonClasses =
   "inline-flex items-center justify-center w-[42px] h-[42px] rounded-xl bg-glass-strong backdrop-blur-[12px] backdrop-saturate-[160%] text-strong border border-glass-border cursor-pointer transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi [&_svg]:w-[22px] [&_svg]:h-[22px]";
 
+const brandMark =
+  "[filter:drop-shadow(0_6px_16px_rgba(91,230,178,0.45))] [&_svg]:w-full [&_svg]:h-full [&_svg]:block";
+
+const navLinkBase =
+  "group/link flex items-center justify-between py-[1.05rem] px-[1.4rem] text-[1.05rem] font-medium text-strong rounded-2xl border backdrop-blur-[10px] transition-[background,transform,border-color] duration-200 opacity-0 translate-y-2 group-data-[open=true]:animate-[mm-in_0.4s_cubic-bezier(0.2,0.7,0.2,1)_forwards]";
+
 export function MobileMenu({ items }: { items: NavItem[] }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const pathname = usePathname() ?? "";
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -35,10 +48,6 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
       document.body.style.overflow = prev;
     };
   }, [open]);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -53,16 +62,26 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
 
   const overlay = (
     <div
-      className="mobile-menu"
+      className="group fixed inset-0 w-screen h-[100dvh] z-[9999] flex flex-col overflow-y-auto [-webkit-overflow-scrolling:touch] bg-[rgba(7,10,18,0.78)] backdrop-blur-[26px] backdrop-saturate-[180%] text-strong opacity-0 invisible pointer-events-none -translate-y-3 transition-[opacity,transform,visibility] duration-300 ease-out data-[open=true]:opacity-100 data-[open=true]:visible data-[open=true]:pointer-events-auto data-[open=true]:translate-y-0"
       data-open={open}
       role="dialog"
       aria-modal="true"
       aria-hidden={!open}
       aria-label="منوی اصلی"
     >
-      <div className="mobile-menu-top flex justify-between items-center h-[72px] px-5 border-b border-glass-border relative z-[1]">
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 70% 50% at 20% 0%, rgba(91, 230, 178, 0.22), transparent 60%)," +
+            "radial-gradient(ellipse 60% 60% at 100% 100%, rgba(123, 137, 255, 0.18), transparent 60%)",
+        }}
+      />
+
+      <div className="flex justify-between items-center h-[72px] px-5 border-b border-glass-border relative z-[1] standalone:h-[calc(72px+env(safe-area-inset-top)+16px)] standalone:pt-[calc(env(safe-area-inset-top)+16px)]">
         <span className="inline-flex items-center gap-2.5 text-strong text-[1.15rem] font-bold">
-          <span className="brand-mark inline-block w-[38px] h-[38px]" aria-hidden="true">
+          <span className={`${brandMark} inline-block w-[38px] h-[38px]`} aria-hidden="true">
             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <linearGradient id="brandGradMm" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
@@ -86,22 +105,36 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         </button>
       </div>
 
-      <nav className="mobile-menu-nav">
+      <nav className="flex-1 flex flex-col gap-3 py-8 px-5 relative z-[1] standalone:pt-12">
         {items.map((item, i) => (
           <Link
             key={item.href}
             href={item.href}
-            className={isActive(item.href) ? "active-link" : undefined}
+            onClick={() => setOpen(false)}
+            className={`${navLinkBase} ${
+              isActive(item.href)
+                ? "bg-[linear-gradient(135deg,rgba(91,230,178,0.22),rgba(91,230,178,0.08))] border-mint/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_0_24px_rgba(91,230,178,0.22)]"
+                : "bg-glass border-glass-border hover:bg-glass-hover hover:border-glass-border-hi"
+            }`}
             style={{ animationDelay: `${0.08 * i + 0.05}s` }}
           >
             <span>{item.label}</span>
-            <span aria-hidden="true" className="arrow">←</span>
+            <span
+              aria-hidden="true"
+              className="text-[1.1rem] opacity-50 transition-[opacity,transform] duration-200 group-hover/link:opacity-100 group-hover/link:-translate-x-[3px]"
+            >
+              ←
+            </span>
           </Link>
         ))}
       </nav>
 
       <div className="px-5 pt-6 pb-8 border-t border-glass-border flex flex-col gap-5 relative z-[1]">
-        <Link href="/login" className="btn-biz mobile-menu-foot-cta">
+        <Link
+          href="/login"
+          onClick={() => setOpen(false)}
+          className={`${BTN_PRIMARY} w-full py-4 px-6 text-base`}
+        >
           ورود
         </Link>
         <div className="flex items-center justify-center gap-3">

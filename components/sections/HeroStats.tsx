@@ -19,11 +19,13 @@ function useCountUp(target: number, duration = 1800) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      setV(target);
-      return;
-    }
     let raf = 0;
+    if (reduced) {
+      // Defer into rAF so the value still starts at 0 on the hydration render
+      // (avoids a server/client mismatch) but jumps straight to target after.
+      raf = requestAnimationFrame(() => setV(target));
+      return () => cancelAnimationFrame(raf);
+    }
     const tick = (now: number) => {
       if (startRef.current === null) startRef.current = now;
       const p = Math.min(1, (now - startRef.current) / duration);
@@ -41,7 +43,7 @@ function StatItem({ stat }: { stat: Stat }) {
   const v = useCountUp(stat.value);
   return (
     <li className="relative flex flex-col items-center gap-1 [&+li]:before:content-[''] [&+li]:before:absolute [&+li]:before:-right-1 [&+li]:before:top-[15%] [&+li]:before:bottom-[15%] [&+li]:before:w-px [&+li]:before:bg-glass-border">
-      <span className="hero-stat-value text-[1.1rem] sm:text-[1.4rem] font-extrabold text-strong -tracking-[0.01em]">
+      <span className="tabular-nums [font-feature-settings:'ss01'] text-[1.1rem] sm:text-[1.4rem] font-extrabold text-strong -tracking-[0.01em]">
         {v.toLocaleString("fa-IR")}
         {stat.suffix ?? ""}
       </span>

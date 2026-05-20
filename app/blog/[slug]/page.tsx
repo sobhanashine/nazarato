@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { Container } from "@/components/ui/Container";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { PostContent } from "@/components/blog/PostContent";
@@ -62,7 +63,7 @@ export default async function BlogPostPage({
   return (
     <>
       <Header />
-      <div className="container">
+      <Container>
         <Breadcrumb
           items={[
             { label: "خانه", href: "/" },
@@ -70,7 +71,7 @@ export default async function BlogPostPage({
             { label: post.title },
           ]}
         />
-      </div>
+      </Container>
       <PostContent post={post} />
       <Footer />
     </>

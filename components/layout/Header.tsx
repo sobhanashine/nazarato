@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { MobileMenu } from "@/components/layout/MobileMenu";
 import { NavLink } from "@/components/layout/NavLink";
+import { Container } from "@/components/ui/Container";
+import { BTN_PRIMARY } from "@/components/ui/styles";
 
 const navItems = [
   { href: "/blog", label: "بلاگ" },
@@ -9,18 +11,21 @@ const navItems = [
   { href: "/contact", label: "تماس با ما" },
 ];
 
+const brandMark =
+  "[filter:drop-shadow(0_6px_16px_rgba(91,230,178,0.45))] [&_svg]:w-full [&_svg]:h-full [&_svg]:block";
+
 export function Header() {
   return (
-    <header className="site-header">
+    <header className="sticky top-0 z-[100] h-[72px] sm:h-20 bg-[rgba(8,11,20,0.55)] backdrop-blur-[22px] backdrop-saturate-[180%] not-supports-[backdrop-filter]:bg-[rgba(8,11,20,0.92)] border-b border-glass-border shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_30px_rgba(0,0,0,0.35)] standalone:h-[calc(72px+env(safe-area-inset-top)+16px)] standalone:pt-[calc(env(safe-area-inset-top)+16px)] standalone:sm:h-[calc(80px+env(safe-area-inset-top)+16px)]">
       <div className="w-full h-[72px] sm:h-20 flex items-center">
-        <div className="container flex flex-row justify-between items-center gap-4 h-full">
+        <Container className="flex flex-row justify-between items-center gap-4 h-full">
           <Link
             href="/"
             aria-label="نظراتو"
             className="inline-flex items-center gap-2.5 text-strong shrink-0"
           >
             <span
-              className="brand-mark hidden md:inline-block w-[38px] h-[38px]"
+              className={`${brandMark} hidden md:inline-block w-[38px] h-[38px]`}
               aria-hidden="true"
             >
               <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -56,12 +61,12 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2 shrink-0">
-            <Link href="/login" className="btn-biz hidden md:inline-flex">
+            <Link href="/login" className={`${BTN_PRIMARY} max-md:hidden py-[0.6rem] px-5 text-sm`}>
               ورود
             </Link>
             <MobileMenu items={navItems} />
           </div>
-        </div>
+        </Container>
       </div>
     </header>
   );
