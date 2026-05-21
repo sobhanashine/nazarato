@@ -173,35 +173,38 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
         </div>
       )}
 
-      {/* ── Action bar ── */}
-      <div className="mt-5 flex flex-wrap items-center gap-3">
+      {/* ── Action bar — on mobile the save/share pair sits above a
+          full-width primary CTA; from sm up it's a single inline row. ── */}
+      <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <Link
           href={`/company/${business.slug}/write-review`}
-          className={`${BTN_PRIMARY} px-6 py-2.5 text-[0.9rem]`}
+          className={`${BTN_PRIMARY} w-full justify-center px-6 py-3 text-[0.9rem] sm:w-auto sm:py-2.5`}
         >
           نوشتن نظر
         </Link>
-        <button
-          type="button"
-          onClick={() => setSaved((s) => !s)}
-          aria-pressed={saved}
-          className={`inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-[0.85rem] font-semibold transition-colors duration-200 ${
-            saved
-              ? "border-mint/55 bg-mint/[0.12] text-mint"
-              : "border-glass-border bg-glass text-muted hover:border-mint/45 hover:text-strong"
-          }`}
-        >
-          <BookmarkIcon filled={saved} />
-          {saved ? "ذخیره شد" : "ذخیره"}
-        </button>
-        <button
-          type="button"
-          onClick={handleShare}
-          className="inline-flex items-center gap-2 rounded-full border border-glass-border bg-glass px-5 py-2.5 text-[0.85rem] font-semibold text-muted transition-colors duration-200 hover:border-mint/45 hover:text-strong"
-        >
-          <ShareIcon />
-          {shareNote || "اشتراک"}
-        </button>
+        <div className="grid grid-cols-2 gap-3 sm:flex">
+          <button
+            type="button"
+            onClick={() => setSaved((s) => !s)}
+            aria-pressed={saved}
+            className={`inline-flex items-center justify-center gap-2 rounded-full border px-5 py-3 text-[0.85rem] font-semibold transition-colors duration-200 sm:py-2.5 ${
+              saved
+                ? "border-mint/55 bg-mint/[0.12] text-mint"
+                : "border-glass-border bg-glass text-muted hover:border-mint/45 hover:text-strong"
+            }`}
+          >
+            <BookmarkIcon filled={saved} />
+            {saved ? "ذخیره شد" : "ذخیره"}
+          </button>
+          <button
+            type="button"
+            onClick={handleShare}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-glass-border bg-glass px-5 py-3 text-[0.85rem] font-semibold text-muted transition-colors duration-200 hover:border-mint/45 hover:text-strong sm:py-2.5"
+          >
+            <ShareIcon />
+            {shareNote || "اشتراک"}
+          </button>
+        </div>
       </div>
 
       {/* ── Tabs ── */}
@@ -233,16 +236,19 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
 
       {/* ── Overview ── */}
       {tab === "overview" && (
-        <div role="tabpanel" className="mt-6 grid gap-5 lg:grid-cols-3">
-          <div className="flex flex-col gap-5 lg:col-span-2">
-            <section className={CARD}>
+        <div role="tabpanel" className="mt-6 flex flex-col gap-5 lg:grid lg:grid-cols-3">
+          {/* On mobile the columns collapse via `contents` so each card is a
+              direct flex child — letting `order-*` interleave them (rating
+              distribution above recent reviews). The grid restores from lg. */}
+          <div className="contents lg:flex lg:flex-col lg:gap-5 lg:col-span-2">
+            <section className={`${CARD} order-1 lg:order-none`}>
               <h2 className={SECTION_H2}>درباره</h2>
               <p className="mt-3 text-[0.9rem] leading-[2] text-muted">
                 {business.description}
               </p>
             </section>
 
-            <section className={CARD}>
+            <section className={`${CARD} order-3 lg:order-none`}>
               <h2 className={SECTION_H2}>نظرات اخیر</h2>
               {hasReviews ? (
                 <>
@@ -265,23 +271,21 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
             </section>
           </div>
 
-          <div className="flex flex-col gap-5">
-            <section className={CARD}>
+          <div className="contents lg:flex lg:flex-col lg:gap-5">
+            <section className={`${CARD} order-2 lg:order-none`}>
               <h2 className={SECTION_H2}>توزیع امتیاز</h2>
               {hasReviews ? (
                 <>
-                  <div className="mt-3 flex items-center gap-3">
-                    <span className="text-[2.4rem] font-black leading-none text-strong">
+                  <div className="mt-4 flex flex-col items-center gap-2.5 rounded-2xl border border-glass-border bg-[#0b0f1a] py-5">
+                    <span className="bg-[linear-gradient(135deg,#5BE6B2,#3FBF92)] bg-clip-text text-[3.4rem] font-black leading-none text-transparent">
                       {averageLabel}
                     </span>
-                    <div>
-                      <RatingStars rating={roundedAverage} />
-                      <p className="mt-1 text-[0.78rem] text-muted">
-                        از {stats.count.toLocaleString("fa-IR")} نظر
-                      </p>
-                    </div>
+                    <RatingStars rating={roundedAverage} />
+                    <p className="text-[0.8rem] text-muted">
+                      بر اساس {stats.count.toLocaleString("fa-IR")} نظر
+                    </p>
                   </div>
-                  <div className="mt-4">
+                  <div className="mt-5 border-t border-glass-border pt-4">
                     <RatingBars histogram={stats.histogram} total={stats.count} />
                   </div>
                 </>
@@ -292,10 +296,10 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
               )}
             </section>
 
-            <ContactCard business={business} />
+            <ContactCard business={business} className="order-4 lg:order-none" />
 
             {business.hours && business.hours.length > 0 && (
-              <section className={CARD}>
+              <section className={`${CARD} order-5 lg:order-none`}>
                 <h2 className={SECTION_H2}>ساعات کاری</h2>
                 <dl className="mt-3 flex flex-col gap-2 text-[0.85rem]">
                   {business.hours.map((h) => (
@@ -431,11 +435,17 @@ function NoReviews({ slug }: { slug: string }) {
   );
 }
 
-function ContactCard({ business }: { business: BusinessDetail }) {
+function ContactCard({
+  business,
+  className = "",
+}: {
+  business: BusinessDetail;
+  className?: string;
+}) {
   const { website, phone, instagram } = business.contact;
   if (!website && !phone && !instagram) return null;
   return (
-    <section className={CARD}>
+    <section className={`${CARD} ${className}`}>
       <h2 className={SECTION_H2}>اطلاعات تماس</h2>
       <ul className="mt-3 flex flex-col gap-3 text-[0.85rem]">
         {website && (
