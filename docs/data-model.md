@@ -31,13 +31,16 @@ Target DB: Supabase (Postgres). Auth (phone + OTP) lives in `auth.users`.
 
 ## 2. `users` — consumer / owner profile
 
-Extends Supabase `auth.users` (which holds phone + OTP). This row is the
-public-facing profile.
+Auth is **app-managed** (phone OTP + signed-cookie sessions — see `lib/auth/`),
+so `users` is a standalone table: it carries its own `phone` column and does
+**not** extend Supabase's `auth.users`. This row is the public-facing profile.
+MVP columns are live — see `supabase/migrations/0001_create_users_table.sql`.
 
 | Column | Type | Default | Phase | Purpose |
 |---|---|---|---|---|
-| `id` | `uuid` PK | — | MVP | FK → `auth.users(id)` |
-| `username` | `text` UNIQUE | — | MVP | URL slug for `/users/[username]` |
+| `id` | `uuid` PK | `gen_random_uuid()` | MVP | App-generated (not an `auth.users` FK) |
+| `phone` | `text` UNIQUE | — | MVP | Verified mobile, canonical `+989…` — the login key |
+| `username` | `text` UNIQUE | — | MVP | URL slug for `/users/[username]` — nullable until set in profile edit |
 | `display_name` | `text` | — | MVP | Pseudonymous public name — never legal name |
 | `avatar_url` | `text` null | — | MVP | Uploaded avatar |
 | `avatar_color` | `text` | — | MVP | Hex fallback color (matches existing `color`) |
@@ -197,3 +200,7 @@ schema needed — it is a moderation query.
 
 - **2026-05-22** — Initial draft. Three core tables (`users`, `businesses`,
   `reviews`) + supporting tables. Gamification columns added as `[P3]`.
+- **2026-05-22** — `users` table created in Supabase (migration
+  `supabase/migrations/0001_create_users_table.sql`) for phone-OTP auth (#13).
+  Auth is app-managed, so `users` is standalone — app-generated `id`, added a
+  `phone` column, no `auth.users` FK. RLS enabled, no policies.
