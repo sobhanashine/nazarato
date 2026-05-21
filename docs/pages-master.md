@@ -3,7 +3,7 @@
 > Single source of truth for every page in the product: what exists, what's planned, what each page is for, and how it's structured.
 > Update this when you add/rename/remove a route.
 
-Last edited: 2026-05-19
+Last edited: 2026-05-22
 Owner: Sobhan (solo founder)
 Stack assumptions: Next.js 16 App Router, React 19, Tailwind v4, Supabase + Kavenegar OTP, RTL Persian (`lang="fa" dir="rtl"`).
 
@@ -18,6 +18,8 @@ Stack assumptions: Next.js 16 App Router, React 19, Tailwind v4, Supabase + Kave
   - **Admins** — moderate reviews, approve claims, manage taxonomy. (Internal.)
 - **North-star action** — A consumer writes a real, useful review about an Iranian business.
 - **Login model** — Phone-based OTP via Kavenegar (no email/password assumed).
+- **Review identity** — No anonymous reviews. Every review ties to a phone-verified account (identified). Public display uses a chosen display name (pseudonymous) — never the legal name, so honest negative reviews aren't suppressed.
+- **Verified reviews** — Two tiers. **نقد تأییدشده** = reviewer submits proof of purchase (فاکتور / SMS confirmation / کد رهگیری, or DM screenshot / فیش for IG shops); admin checks it privately, then the proof image is **deleted** (only the verified boolean is kept — less storage, less liability). **نقد عادی** = no proof. Verified reviews rank higher, weigh more in the business score, and are the only tier eligible for reviewer badges. Verification is never mandatory — it is the aspirational tier, not a gate.
 - **Locale** — `fa-IR`, RTL, Persian/Farsi digits (۱۲۳۴۵).
 - **Style** — Dark, glassy/mint/lapis design system (see `app/globals.css`).
 
@@ -552,6 +554,16 @@ You're a solo founder. Don't try to build the sitemap top-down. Build the minimu
 - Compare businesses, follow users, Q&A on business pages, photo uploads on reviews.
 - Full admin: `/admin/reports`, `/admin/businesses`, `/admin/users`.
 
+### Gamification & trust loop (phased)
+
+The badge/leaderboard system is an *amplifier* — it is built only once the review loop is already turning. Schema first, engine later: adding fields now is nearly free, a migration later is painful.
+
+- **Phase 1** — Add the data fields now (`review.verified`, `review.helpfulCount`, `user.reputationScore`, `business.responseRate`). Ship the **verified badge on reviews** + **"مفید بود" helpful votes**. The verified badge is the only game mechanic at MVP.
+- **Phase 2** — Public **response-rate / response-time** stat on business profiles. Reviewer profile shows total helpful votes received.
+- **Phase 3** — Full system: reviewer **levels** (تازه‌وارد → منتقد ارشد, driven by helpful votes, *not* review count), rotating **leaderboards**, **"بهترین‌های دسته"** page (composite rank: rating × volume × recency × response rate), embeddable "X در نظراتو" widget.
+
+> Anti-abuse: badges/scores only count *after* a review clears moderation. New accounts' reviews and votes weigh less. Reward quality signals (helpful votes, verified purchases, depth) — never raw review count.
+
 ---
 
 ## 7. Open decisions / questions to resolve
@@ -560,14 +572,19 @@ These will shape the doc once you decide. Flagged here so they don't get lost.
 
 1. **Login model** — phone-only (Kavenegar OTP) or also email+password? .env hints at phone-only. Confirm before building.
 2. **Onboarding** — do you collect display name on first login (extra step) or auto-generate one (e.g. کاربر+last4digits)?
-3. **Anonymous reviews** — allow? Trustpilot does, Yelp doesn't. Affects UX of profile pages.
-4. **IG-shop vs business** — one entity with a `type` field, or separate tables? Affects routing (`/company` vs `/shop`) and slug collisions.
-5. **Photos on reviews** — MVP or v1? Adds Supabase storage + moderation work.
-6. **Owner responses** — public-only, or also private DM? Most platforms do public-only.
-7. **Multi-city / geo** — single-country (Iran) is given; do you want `/locations/tehran` pages for local SEO?
-8. **Comments on blog posts** — comments, "discuss on X/Telegram", or none?
-9. **Pricing for owners** — free always vs freemium vs paid? Determines whether `/business/billing` needs to exist.
-10. **Deletion** — GDPR-style hard-delete or soft-anonymize? Affects `/settings/privacy` UX.
+3. **Photos on reviews** — MVP or v1? Adds Supabase storage + moderation work. (Note: *proof-of-purchase* uploads are a separate, decided flow — see §1 "Verified reviews". This item is only about user-attached photos in the review body.)
+4. **Owner responses** — public-only, or also private DM? Most platforms do public-only.
+5. **Multi-city / geo** — single-country (Iran) is given; do you want `/locations/tehran` pages for local SEO?
+6. **Comments on blog posts** — comments, "discuss on X/Telegram", or none?
+7. **Pricing for owners** — free always vs freemium vs paid? Determines whether `/business/billing` needs to exist.
+8. **Deletion** — GDPR-style hard-delete or soft-anonymize? Affects `/settings/privacy` UX.
+
+### Recently resolved
+
+- **Anonymous reviews** — ❌ no anonymous reviews; identified + pseudonymous. Settled 2026-05-22 → moved to §1 "Review identity".
+- **What "verified" means** — proof-of-purchase, private admin check, two-tier model. Settled 2026-05-22 → moved to §1 "Verified reviews".
+- **Gamification timing** — phased (schema in Phase 1, engine in Phase 3). Settled 2026-05-22 → moved to §6 "Gamification & trust loop".
+- **IG-shop vs business** — ✅ a single `businesses` table + a `type` column (`'company'` | `'ig_shop'`); one slug namespace so `/company/x` and `/shop/x` can't collide; routes stay separate. Settled 2026-05-22 → see `data-model.md` §3.
 
 ---
 
@@ -581,7 +598,7 @@ These will shape the doc once you decide. Flagged here so they don't get lost.
 
 ### 8.1 Issue tracker index
 
-GitHub issues mirror the build order in §6. Repo: [`sobhanashine/nazarato`](https://github.com/sobhanashine/nazarato/issues). Diagrams: [`pages-diagrams.md`](./pages-diagrams.md).
+GitHub issues mirror the build order in §6. Repo: [`sobhanashine/nazarato`](https://github.com/sobhanashine/nazarato/issues). Diagrams: [`pages-diagrams.md`](./pages-diagrams.md). Database schema: [`data-model.md`](./data-model.md).
 
 **Phase 1 — MVP loop** · [milestone](https://github.com/sobhanashine/nazarato/milestone/1)
 
