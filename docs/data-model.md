@@ -92,7 +92,8 @@ public-facing profile.
 | `created_at` | `timestamptz` | `now()` | MVP | |
 | `updated_at` | `timestamptz` | `now()` | MVP | |
 
-- **One table + `type` column** (resolves `pages-master.md` §7 decision #3).
+- **One table + `type` column** (resolves the IG-shop-vs-business question — see
+  `pages-master.md` §7 "Recently resolved").
   Simpler joins, one slug namespace so `/company/x` and `/shop/x` can't collide,
   shared `<BusinessCard />`. Cost: a few columns apply to one type only
   (`hours` for companies; IG handle/DM live inside `contact`).
@@ -188,7 +189,7 @@ schema needed — it is a moderation query.
 - Multiple proof images per review? Current draft allows one (`proof_url`).
   Promote to a `review_proofs` child table if one image proves insufficient.
 - Soft-delete vs hard-delete for `reviews` / `users` — tied to `pages-master.md`
-  §7 decision #9 (deletion policy).
+  §7's open decision on deletion policy.
 
 ---
 

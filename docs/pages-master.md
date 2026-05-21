@@ -572,19 +572,19 @@ These will shape the doc once you decide. Flagged here so they don't get lost.
 
 1. **Login model** — phone-only (Kavenegar OTP) or also email+password? .env hints at phone-only. Confirm before building.
 2. **Onboarding** — do you collect display name on first login (extra step) or auto-generate one (e.g. کاربر+last4digits)?
-3. **IG-shop vs business** — one entity with a `type` field, or separate tables? Affects routing (`/company` vs `/shop`) and slug collisions.
-4. **Photos on reviews** — MVP or v1? Adds Supabase storage + moderation work. (Note: *proof-of-purchase* uploads are a separate, decided flow — see §1 "Verified reviews". This item is only about user-attached photos in the review body.)
-5. **Owner responses** — public-only, or also private DM? Most platforms do public-only.
-6. **Multi-city / geo** — single-country (Iran) is given; do you want `/locations/tehran` pages for local SEO?
-7. **Comments on blog posts** — comments, "discuss on X/Telegram", or none?
-8. **Pricing for owners** — free always vs freemium vs paid? Determines whether `/business/billing` needs to exist.
-9. **Deletion** — GDPR-style hard-delete or soft-anonymize? Affects `/settings/privacy` UX.
+3. **Photos on reviews** — MVP or v1? Adds Supabase storage + moderation work. (Note: *proof-of-purchase* uploads are a separate, decided flow — see §1 "Verified reviews". This item is only about user-attached photos in the review body.)
+4. **Owner responses** — public-only, or also private DM? Most platforms do public-only.
+5. **Multi-city / geo** — single-country (Iran) is given; do you want `/locations/tehran` pages for local SEO?
+6. **Comments on blog posts** — comments, "discuss on X/Telegram", or none?
+7. **Pricing for owners** — free always vs freemium vs paid? Determines whether `/business/billing` needs to exist.
+8. **Deletion** — GDPR-style hard-delete or soft-anonymize? Affects `/settings/privacy` UX.
 
 ### Recently resolved
 
 - **Anonymous reviews** — ❌ no anonymous reviews; identified + pseudonymous. Settled 2026-05-22 → moved to §1 "Review identity".
 - **What "verified" means** — proof-of-purchase, private admin check, two-tier model. Settled 2026-05-22 → moved to §1 "Verified reviews".
 - **Gamification timing** — phased (schema in Phase 1, engine in Phase 3). Settled 2026-05-22 → moved to §6 "Gamification & trust loop".
+- **IG-shop vs business** — ✅ a single `businesses` table + a `type` column (`'company'` | `'ig_shop'`); one slug namespace so `/company/x` and `/shop/x` can't collide; routes stay separate. Settled 2026-05-22 → see `data-model.md` §3.
 
 ---
 
