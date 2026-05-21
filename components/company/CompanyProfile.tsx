@@ -6,7 +6,7 @@
  * filter, sort, save and share state.
  */
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { InstagramIcon, MailIcon, PhoneIcon } from "@/components/icons";
 import { BusinessCard } from "@/components/ui/BusinessCard";
@@ -249,21 +249,31 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
             </section>
 
             <section className={`${CARD} order-3 lg:order-none`}>
-              <h2 className={SECTION_H2}>نظرات اخیر</h2>
-              {hasReviews ? (
-                <>
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    {reviews.slice(0, 3).map((r) => (
-                      <ReviewCard key={r.id} review={r} />
-                    ))}
-                  </div>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className={SECTION_H2}>نظرات اخیر</h2>
+                {hasReviews && (
                   <button
                     type="button"
                     onClick={() => setTab("reviews")}
-                    className="mt-4 text-[0.85rem] font-bold text-mint hover:underline"
+                    className="shrink-0 text-[0.85rem] font-bold text-mint hover:underline"
                   >
                     همه نظرات ←
                   </button>
+                )}
+              </div>
+              {hasReviews ? (
+                <>
+                  {/* horizontal snap-scroll on mobile, 2-col grid from sm up */}
+                  <div className="mt-4 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0">
+                    {reviews.slice(0, 3).map((r) => (
+                      <div
+                        key={r.id}
+                        className="w-[85%] shrink-0 snap-start sm:w-auto"
+                      >
+                        <ReviewCard review={r} />
+                      </div>
+                    ))}
+                  </div>
                 </>
               ) : (
                 <NoReviews slug={business.slug} />
@@ -447,41 +457,72 @@ function ContactCard({
   return (
     <section className={`${CARD} ${className}`}>
       <h2 className={SECTION_H2}>اطلاعات تماس</h2>
-      <ul className="mt-3 flex flex-col gap-3 text-[0.85rem]">
+      <div className="mt-3 flex flex-col gap-2">
         {website && (
-          <li>
-            <a
-              href={`https://${website}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-mint hover:underline [&>svg]:h-[18px] [&>svg]:w-[18px]"
-            >
-              <MailIcon />
-              <span dir="ltr">{website}</span>
-            </a>
-          </li>
+          <ContactRow
+            icon={<MailIcon />}
+            label="وب‌سایت"
+            value={website}
+            href={`https://${website}`}
+          />
         )}
         {phone && (
-          <li className="inline-flex items-center gap-2 text-strong [&>svg]:h-[18px] [&>svg]:w-[18px] [&>svg]:text-muted">
-            <PhoneIcon />
-            <span className="tabular-nums">{phone}</span>
-          </li>
+          <ContactRow icon={<PhoneIcon />} label="تلفن" value={phone} />
         )}
         {instagram && (
-          <li>
-            <a
-              href={`https://instagram.com/${instagram}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-mint hover:underline [&>svg]:h-[18px] [&>svg]:w-[18px]"
-            >
-              <InstagramIcon />
-              <span dir="ltr">@{instagram}</span>
-            </a>
-          </li>
+          <ContactRow
+            icon={<InstagramIcon />}
+            label="اینستاگرام"
+            value={`@${instagram}`}
+            href={`https://instagram.com/${instagram}`}
+          />
         )}
-      </ul>
+      </div>
     </section>
+  );
+}
+
+/** One contact line — icon badge + label/value; a link when `href` is set. */
+function ContactRow({
+  icon,
+  label,
+  value,
+  href,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  href?: string;
+}) {
+  const body = (
+    <>
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-glass-border bg-glass text-mint [&>svg]:h-[17px] [&>svg]:w-[17px]">
+        {icon}
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-[0.72rem] text-muted">{label}</span>
+        <span
+          dir="ltr"
+          className="truncate text-right text-[0.85rem] font-semibold text-strong"
+        >
+          {value}
+        </span>
+      </span>
+    </>
+  );
+  const base =
+    "flex items-center gap-3 rounded-xl border border-glass-border bg-[#0b0f1a] px-3 py-2.5";
+  return href ? (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`${base} transition-colors duration-200 hover:border-mint/40`}
+    >
+      {body}
+    </a>
+  ) : (
+    <div className={base}>{body}</div>
   );
 }
 
