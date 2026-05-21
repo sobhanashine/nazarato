@@ -577,5 +577,49 @@ These will shape the doc once you decide. Flagged here so they don't get lost.
 - When you rename a route, also rename it here + the file tree.
 - When a new "open decision" gets settled, move it into the relevant section and remove from §7.
 - If a section grows too long, split it into its own doc under `docs/` and link.
+- When you open, close, or re-scope an issue, keep the **Issue tracker index** below in sync.
+
+### 8.1 Issue tracker index
+
+GitHub issues mirror the build order in §6. Repo: [`sobhanashine/nazarato`](https://github.com/sobhanashine/nazarato/issues). Diagrams: [`pages-diagrams.md`](./pages-diagrams.md).
+
+**Phase 1 — MVP loop** · [milestone](https://github.com/sobhanashine/nazarato/milestone/1)
+
+| Route(s) / deliverable | Issue |
+|------------------------|-------|
+| `/login` · `/login/verify` | [#13](https://github.com/sobhanashine/nazarato/issues/13) |
+| `/profile` · `/profile/reviews` | [#14](https://github.com/sobhanashine/nazarato/issues/14) |
+| Shared cards — `<BusinessCard />` `<ReviewCard />` `<IgShopCard />` `<RatingStars />` | [#15](https://github.com/sobhanashine/nazarato/issues/15) |
+| `/company/[slug]` | [#16](https://github.com/sobhanashine/nazarato/issues/16) |
+| `/company/[slug]/write-review` | [#17](https://github.com/sobhanashine/nazarato/issues/17) |
+| `/search` | [#18](https://github.com/sobhanashine/nazarato/issues/18) |
+| `/terms` · `/privacy` | [#19](https://github.com/sobhanashine/nazarato/issues/19) |
+| `/admin/moderation` | [#20](https://github.com/sobhanashine/nazarato/issues/20) |
+
+**Phase 2 — v1.0** · [milestone](https://github.com/sobhanashine/nazarato/milestone/2)
+
+| Route(s) / deliverable | Issue |
+|------------------------|-------|
+| `/categories` · `/categories/[slug]` | [#21](https://github.com/sobhanashine/nazarato/issues/21) |
+| `/instagram-shops` · `/shop/[handle]` · `/shop/[handle]/write-review` | [#22](https://github.com/sobhanashine/nazarato/issues/22) |
+| `/reviews` | [#23](https://github.com/sobhanashine/nazarato/issues/23) |
+| `/saved` (+ bookmark API) | [#24](https://github.com/sobhanashine/nazarato/issues/24) |
+| `/settings` · `/settings/security` · `/settings/notifications` · `/settings/privacy` | [#25](https://github.com/sobhanashine/nazarato/issues/25) |
+| `/users/[username]` | [#26](https://github.com/sobhanashine/nazarato/issues/26) |
+| `/for-business` · `/company/[slug]/claim` | [#27](https://github.com/sobhanashine/nazarato/issues/27) |
+| `/business` · `/business/reviews` · `/business/profile` | [#28](https://github.com/sobhanashine/nazarato/issues/28) |
+| `/blog/category/[slug]` · `/blog/tag/[slug]` · related posts (+ `/blog` pagination) | [#29](https://github.com/sobhanashine/nazarato/issues/29) |
+
+**Phase 3 — v2+** · [milestone](https://github.com/sobhanashine/nazarato/milestone/3)
+
+| Route(s) / deliverable | Issue |
+|------------------------|-------|
+| `/notifications` | [#30](https://github.com/sobhanashine/nazarato/issues/30) |
+| `/business/insights` · `/business/team` · `/business/billing` | [#31](https://github.com/sobhanashine/nazarato/issues/31) |
+| `/admin` · `/admin/reports` · `/admin/businesses` · `/admin/users` | [#32](https://github.com/sobhanashine/nazarato/issues/32) |
+| v2+ features — compare businesses, follow users, Q&A, review photos | [#33](https://github.com/sobhanashine/nazarato/issues/33) |
+
+**Not tracked** — already ✅ built, no issue: `/` · `/blog` · `/blog/[slug]` · `/about` · `/contact`.
+**Untracked gaps** — `/company/[slug]/reviews` (split recommended in §4.1, folded into #16 for now); `/help` and `/cookies` (P1/conditional, no issue yet); `/contact` email/DB delivery still pending (§4.2).
 
 > One file. One owner. One source of truth. Don't let it rot.
