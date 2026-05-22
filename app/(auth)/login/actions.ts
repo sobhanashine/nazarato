@@ -27,6 +27,8 @@ export type FormState = {
   field?: "phone" | "name";
   /** Non-field outcomes the verify UI renders as dedicated states. */
   reason?: "expired" | "locked";
+  /** Optional URL to redirect to on the client side after success. */
+  redirectUrl?: string;
 };
 
 const RESEND_COOLDOWN_MS = 60_000;
@@ -172,7 +174,7 @@ export async function verifyOtp(
       name: existing.display_name,
     });
     await clearOtpChallenge();
-    redirect(safeNext(asString(formData.get("next"))));
+    return { ok: true, redirectUrl: safeNext(asString(formData.get("next"))) };
   }
 
   // New phone → carry a verified challenge into the display-name step.
@@ -221,5 +223,5 @@ export async function completeProfile(
   await setSession({ id: user.id, phone: user.phone, name: user.display_name });
   await clearOtpChallenge();
 
-  redirect(safeNext(asString(formData.get("next"))));
+  return { ok: true, redirectUrl: safeNext(asString(formData.get("next"))) };
 }
