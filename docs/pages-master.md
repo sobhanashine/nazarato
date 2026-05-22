@@ -3,7 +3,7 @@
 > Single source of truth for every page in the product: what exists, what's planned, what each page is for, and how it's structured.
 > Update this when you add/rename/remove a route.
 
-Last edited: 2026-05-19
+Last edited: 2026-05-22
 Owner: Sobhan (solo founder)
 Stack assumptions: Next.js 16 App Router, React 19, Tailwind v4, Supabase + Kavenegar OTP, RTL Persian (`lang="fa" dir="rtl"`).
 
@@ -18,6 +18,8 @@ Stack assumptions: Next.js 16 App Router, React 19, Tailwind v4, Supabase + Kave
   - **Admins** — moderate reviews, approve claims, manage taxonomy. (Internal.)
 - **North-star action** — A consumer writes a real, useful review about an Iranian business.
 - **Login model** — Phone-based OTP via Kavenegar (no email/password assumed).
+- **Review identity** — No anonymous reviews. Every review ties to a phone-verified account (identified). Public display uses a chosen display name (pseudonymous) — never the legal name, so honest negative reviews aren't suppressed.
+- **Verified reviews** — Two tiers. **نقد تأییدشده** = reviewer submits proof of purchase (فاکتور / SMS confirmation / کد رهگیری, or DM screenshot / فیش for IG shops); admin checks it privately, then the proof image is **deleted** (only the verified boolean is kept — less storage, less liability). **نقد عادی** = no proof. Verified reviews rank higher, weigh more in the business score, and are the only tier eligible for reviewer badges. Verification is never mandatory — it is the aspirational tier, not a gate.
 - **Locale** — `fa-IR`, RTL, Persian/Farsi digits (۱۲۳۴۵).
 - **Style** — Dark, glassy/mint/lapis design system (see `app/globals.css`).
 
@@ -219,7 +221,7 @@ Each entry is structured the same way so it scans fast:
 - **States**: Loaded only (no empty state — always populated).
 - **Notes**: Replace popular-search hardcoded array with top-search analytics once data exists.
 
-#### Search results — `/search?q=...&category=...&rating=...` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### Search results — `/search?q=...&category=...&rating=...` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Purpose**: Show businesses & shops matching a query. The hero's main CTA leads here, so it can't be missing in MVP.
 - **Layout**: PageBanner ("نتایج جستجو برای «X»") + sidebar filters (category / rating / has-reviews / verified) + result cards + pagination.
 - **Sections**:
@@ -230,8 +232,9 @@ Each entry is structured the same way so it scans fast:
 - **Data**: `?q`, `?category[]`, `?rating>=`, `?type=biz|insta`, `?page`. Server component reads `searchParams`.
 - **States**: Empty ("چیزی پیدا نشد — این پیشنهادها رو ببین"), loading skeleton, error.
 - **A11y**: live region for result count; first focusable element is the search input (allow refinement without scrolling).
+- **Typeahead**: from the 2nd character the search box shows a live dropdown of matching businesses (companies + IG shops). The same typeahead is on the homepage hero. Logic is shared in `lib/search.ts` (`suggestBusinesses`), UI in `components/search/SearchSuggestions.tsx`.
 
-#### Categories index — `/categories` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### Categories index — `/categories` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Purpose**: All categories at a glance.
 - **Layout**: PageBanner + grid of category cards (reuse `Categories` section card design, but full grid not horizontal scroll).
 - **Sections**: Search field (filter visible cards), grid (sorted by popularity).
@@ -255,7 +258,7 @@ Each entry is structured the same way so it scans fast:
 - **Data**: `lib/data/instagram-shops.ts` (already exists; later DB-backed).
 - **Notes**: Reuse `InstagramShops.tsx` card markup; extract `<IgShopCard />` so home + this page share it.
 
-#### Business profile — `/company/[slug]` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### Business profile — `/company/[slug]` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Purpose**: The most important page in the product. Everything funnels here.
 - **Layout (mobile-first)**:
   ```
@@ -292,7 +295,7 @@ Each entry is structured the same way so it scans fast:
 - **Layout**: Mirrors the نظرات tab above, but as its own URL so search engines index review content.
 - **Implementation note**: This can be the same page component as `/company/[slug]` with a default tab; or split it. **Recommendation**: split — better SEO and simpler streaming.
 
-#### Write review (business) — `/company/[slug]/write-review` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
+#### Write review (business) — `/company/[slug]/write-review` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
 - **Purpose**: Submit a review for a specific business.
 - **Layout**: centered single-column form on glass card.
 - **Form steps** (single page, vertical):
@@ -321,7 +324,7 @@ Each entry is structured the same way so it scans fast:
 - **Sort**: Default = جدیدترین. Other: مفیدترین، بحث‌برانگیزترین.
 - **Notes**: Reuse `RecentReviews.tsx` card markup → extract as `<ReviewCard />`.
 
-#### Universal "write review" entry — `/write-review` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
+#### Universal "write review" entry — `/write-review` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
 - **Purpose**: The mobile-tab-bar FAB lands here when the user hasn't pre-selected a business.
 - **Layout**: Big search field "کدوم کسب‌وکار را نقد می‌کنی؟" + suggestions (recently visited / popular) + "نمیتونم پیداش کنم — معرفی‌اش کن →".
 - **Flow**: pick business → redirect to `/company/[slug]/write-review`.
@@ -359,12 +362,12 @@ Each entry is structured the same way so it scans fast:
 
 > Layout note: this route group gets its own `layout.tsx` that hides the marketing Header/Footer and centers a card. The MobileTabBar should also be hidden here (it's distracting during a critical flow).
 
-#### Login (phone entry) — `/login` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### Login (phone entry) — `/login` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Layout**: centered glass card. Brand mark + heading "ورود یا ثبت‌نام" + phone input with `+98` prefix + "ارسال کد" button + terms checkbox.
 - **State**: idle / submitting / rate-limited / error. Show error inline near the field (UX rule `error-placement`).
 - **Submit**: POST `/api/auth/otp/start` → on success redirect to `/login/verify?phone=...&next=...`.
 
-#### Verify OTP — `/login/verify` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0
+#### Verify OTP — `/login/verify` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0
 - **Layout**: 6-digit code input (auto-tab, paste-supported, `inputMode="numeric"` for keyboard — UX rule `input-type-keyboard`). Resend countdown timer. "تغییر شماره" link back to `/login`.
 - **State**: idle / verifying / wrong code / expired / locked-out. Auto-submit on 6th digit.
 - **Submit**: POST `/api/auth/otp/verify` → set HTTP-only JWT cookie → redirect to `?next` or `/`.
@@ -377,11 +380,11 @@ Each entry is structured the same way so it scans fast:
 
 > Layout note: shared `layout.tsx` includes a vertical settings/profile sidebar on desktop, hidden on mobile (replaced by tabs). All pages here require auth — gate at the layout level with `redirect("/login?next=...")`.
 
-#### My profile — `/profile` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0
+#### My profile — `/profile` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0
 - **Purpose**: At-a-glance dashboard for the logged-in consumer.
 - **Sections**: avatar + name + member-since + stats (تعداد نظرات / مفید بود / فالوور) + tab links to "نظرات من" / "ذخیره‌شده‌ها" / "تنظیمات".
 
-#### My reviews — `/profile/reviews` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0
+#### My reviews — `/profile/reviews` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0
 - **Purpose**: List of reviews you wrote, with status (منتشر شده / در انتظار / رد شده).
 - **Actions per row**: ویرایش / حذف. Confirmation dialog on delete (UX rule `confirmation-dialogs`).
 
@@ -476,8 +479,8 @@ These are reusable across pages — extract once, share everywhere.
 | `<Breadcrumb />`   | All non-home pages                                     | ✅ built    | `components/ui/Breadcrumb.tsx`               |
 | `<PageBanner />`   | All sub-pages with a title                             | ✅ built    | `components/ui/PageBanner.tsx`               |
 | `<NavLink />`      | Header nav                                             | ✅ built    | `components/layout/NavLink.tsx`              |
-| `<AuthLayout />`   | `/login`, `/login/verify`, `/signup`                   | 📋 planned  | `app/(auth)/layout.tsx`                       |
-| `<UserShell />`    | `/profile`, `/saved`, `/settings`, `/notifications`    | 📋 planned  | `app/(user)/layout.tsx`                       |
+| `<AuthLayout />`   | `/login`, `/login/verify`, `/signup`                   | ✅ built    | `app/(auth)/layout.tsx`                       |
+| `<UserShell />`    | `/profile`, `/saved`, `/settings`, `/notifications`    | ✅ built    | `app/(user)/layout.tsx`                       |
 | `<OwnerShell />`   | `/business/*`                                          | 📋 planned  | `app/(business)/layout.tsx`                   |
 | `<AdminShell />`   | `/admin/*`                                             | 📋 planned  | `app/(admin)/layout.tsx`                      |
 
@@ -552,6 +555,16 @@ You're a solo founder. Don't try to build the sitemap top-down. Build the minimu
 - Compare businesses, follow users, Q&A on business pages, photo uploads on reviews.
 - Full admin: `/admin/reports`, `/admin/businesses`, `/admin/users`.
 
+### Gamification & trust loop (phased)
+
+The badge/leaderboard system is an *amplifier* — it is built only once the review loop is already turning. Schema first, engine later: adding fields now is nearly free, a migration later is painful.
+
+- **Phase 1** — Add the data fields now (`review.verified`, `review.helpfulCount`, `user.reputationScore`, `business.responseRate`). Ship the **verified badge on reviews** + **"مفید بود" helpful votes**. The verified badge is the only game mechanic at MVP.
+- **Phase 2** — Public **response-rate / response-time** stat on business profiles. Reviewer profile shows total helpful votes received.
+- **Phase 3** — Full system: reviewer **levels** (تازه‌وارد → منتقد ارشد, driven by helpful votes, *not* review count), rotating **leaderboards**, **"بهترین‌های دسته"** page (composite rank: rating × volume × recency × response rate), embeddable "X در نظراتو" widget.
+
+> Anti-abuse: badges/scores only count *after* a review clears moderation. New accounts' reviews and votes weigh less. Reward quality signals (helpful votes, verified purchases, depth) — never raw review count.
+
 ---
 
 ## 7. Open decisions / questions to resolve
@@ -560,14 +573,19 @@ These will shape the doc once you decide. Flagged here so they don't get lost.
 
 1. **Login model** — phone-only (Kavenegar OTP) or also email+password? .env hints at phone-only. Confirm before building.
 2. **Onboarding** — do you collect display name on first login (extra step) or auto-generate one (e.g. کاربر+last4digits)?
-3. **Anonymous reviews** — allow? Trustpilot does, Yelp doesn't. Affects UX of profile pages.
-4. **IG-shop vs business** — one entity with a `type` field, or separate tables? Affects routing (`/company` vs `/shop`) and slug collisions.
-5. **Photos on reviews** — MVP or v1? Adds Supabase storage + moderation work.
-6. **Owner responses** — public-only, or also private DM? Most platforms do public-only.
-7. **Multi-city / geo** — single-country (Iran) is given; do you want `/locations/tehran` pages for local SEO?
-8. **Comments on blog posts** — comments, "discuss on X/Telegram", or none?
-9. **Pricing for owners** — free always vs freemium vs paid? Determines whether `/business/billing` needs to exist.
-10. **Deletion** — GDPR-style hard-delete or soft-anonymize? Affects `/settings/privacy` UX.
+3. **Photos on reviews** — MVP or v1? Adds Supabase storage + moderation work. (Note: *proof-of-purchase* uploads are a separate, decided flow — see §1 "Verified reviews". This item is only about user-attached photos in the review body.)
+4. **Owner responses** — public-only, or also private DM? Most platforms do public-only.
+5. **Multi-city / geo** — single-country (Iran) is given; do you want `/locations/tehran` pages for local SEO?
+6. **Comments on blog posts** — comments, "discuss on X/Telegram", or none?
+7. **Pricing for owners** — free always vs freemium vs paid? Determines whether `/business/billing` needs to exist.
+8. **Deletion** — GDPR-style hard-delete or soft-anonymize? Affects `/settings/privacy` UX.
+
+### Recently resolved
+
+- **Anonymous reviews** — ❌ no anonymous reviews; identified + pseudonymous. Settled 2026-05-22 → moved to §1 "Review identity".
+- **What "verified" means** — proof-of-purchase, private admin check, two-tier model. Settled 2026-05-22 → moved to §1 "Verified reviews".
+- **Gamification timing** — phased (schema in Phase 1, engine in Phase 3). Settled 2026-05-22 → moved to §6 "Gamification & trust loop".
+- **IG-shop vs business** — ✅ a single `businesses` table + a `type` column (`'company'` | `'ig_shop'`); one slug namespace so `/company/x` and `/shop/x` can't collide; routes stay separate. Settled 2026-05-22 → see `data-model.md` §3.
 
 ---
 
@@ -581,7 +599,7 @@ These will shape the doc once you decide. Flagged here so they don't get lost.
 
 ### 8.1 Issue tracker index
 
-GitHub issues mirror the build order in §6. Repo: [`sobhanashine/nazarato`](https://github.com/sobhanashine/nazarato/issues). Diagrams: [`pages-diagrams.md`](./pages-diagrams.md).
+GitHub issues mirror the build order in §6. Repo: [`sobhanashine/nazarato`](https://github.com/sobhanashine/nazarato/issues). Diagrams: [`pages-diagrams.md`](./pages-diagrams.md). Database schema: [`data-model.md`](./data-model.md).
 
 **Phase 1 — MVP loop** · [milestone](https://github.com/sobhanashine/nazarato/milestone/1)
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SearchIcon } from "@/components/icons";
+import { HeroSearch } from "@/components/sections/HeroSearch";
 import { HeroStats } from "@/components/sections/HeroStats";
 import { Container } from "@/components/ui/Container";
 
@@ -95,25 +95,7 @@ export function Hero() {
             </span>
           </h1>
 
-          <div className="relative w-full max-w-[620px] h-[60px] mt-2 sm:h-16">
-            {/* Soft gradient glow behind the input */}
-            <div
-              aria-hidden
-              className="absolute inset-[-3px] rounded-full blur-[16px] opacity-75 z-[-1] bg-[linear-gradient(135deg,rgba(91,230,178,0.45),rgba(123,137,255,0.45),rgba(255,107,149,0.30))]"
-            />
-            <input
-              type="text"
-              placeholder="کسب و کار، فروشگاه یا دسته‌بندی..."
-              aria-label="جستجو"
-              className="w-full h-full pr-7 pl-[3.25rem] bg-[rgba(13,17,28,0.65)] backdrop-blur-[18px] backdrop-saturate-[180%] border border-glass-border-hi rounded-full text-[15px] text-strong outline-none transition-[box-shadow,border-color] duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] placeholder:text-[#6b7385] focus:border-mint/55 focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_4px_rgba(91,230,178,0.18),0_12px_40px_rgba(0,0,0,0.45)]"
-            />
-            <span
-              className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center text-mint pointer-events-none"
-              aria-hidden
-            >
-              <SearchIcon />
-            </span>
-          </div>
+          <HeroSearch />
 
           <div
             className="flex flex-wrap items-center justify-center gap-y-[0.45rem] gap-x-2 mt-2 max-w-[620px]"

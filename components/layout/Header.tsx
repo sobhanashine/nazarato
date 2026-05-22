@@ -1,14 +1,23 @@
 import Link from "next/link";
+import { HeaderAuth } from "@/components/layout/HeaderAuth";
 import { MobileMenu } from "@/components/layout/MobileMenu";
 import { NavLink } from "@/components/layout/NavLink";
 import { Container } from "@/components/ui/Container";
-import { BTN_PRIMARY } from "@/components/ui/styles";
 
+// Desktop top-nav — kept short to fit the pill.
 const navItems = [
   { href: "/blog", label: "بلاگ" },
   { href: "/categories", label: "دسته‌بندی‌ها" },
   { href: "/about", label: "درباره ما" },
   { href: "/contact", label: "تماس با ما" },
+];
+
+// Mobile hamburger menu — has room for every primary page, so it also
+// surfaces جستجو and نوشتن نظر (which desktop reaches via the hero / tab bar).
+const mobileNavItems = [
+  { href: "/search", label: "جستجو" },
+  { href: "/write-review", label: "نوشتن نظر" },
+  ...navItems,
 ];
 
 const brandMark =
@@ -61,10 +70,8 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2 shrink-0">
-            <Link href="/login" className={`${BTN_PRIMARY} max-md:hidden py-[0.6rem] px-5 text-sm`}>
-              ورود
-            </Link>
-            <MobileMenu items={navItems} />
+            <HeaderAuth />
+            <MobileMenu items={mobileNavItems} />
           </div>
         </Container>
       </div>

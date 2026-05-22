@@ -60,6 +60,9 @@ export function MobileTabBar() {
   const pathname = usePathname();
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
+  // Hidden during the focused auth flow — the `(auth)` layout has no chrome.
+  if (pathname.startsWith("/login")) return null;
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-[200] px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pointer-events-none md:hidden"

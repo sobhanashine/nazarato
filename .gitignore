@@ -45,3 +45,7 @@ next-env.d.ts
 
 # playwright mcp — local browser artifacts
 .playwright-mcp/
+
+# antigravity cli — local workspace metadata
+.antigravitycli/
+
