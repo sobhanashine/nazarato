@@ -82,9 +82,6 @@ const ERR_TEXT = "text-[12px] font-bold text-pomegr";
 const FIELD =
   "w-full rounded-xl border bg-white/[0.03] px-4 py-3.5 text-[16px] text-white " +
   "placeholder:text-white/25 outline-none backdrop-blur-md transition-colors";
-const SELECT =
-  "flex-1 rounded-xl border bg-white/[0.03] px-3 py-3.5 text-[15px] text-white " +
-  "outline-none backdrop-blur-md transition-colors [color-scheme:dark] appearance-none";
 
 function fieldBorder(invalid: boolean): string {
   return invalid
@@ -234,7 +231,8 @@ export function WriteReviewForm({
           {fe.rating && <p className={`${ERR_TEXT} mt-1.5`}>{fe.rating}</p>}
         </fieldset>
 
-        {/* 2 — Title (required) with suggestion icon on the left */}
+        {/* 2 — Title (required). The icon sits on the physical left as a real
+            flex child — no absolute overlap — and toggles the suggestions menu. */}
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between">
             <label htmlFor="title" className={LABEL}>عنوان</label>
@@ -243,34 +241,53 @@ export function WriteReviewForm({
             </span>
           </div>
           <div ref={suggestionsRef} className="relative">
-            {/* Lightbulb icon on the physical left side */}
-            <button
-              type="button"
-              aria-label="پیشنهاد عنوان"
-              onClick={() => setShowSuggestions((v) => !v)}
-              className={`absolute left-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
-                showSuggestions
-                  ? "bg-mint/20 text-mint"
-                  : "text-white/30 hover:bg-white/[0.06] hover:text-mint/80"
-              }`}
+            <div
+              className={`flex items-center rounded-xl border bg-white/[0.03] backdrop-blur-md transition-colors ${fieldBorder(
+                Boolean(fe.title),
+              )}`}
             >
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V17a1 1 0 0 1-1 1H10a1 1 0 0 1-1-1v-2.8C7.2 13.16 6 11.22 6 9a6 6 0 0 1 6-6z" />
-              </svg>
-            </button>
-            <input
-              id="title"
-              name="title"
-              type="text"
-              maxLength={TITLE_MAX}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="در یک جمله، تجربه‌ات را خلاصه کن"
-              className={`${FIELD} pl-12 ${fieldBorder(Boolean(fe.title))}`}
-            />
-            {/* Suggestions popover */}
+              <input
+                id="title"
+                name="title"
+                type="text"
+                maxLength={TITLE_MAX}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="در یک جمله، تجربه‌ات را خلاصه کن"
+                className="min-w-0 flex-1 bg-transparent py-3.5 pr-4 pl-1 text-[16px] text-white placeholder:text-white/25 outline-none"
+              />
+              <button
+                type="button"
+                aria-label="پیشنهاد عنوان"
+                aria-expanded={showSuggestions}
+                onClick={() => setShowSuggestions((v) => !v)}
+                className={`m-1.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                  showSuggestions
+                    ? "bg-mint/20 text-mint"
+                    : "text-muted hover:bg-white/[0.07] hover:text-mint"
+                }`}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <path d="M9 18h6" />
+                  <path d="M10 22h4" />
+                  <path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z" />
+                </svg>
+              </button>
+            </div>
             {showSuggestions && (
-              <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 rounded-xl border border-glass-border bg-[rgba(10,13,22,0.92)] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] overflow-hidden">
+              <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-[260px] overflow-y-auto rounded-xl border border-glass-border bg-[rgba(12,16,26,0.97)] shadow-[0_12px_36px_rgba(0,0,0,0.55)]">
+                <p className="border-b border-glass-border px-4 py-2 text-[11px] font-bold text-muted">
+                  یک پیشنهاد را انتخاب کن
+                </p>
                 {TITLE_SUGGESTIONS.map((s) => (
                   <button
                     key={s}
@@ -279,7 +296,7 @@ export function WriteReviewForm({
                       setTitle(s);
                       setShowSuggestions(false);
                     }}
-                    className="w-full px-4 py-2.5 text-right text-[13px] text-muted hover:bg-mint/10 hover:text-mint transition-colors"
+                    className="block w-full px-4 py-2.5 text-right text-[13px] text-muted transition-colors hover:bg-mint/10 hover:text-mint"
                   >
                     {s}
                   </button>
@@ -314,48 +331,64 @@ export function WriteReviewForm({
           )}
         </div>
 
-        {/* 4 — Purchase date — Persian calendar (optional) */}
+        {/* 4 — Purchase date — Persian (Jalali) calendar (optional).
+            Three borderless selects share one bordered box — no dividers. */}
         <div className="flex flex-col gap-2">
           <span className={LABEL}>
             تاریخ خرید <span className={OPTIONAL}>(اختیاری)</span>
           </span>
-          <div className="grid grid-cols-3 gap-2">
-            {/* Year */}
+          <div
+            className={`flex items-center overflow-hidden rounded-xl border bg-white/[0.03] backdrop-blur-md transition-colors ${fieldBorder(
+              Boolean(fe.purchaseDate),
+            )}`}
+          >
             <select
               value={jYear}
-              onChange={(e) => { setJYear(e.target.value); setJDay(""); }}
-              aria-label="سال"
-              className={`${SELECT} ${fieldBorder(Boolean(fe.purchaseDate))}`}
+              onChange={(e) => {
+                setJYear(e.target.value);
+                setJDay("");
+              }}
+              aria-label="سال خرید"
+              className="min-w-0 flex-1 cursor-pointer appearance-none bg-transparent px-2 py-3.5 text-center text-[15px] text-white outline-none [color-scheme:dark]"
             >
               <option value="">سال</option>
               {JALALI_YEARS.map((y) => (
-                <option key={y} value={y}>{fa(y)}</option>
+                <option key={y} value={y}>
+                  {fa(y)}
+                </option>
               ))}
             </select>
-            {/* Month */}
             <select
               value={jMonth}
-              onChange={(e) => { setJMonth(e.target.value); setJDay(""); }}
-              aria-label="ماه"
-              className={`${SELECT} ${fieldBorder(Boolean(fe.purchaseDate))}`}
+              onChange={(e) => {
+                setJMonth(e.target.value);
+                setJDay("");
+              }}
+              aria-label="ماه خرید"
+              className="min-w-0 flex-[1.4] cursor-pointer appearance-none bg-transparent px-2 py-3.5 text-center text-[15px] text-white outline-none [color-scheme:dark]"
             >
               <option value="">ماه</option>
               {JALALI_MONTHS.map((m, i) => (
-                <option key={m} value={i + 1}>{m}</option>
+                <option key={m} value={i + 1}>
+                  {m}
+                </option>
               ))}
             </select>
-            {/* Day */}
             <select
               value={jDay}
               onChange={(e) => setJDay(e.target.value)}
-              aria-label="روز"
+              aria-label="روز خرید"
               disabled={!jMonth || !jYear}
-              className={`${SELECT} disabled:opacity-40 ${fieldBorder(Boolean(fe.purchaseDate))}`}
+              className="min-w-0 flex-1 cursor-pointer appearance-none bg-transparent px-2 py-3.5 text-center text-[15px] text-white outline-none [color-scheme:dark] disabled:cursor-not-allowed disabled:opacity-40"
             >
               <option value="">روز</option>
-              {Array.from({ length: daysInSelectedMonth }, (_, i) => i + 1).map((d) => (
-                <option key={d} value={d}>{fa(d)}</option>
-              ))}
+              {Array.from({ length: daysInSelectedMonth }, (_, i) => i + 1).map(
+                (d) => (
+                  <option key={d} value={d}>
+                    {fa(d)}
+                  </option>
+                ),
+              )}
             </select>
           </div>
           {fe.purchaseDate && <p className={ERR_TEXT}>{fe.purchaseDate}</p>}
