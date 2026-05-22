@@ -438,7 +438,7 @@ Each entry is structured the same way so it scans fast:
 > Internal-only. Gate by Supabase RLS + `viewer.role === "admin"`.
 
 - `/admin` — overview tiles (pending reviews, pending claims, reported items, new businesses).
-- `/admin/moderation` — ✅ built — review queue with approve/reject (including private purchase proof viewing/deletion).
+- `/admin/moderation` — ✅ built — review queue with approve/reject (including private purchase proof viewing/deletion), optional rejection reasons, dynamic dashboard statistics, and template violation chips.
 - `/admin/reports` — reports inbox with action buttons.
 - `/admin/businesses` — list/edit/merge/approve-claim.
 - `/admin/users` — list/ban/role-toggle.
