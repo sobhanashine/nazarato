@@ -13,9 +13,19 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  // Already signed in → nothing to do here.
-  if (await getSession()) redirect("/");
+  const params = await searchParams;
+  const rawNext = typeof params.next === "string" ? params.next : "";
 
-  const next = (await searchParams).next;
-  return <LoginForm next={typeof next === "string" ? next : ""} />;
+  // Already signed in → honour the ?next destination rather than always "/".
+  if (await getSession()) {
+    const dest =
+      rawNext.startsWith("/") &&
+      !rawNext.startsWith("//") &&
+      !rawNext.startsWith("/\\")
+        ? rawNext
+        : "/";
+    redirect(dest);
+  }
+
+  return <LoginForm next={rawNext} />;
 }
