@@ -55,6 +55,14 @@ function IconLogout() {
   );
 }
 
+function IconShield() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
 const items: Item[] = [
   { href: "/profile", label: "نمای کلی", icon: <IconGrid /> },
   { href: "/profile/reviews", label: "نظرات من", icon: <IconStar /> },
@@ -66,15 +74,28 @@ const items: Item[] = [
 const chipBase =
   "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-[0.85rem] font-semibold whitespace-nowrap transition-colors duration-200 lg:rounded-2xl [&_svg]:h-[18px] [&_svg]:w-[18px] [&_svg]:shrink-0";
 
-export function ProfileNav() {
+interface ProfileNavProps {
+  userRole?: string;
+}
+
+export function ProfileNav({ userRole }: ProfileNavProps) {
   const pathname = usePathname() ?? "";
+
+  const navItems = [...items];
+  if (userRole === "admin") {
+    navItems.push({
+      href: "/admin/moderation",
+      label: "پنل مدیریت",
+      icon: <IconShield />,
+    });
+  }
 
   return (
     <nav
       aria-label="ناوبری حساب کاربری"
       className={`-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:flex-col lg:overflow-visible lg:p-0 ${HIDE_SCROLL}`}
     >
-      {items.map((item) => {
+      {navItems.map((item) => {
         const active =
           item.href === "/profile"
             ? pathname === "/profile"
