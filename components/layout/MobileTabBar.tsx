@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useReviewSheet } from "@/components/review/ReviewSheetProvider";
 
 type Tab = { href: string; label: string; icon: React.ReactNode };
 
@@ -58,6 +59,7 @@ const tabActive =
 
 export function MobileTabBar() {
   const pathname = usePathname();
+  const { openReviewSheet } = useReviewSheet();
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   // Hidden during the focused auth flow — the `(auth)` layout has no chrome.
@@ -83,8 +85,9 @@ export function MobileTabBar() {
           );
         })}
 
-        <Link
-          href="/write-review"
+        <button
+          type="button"
+          onClick={() => openReviewSheet()}
           className="relative w-14 h-14 -mt-6 grid place-items-center rounded-full bg-[linear-gradient(135deg,#5BE6B2_0%,#7B89FF_100%)] text-[#06231b] shadow-[0_12px_30px_-6px_rgba(91,230,178,0.7),0_0_0_4px_rgba(10,13,22,0.8),inset_0_1px_0_rgba(255,255,255,0.45)] transition-[transform,filter] duration-200 active:scale-95 hover:brightness-105"
           aria-label="نوشتن نظر"
         >
@@ -95,7 +98,7 @@ export function MobileTabBar() {
           <span className="inline-flex [&_svg]:w-[22px] [&_svg]:h-[22px]" aria-hidden>
             <IconPen />
           </span>
-        </Link>
+        </button>
 
         {tabs.slice(2).map((t) => {
           const active = isActive(t.href);
