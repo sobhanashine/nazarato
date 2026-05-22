@@ -8,7 +8,9 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
+import { setFlash } from "@/lib/flash";
 import { completeProfile, resendOtp, verifyOtp, type FormState } from "../actions";
 
 const initial: FormState = { ok: false };
@@ -64,6 +66,7 @@ function CodeStep({
   devCode: string | null;
   onVerified: () => void;
 }) {
+  const router = useRouter();
   const [state, action, verifying] = useActionState(verifyOtp, initial);
   const [resendState, resendAction, resending] = useActionState(
     resendOtp,
@@ -105,8 +108,15 @@ function CodeStep({
 
   // Correct code → advance to the display-name step.
   useEffect(() => {
-    if (state.ok) onVerified();
-  }, [state.ok, onVerified]);
+    if (state.ok) {
+      if (state.redirectUrl) {
+        setFlash("خوش آمدید! ورود با موفقیت انجام شد.");
+        router.push(state.redirectUrl);
+      } else {
+        onVerified();
+      }
+    }
+  }, [state.ok, state.redirectUrl, onVerified, router]);
 
   // Refocus the first box once it has been cleared (focus only — no setState).
   useEffect(() => {
@@ -279,10 +289,18 @@ function CodeStep({
 }
 
 function NameStep({ next }: { next: string }) {
+  const router = useRouter();
   const [state, action, pending] = useActionState(completeProfile, initial);
   const nameError = state.field === "name" ? state.error : undefined;
   const formError =
     state.error && state.field !== "name" ? state.error : undefined;
+
+  useEffect(() => {
+    if (state.ok && state.redirectUrl) {
+      setFlash("حساب شما با موفقیت ساخته شد!");
+      router.push(state.redirectUrl);
+    }
+  }, [state.ok, state.redirectUrl, router]);
 
   return (
     <div className={`${GLASS} p-6 sm:p-8`}>

@@ -4,6 +4,7 @@ import { Backdrop } from "@/components/layout/Backdrop";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { RegisterSW } from "@/components/pwa/RegisterSW";
+import { ToastProvider } from "@/components/providers/ToastProvider";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -66,6 +67,7 @@ export default function RootLayout({
         <MobileTabBar />
         <InstallPrompt />
         <RegisterSW />
+        <ToastProvider />
       </body>
     </html>
   );
