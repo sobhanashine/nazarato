@@ -241,7 +241,7 @@ Each entry is structured the same way so it scans fast:
 - **Data**: `lib/data/categories.tsx` (already exists).
 - **Notes**: Lift the inline icon set out — current `<svg>`s are inlined per-category; consider an `icon` field referencing an icon component name once you have >20 categories.
 
-#### Category detail — `/categories/[slug]` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### Category detail — `/categories/[slug]` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Purpose**: Discover businesses inside one category (e.g. all رستوران).
 - **Layout**: PageBanner with category name/desc + filter sidebar + business list + pagination.
 - **Sections**:

@@ -79,7 +79,7 @@ Set globally in `next.config.ts:31-40`:
 - App Router conventions only. No `pages/`.
 - Components are `PascalCase.tsx`, co-located by domain (`components/blog/`, `components/sections/`, ...).
 - Static/sample data lives in `lib/data/*.ts` and is imported directly — no fetch needed.
-- Co-locate tests next to source: `foo.ts` → `foo.test.ts`. (Test runner not wired yet — see Open items.)
+- Co-locate tests next to source: `foo.ts` → `foo.test.ts`. (Tested via Vitest.)
 
 ### Styling
 
@@ -126,10 +126,6 @@ Set globally in `next.config.ts:31-40`:
 
 ## 3. Open items / known gaps
 
-- **No test runner wired.** `package.json` has no `test` script. When the first
-  test is added, wire Vitest (preferred for Vite/Next stacks) and add a
-  `test` script. Until then, `project-loop` falls back to typecheck + lint
-  and flags this gap.
 - **WP_API_URL** must be set in the deployment env or `lib/wp.ts` calls will
   fail. Not yet documented in a `.env.example`.
 - **Auth — remaining wiring.** `/login` works end-to-end in dev. Still open:
@@ -148,6 +144,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-05-23** — Implemented category detail page (/categories/[slug]) with RTL subcategory chips, dynamic custom Farsi sorting, pagination, and empty-state fallback to write a review. Wired up Vitest as the test runner with unit tests for category filtering and sorting. Files: `app/categories/[slug]/page.tsx`, `components/categories/CategoryDetailClient.tsx`, `lib/data/businesses.ts`, `lib/data/businesses.test.ts`, `package.json`, `package-lock.json`.
 - **2026-05-22** — Fixed mobile/tablet touch target size violations in the header by increasing the NavLink height to min-h-11, adjusting its horizontal padding to px-3, and resizing the desktop HeaderAuth avatar/login button to w-11 h-11 / min-h-11. Files: `components/layout/Header.tsx`, `components/layout/NavLink.tsx`, `components/layout/HeaderAuth.tsx`.
 - **2026-05-22** — Fixed login page build failure by adding the phone property to FormState in the auth server actions and returning the raw input on OTP start error. Disabled the custom react-hooks/set-state-in-effect rule in eslint.config.mjs to clear build-blocking lint errors in ReviewSheet and ReviewSheetProvider. Files: `app/(auth)/login/actions.ts`, `eslint.config.mjs`, `app/about/page.tsx`.
 - **2026-05-22** — Linked all "نوشتن نظر" buttons (in MobileMenu, CompanyProfile, AboutWriteReview) to open the mobile bottom-sheet wizard (`ReviewSheet`) instead of navigating to a separate route, ensuring a consistent review entry flow. Added a glowing pulse animation (`fab-pulse`) to submit buttons. Removed the desktop write review button from the header to keep it clean. Files: `components/company/CompanyProfile.tsx`, `components/layout/MobileMenu.tsx`, `components/review/ReviewSheetProvider.tsx`, `components/sections/AboutWriteReview.tsx`, `components/layout/Header.tsx`.

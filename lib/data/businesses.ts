@@ -416,3 +416,135 @@ export async function getSimilarBusinesses(detail: BusinessDetail): Promise<Busi
     };
   });
 }
+
+/** Mappings of category slugs to subcategory names. */
+export const categorySubcategories: Record<string, string[]> = {
+  food: ["همه", "کافه", "رستوران", "سفارش آنلاین"],
+  digital: ["همه", "فروشگاه بزرگ", "خرده‌فروشی آنلاین"],
+  health: ["همه", "بیمه", "داروخانه"],
+  sports: ["همه", "خودرو", "سنگین"],
+};
+
+/**
+ * Checks if a business details match a given subcategory keyword.
+ */
+export function businessMatchesSubcategory(
+  b: { name: string; description?: string; category?: string; info?: unknown[] },
+  subcat: string,
+): boolean {
+  if (!subcat || subcat === "همه") return true;
+  const name = b.name || "";
+  const desc = b.description || "";
+  const cat = b.category || "";
+  const infoText = Array.isArray(b.info) ? JSON.stringify(b.info) : "";
+
+  const textToSearch = `${name} ${desc} ${cat} ${infoText}`.toLowerCase();
+
+  if (subcat === "کافه") return textToSearch.includes("کافه");
+  if (subcat === "رستوران") return textToSearch.includes("رستوران");
+  if (subcat === "سفارش آنلاین") return textToSearch.includes("آنلاین") || textToSearch.includes("سفارش");
+  if (subcat === "فروشگاه بزرگ") return textToSearch.includes("فروشگاه") || textToSearch.includes("بزرگترین") || textToSearch.includes("بزرگ‌ ترین");
+  if (subcat === "خرده‌فروشی آنلاین") return textToSearch.includes("خرده‌فروشی") || textToSearch.includes("آنلاین");
+  if (subcat === "بیمه") return textToSearch.includes("بیمه");
+  if (subcat === "داروخانه") return textToSearch.includes("داروخانه");
+  if (subcat === "خودرو") return textToSearch.includes("خودرو");
+  if (subcat === "سنگین") return textToSearch.includes("سنگین");
+
+  return textToSearch.includes(subcat.toLowerCase());
+}
+
+export type BusinessSortKey = "rating" | "reviews" | "newest";
+
+/** Retrieve paginated, sorted, and optionally sub-category filtered businesses under a category slug. */
+export async function getBusinessesByCategory(
+  categorySlug: string,
+  options?: {
+    sort?: BusinessSortKey;
+    subcategory?: string;
+    page?: number;
+    limit?: number;
+  }
+): Promise<{ businesses: Business[]; total: number }> {
+  const supabase = supabaseAdmin();
+  const sort = options?.sort || "rating";
+  const subcategory = options?.subcategory || "همه";
+  const page = options?.page || 1;
+  const limit = options?.limit || 6;
+
+  // 1. Start querying the businesses table
+  let query = supabase
+    .from("businesses")
+    .select("*", { count: "exact" })
+    .eq("category_slug", categorySlug)
+    .in("status", ["active", "merged"]);
+
+  // Apply sorting at the database level where possible
+  if (sort === "rating") {
+    query = query
+      .order("rating_avg", { ascending: false })
+      .order("review_count", { ascending: false });
+  } else if (sort === "reviews") {
+    query = query
+      .order("review_count", { ascending: false })
+      .order("rating_avg", { ascending: false });
+  } else if (sort === "newest") {
+    query = query.order("created_at", { ascending: false });
+  }
+
+  const { data, error } = await query;
+  if (error || !data) {
+    return { businesses: [], total: 0 };
+  }
+
+  // 2. Map DB rows to card shape
+  let mappedList = data.map((b) => {
+    const scoreVal = b.rating_avg ? Number(b.rating_avg) : 0.0;
+    return {
+      slug: b.slug,
+      name: b.name,
+      category: getCategoryTitle(b.category_slug),
+      city: b.city || "نامشخص",
+      initial: b.initial,
+      color: b.color,
+      score: b.review_count > 0 ? scoreVal.toLocaleString("fa-IR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "—",
+      reviews: b.review_count.toLocaleString("fa-IR"),
+      verified: b.verified,
+      description: b.description || "",
+      info: b.info || [],
+    };
+  });
+
+  // 3. Client-side subcategory filtering (since it's keyword-based JSONB / description parsing)
+  if (subcategory && subcategory !== "همه") {
+    mappedList = mappedList.filter((b) =>
+      businessMatchesSubcategory(
+        { name: b.name, description: b.description, category: b.category, info: b.info },
+        subcategory,
+      )
+    );
+  }
+
+  const filteredTotal = mappedList.length;
+
+  // 4. Client-side pagination
+  const startIndex = (page - 1) * limit;
+  const paginatedList = mappedList.slice(startIndex, startIndex + limit);
+
+  // Strip temporary fields before returning
+  const resultList: Business[] = paginatedList.map((b) => ({
+    slug: b.slug,
+    name: b.name,
+    category: b.category,
+    city: b.city,
+    initial: b.initial,
+    color: b.color,
+    score: b.score,
+    reviews: b.reviews,
+    verified: b.verified,
+  }));
+
+  return {
+    businesses: resultList,
+    total: filteredTotal,
+  };
+}
