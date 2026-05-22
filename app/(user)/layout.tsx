@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { ProfileNav } from "@/components/profile/ProfileNav";
 import { Container } from "@/components/ui/Container";
 import { getSession } from "@/lib/auth/session";
+import { getUserById } from "@/lib/data/users";
 
 /**
  * Consumer account shell — the `(user)` route group.
@@ -21,6 +22,9 @@ export default async function UserLayout({
   const session = await getSession();
   if (!session) redirect("/login?next=/profile");
 
+  const user = await getUserById(session.id);
+  if (!user) redirect("/login?next=/profile");
+
   return (
     <>
       <Header />
@@ -31,7 +35,7 @@ export default async function UserLayout({
             the cards don't stretch sparse on wide screens. */}
         <div className="grid grid-cols-1 gap-5 py-6 lg:grid-cols-[200px_minmax(0,640px)] lg:justify-center lg:gap-8 lg:py-10">
           <aside className="lg:pt-1">
-            <ProfileNav />
+            <ProfileNav userRole={user.role} />
           </aside>
           <div className="min-w-0">{children}</div>
         </div>

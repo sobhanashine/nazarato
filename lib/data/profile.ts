@@ -19,6 +19,7 @@ export type MyReview = {
   rating: Rating;
   text: string;
   status: ReviewStatus;
+  rejectionReason?: string | null;
 };
 
 /** Fixtures — one row per status, plus extras, newest first. */

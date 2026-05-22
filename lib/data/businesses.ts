@@ -9,6 +9,43 @@
 
 import type { Rating } from "@/components/ui/RatingStars";
 import type { Review } from "@/lib/data/reviews";
+import { categories } from "./categories";
+import { supabaseAdmin } from "@/lib/supabase/server";
+
+export function getCategoryTitle(categorySlug: string): string {
+  const cat = categories.find((c) => c.href === `/categories/${categorySlug}`);
+  if (cat) return cat.title;
+  
+  const map: Record<string, string> = {
+    digital: "کالای دیجیتال",
+    food: "خوراکی و شیرینی",
+    health: "سلامت و مکمل",
+    sports: "ورزش و کمپینگ",
+  };
+  return map[categorySlug] || categorySlug;
+}
+
+export function toRelativePersianTime(isoString: string): string {
+  const date = new Date(isoString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+  const diffYears = Math.floor(diffDays / 365);
+
+  const faNum = (n: number) => n.toLocaleString("fa-IR");
+
+  if (diffMins < 1) return "همین الان";
+  if (diffMins < 60) return `${faNum(diffMins)} دقیقه پیش`;
+  if (diffHours < 24) return `${faNum(diffHours)} ساعت پیش`;
+  if (diffDays < 7) return `${faNum(diffDays)} روز پیش`;
+  if (diffWeeks < 5) return `${faNum(diffWeeks)} هفته پیش`;
+  if (diffMonths < 12) return `${faNum(diffMonths)} ماه پیش`;
+  return `${faNum(diffYears)} سال پیش`;
+}
 
 /** Card-shaped business — consumed by `<BusinessCard />`. */
 export type Business = {
@@ -30,6 +67,7 @@ type RawReview = {
   rating: Rating;
   date: string;
   text: string;
+  verified?: boolean;
 };
 
 /** Full business profile — the `/company/[slug]` source of truth. */
@@ -83,6 +121,7 @@ export function toReviews(detail: BusinessDetail): Review[] {
     date: r.date,
     rating: r.rating,
     text: r.text,
+    verified: r.verified,
   }));
 }
 
@@ -251,14 +290,129 @@ export const businessDetails: BusinessDetail[] = [
 
 export const featuredBusinesses: Business[] = businessDetails.map(toCard);
 
-export function getBusiness(slug: string): BusinessDetail | undefined {
-  return businessDetails.find((b) => b.slug === slug);
+export async function getBusiness(slug: string): Promise<BusinessDetail | undefined> {
+  const supabase = supabaseAdmin();
+  
+  // 1. Fetch business row
+  const { data: b, error: bError } = await supabase
+    .from("businesses")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+    
+  if (bError || !b) return undefined;
+  
+  // 2. Fetch published reviews for this business
+  const { data: reviewsData, error: rError } = await supabase
+    .from("reviews")
+    .select(`
+      id,
+      rating,
+      created_at,
+      body,
+      verified,
+      author:users (
+        id,
+        display_name,
+        avatar_color
+      )
+    `)
+    .eq("business_id", b.id)
+    .eq("status", "published")
+    .order("created_at", { ascending: false });
+
+  if (rError) {
+    console.error("[businesses] Failed to fetch reviews", rError.message);
+  }
+    
+  // 3. Map reviews
+  interface DbReview {
+    id: string;
+    rating: number;
+    created_at: string;
+    body: string;
+    verified: boolean;
+    author: {
+      id: string;
+      display_name: string;
+      avatar_color: string | null;
+    } | null;
+  }
+
+  const reviewsList = (reviewsData || []) as unknown as DbReview[];
+
+  const reviews: RawReview[] = reviewsList.map((r) => {
+    const author = r.author || { display_name: "کاربر نظراتو", avatar_color: "#3B82F6" };
+    return {
+      id: r.id,
+      user: {
+        name: author.display_name,
+        initial: author.display_name.charAt(0) || "ک",
+        color: author.avatar_color || "#3B82F6",
+      },
+      rating: r.rating as Rating,
+      date: toRelativePersianTime(r.created_at),
+      text: r.body,
+      verified: r.verified,
+    };
+  });
+  
+  // 4. Fetch similar businesses from same category
+  let similarSlugs: string[] = [];
+  const { data: similarData } = await supabase
+    .from("businesses")
+    .select("slug")
+    .eq("category_slug", b.category_slug)
+    .eq("status", "active")
+    .neq("slug", b.slug)
+    .limit(4);
+    
+  if (similarData) {
+    similarSlugs = similarData.map(s => s.slug);
+  }
+  
+  return {
+    slug: b.slug,
+    name: b.name,
+    category: getCategoryTitle(b.category_slug),
+    city: b.city || "نامشخص",
+    initial: b.initial,
+    color: b.color,
+    verified: b.verified,
+    claimed: b.claimed,
+    description: b.description || "",
+    contact: b.contact || {},
+    hours: b.hours || undefined,
+    info: b.info || [],
+    similar: similarSlugs,
+    reviews: reviews,
+  };
 }
 
 /** Card-shaped `similar` businesses for the مشابه tab; unknown slugs dropped. */
-export function getSimilarBusinesses(detail: BusinessDetail): Business[] {
-  return detail.similar
-    .map((slug) => businessDetails.find((b) => b.slug === slug))
-    .filter((b): b is BusinessDetail => Boolean(b))
-    .map(toCard);
+export async function getSimilarBusinesses(detail: BusinessDetail): Promise<Business[]> {
+  const supabase = supabaseAdmin();
+  if (!detail.similar || detail.similar.length === 0) return [];
+  
+  const { data: list, error } = await supabase
+    .from("businesses")
+    .select("*")
+    .in("slug", detail.similar);
+    
+  if (error || !list) return [];
+  
+  return list.map(b => {
+    const scoreVal = b.rating_avg ? Number(b.rating_avg) : 0.0;
+    return {
+      slug: b.slug,
+      name: b.name,
+      category: getCategoryTitle(b.category_slug),
+      city: b.city || "نامشخص",
+      initial: b.initial,
+      color: b.color,
+      score: b.review_count > 0 ? scoreVal.toLocaleString("fa-IR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "—",
+      reviews: b.review_count.toLocaleString("fa-IR"),
+      verified: b.verified,
+    };
+  });
 }

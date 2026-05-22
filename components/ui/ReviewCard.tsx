@@ -40,8 +40,22 @@ export function ReviewCard({ review }: { review: Review }) {
             </span>
           </div>
           <div className="min-w-0">
-            <div className="text-[0.95rem] font-semibold text-strong whitespace-nowrap overflow-hidden text-ellipsis">
-              {r.user.name}
+            <div className="flex items-center gap-2">
+              <div className="text-[0.95rem] font-semibold text-strong whitespace-nowrap overflow-hidden text-ellipsis">
+                {r.user.name}
+              </div>
+              {r.verified && (
+                <span
+                  className="inline-flex items-center gap-1 rounded-full border border-mint/35 bg-mint/10 px-2 py-0.5 text-[0.68rem] font-bold text-mint shrink-0 shadow-[0_0_10px_rgba(91,230,178,0.2)]"
+                  title="نقد تأییدشده با مدرک خرید"
+                >
+                  <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                  نقد تأییدشده
+                </span>
+              )}
             </div>
             <Link
               href={r.shop.href}

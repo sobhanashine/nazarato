@@ -18,6 +18,7 @@
 
 import { getSession } from "@/lib/auth/session";
 import { getBusiness } from "@/lib/data/businesses";
+import { supabaseAdmin } from "@/lib/supabase/server";
 
 const BODY_MIN = 30;
 const BODY_MAX = 2000;
@@ -151,24 +152,87 @@ export async function submitReview(
     return { ok: false, fieldErrors };
   }
 
-  // DEV-mode accept — see the DEV NOTE at the top of this file. Once the
-  // `reviews` table exists this becomes an insert; the shape logged here is
-  // exactly the row that will be written (status `'pending'` = «در انتظار»).
-  console.info("[review] submission accepted (dev-mode — not persisted)", {
-    route: `/company/${slug}/write-review`,
-    authorId: session.id,
-    businessSlug: slug,
-    rating,
-    titleLength: title.length,
-    bodyLength: body.length,
-    purchaseDate,
-    status: "pending",
-    proofStatus,
-    proofType,
-    proofBytes: hasProof ? (proofFile as File).size : 0,
-  });
+  const supabase = supabaseAdmin();
 
-  // The dedicated `/company/[slug]/reviews` page is not built yet — return to
-  // the company profile, whose reviews section is the natural landing spot.
+  // 1. Fetch business ID from DB
+  const { data: businessRow, error: bizError } = await supabase
+    .from("businesses")
+    .select("id")
+    .eq("slug", slug)
+    .single();
+
+  if (bizError || !businessRow) {
+    return { ok: false, error: "کسب‌وکار موردنظر در سیستم ثبت نشده است." };
+  }
+
+  // 2. Upload proof if provided
+  let proofUrl: string | null = null;
+  if (hasProof) {
+    const file = proofFile as File;
+    const ext = file.name.split(".").pop() || "bin";
+    const filename = `${crypto.randomUUID()}.${ext}`;
+    const filePath = `${session.id}/${filename}`;
+
+    try {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const { error: uploadError } = await supabase.storage
+        .from("proofs")
+        .upload(filePath, buffer, {
+          contentType: file.type,
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error("[review] proof upload failed", {
+          authorId: session.id,
+          error: uploadError.message,
+        });
+        return { ok: false, error: "خطا در آپلود مدرک خرید. لطفاً دوباره تلاش کنید." };
+      }
+      proofUrl = filePath;
+    } catch (err: unknown) {
+      console.error("[review] proof processing failed", err);
+      return { ok: false, error: "خطا در پردازش فایل مدرک خرید." };
+    }
+  }
+
+  // 3. Write review to database
+  const { error: insertError } = await supabase
+    .from("reviews")
+    .insert({
+      business_id: businessRow.id,
+      author_id: session.id,
+      rating,
+      title: title || null,
+      body,
+      status: "pending",
+      verified: false,
+      proof_status: proofStatus,
+      proof_url: proofUrl,
+      proof_type: proofType || null,
+      purchase_date: purchaseDate,
+    });
+
+  if (insertError) {
+    // If unique constraint violated
+    if (insertError.code === "23505") {
+      if (proofUrl) {
+        await supabase.storage.from("proofs").remove([proofUrl]);
+      }
+      return { ok: false, error: "شما قبلاً برای این کسب‌وکار نظر ثبت کرده‌اید." };
+    }
+
+    console.error("[review] DB insert failed", {
+      authorId: session.id,
+      error: insertError.message,
+    });
+
+    if (proofUrl) {
+      await supabase.storage.from("proofs").remove([proofUrl]);
+    }
+    return { ok: false, error: "خطا در ثبت نظر در سیستم." };
+  }
+
   return { ok: true, redirectUrl: `/company/${slug}` };
 }
