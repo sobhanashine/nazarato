@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FacebookIcon, InstagramIcon, LinkedInIcon, TwitterIcon } from "@/components/icons";
 
 export function Footer() {
@@ -15,10 +16,19 @@ export function Footer() {
             <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full text-strong transition-colors duration-200 hover:bg-glass-hover hover:text-mint" aria-label="لینکدین"><LinkedInIcon /></a>
           </div>
         </div>
-        <div className="flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 md:flex-row md:gap-6">
           <p className="text-sm text-muted text-center">
             © تمامی حقوق برای nazarato.ir محفوظ است.
           </p>
+          <div className="flex items-center gap-4 text-[13px] text-muted font-medium">
+            <Link href="/terms" className="hover:text-mint transition-colors duration-200">
+              قوانین و مقررات
+            </Link>
+            <span className="text-glass-border" aria-hidden>·</span>
+            <Link href="/privacy" className="hover:text-mint transition-colors duration-200">
+              حریم خصوصی
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
