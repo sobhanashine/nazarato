@@ -13,6 +13,7 @@ import {
   TwitterIcon,
 } from "@/components/icons";
 import { BTN_PRIMARY } from "@/components/ui/styles";
+import { useSessionStatus } from "./useSessionStatus";
 
 type NavItem = { href: string; label: string };
 
@@ -39,6 +40,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
   const [open, setOpen] = useState(false);
   const mounted = useMounted();
   const pathname = usePathname() ?? "";
+  const status = useSessionStatus();
 
   useEffect(() => {
     if (!open) return;
@@ -131,11 +133,11 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
 
       <div className="px-5 pt-6 pb-8 border-t border-glass-border flex flex-col gap-5 relative z-[1]">
         <Link
-          href="/login"
+          href={status?.loggedIn ? "/profile" : "/login"}
           onClick={() => setOpen(false)}
           className={`${BTN_PRIMARY} w-full py-4 px-6 text-base`}
         >
-          ورود
+          {status?.loggedIn ? "پروفایل من" : "ورود"}
         </Link>
         <div className="flex items-center justify-center gap-3">
           {[

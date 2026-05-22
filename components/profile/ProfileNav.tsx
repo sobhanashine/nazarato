@@ -6,10 +6,12 @@
  * One component, two shapes: a horizontal scrolling tab strip on mobile and a
  * vertical sidebar on desktop (`lg:`). Active state is derived from the path —
  * `/profile` matches exactly so it doesn't also light up on `/profile/reviews`.
+ * Ends with a sign-out action (a `<form>` so it works without JS).
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { logout } from "@/app/(user)/actions";
 import { HIDE_SCROLL } from "@/components/ui/styles";
 
 type Item = { href: string; label: string; icon: ReactNode };
@@ -44,6 +46,14 @@ function IconGear() {
     </svg>
   );
 }
+function IconLogout() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+      <path d="M10 17l-5-5 5-5" /><path d="M5 12h12" />
+    </svg>
+  );
+}
 
 const items: Item[] = [
   { href: "/profile", label: "نمای کلی", icon: <IconGrid /> },
@@ -51,6 +61,10 @@ const items: Item[] = [
   { href: "/saved", label: "ذخیره‌شده‌ها", icon: <IconBookmark /> },
   { href: "/settings", label: "تنظیمات", icon: <IconGear /> },
 ];
+
+/** Shared chip shape — colours are appended per state. */
+const chipBase =
+  "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-[0.85rem] font-semibold whitespace-nowrap transition-colors duration-200 lg:rounded-2xl [&_svg]:h-[18px] [&_svg]:w-[18px] [&_svg]:shrink-0";
 
 export function ProfileNav() {
   const pathname = usePathname() ?? "";
@@ -70,7 +84,7 @@ export function ProfileNav() {
             key={item.href}
             href={item.href}
             aria-current={active ? "page" : undefined}
-            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-[0.85rem] font-semibold whitespace-nowrap transition-colors duration-200 lg:rounded-2xl [&_svg]:h-[18px] [&_svg]:w-[18px] [&_svg]:shrink-0 ${
+            className={`${chipBase} ${
               active
                 ? "border-mint/45 bg-mint/12 text-mint"
                 : "border-glass-border bg-glass text-muted hover:text-strong"
@@ -81,6 +95,18 @@ export function ProfileNav() {
           </Link>
         );
       })}
+
+      <form action={logout} className="contents">
+        <button
+          type="submit"
+          className={`${chipBase} border-rose-400/30 bg-rose-400/10 text-rose-300 hover:bg-rose-400/20 hover:text-rose-200 lg:mt-2`}
+        >
+          <span className="inline-flex">
+            <IconLogout />
+          </span>
+          خروج از حساب
+        </button>
+      </form>
     </nav>
   );
 }

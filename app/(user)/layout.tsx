@@ -25,7 +25,9 @@ export default async function UserLayout({
     <>
       <Header />
       <Container>
-        <div className="grid gap-5 py-6 lg:grid-cols-[210px_1fr] lg:gap-8 lg:py-10">
+        {/* Content track is capped + the whole grid is centred, so the cards
+            don't stretch sparse on wide screens. */}
+        <div className="grid gap-5 py-6 lg:grid-cols-[200px_minmax(0,640px)] lg:justify-center lg:gap-8 lg:py-10">
           <aside className="lg:pt-1">
             <ProfileNav />
           </aside>
