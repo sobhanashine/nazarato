@@ -18,10 +18,7 @@
 
 import { getSession } from "@/lib/auth/session";
 import { getBusiness } from "@/lib/data/businesses";
-import { REVIEW_TITLE_CATEGORIES } from "@/lib/data/reviews";
 import { supabaseAdmin } from "@/lib/supabase/server";
-
-const VALID_CATEGORIES = new Set(REVIEW_TITLE_CATEGORIES.map((c) => c.value));
 
 const BODY_MIN = 30;
 const BODY_MAX = 2000;
@@ -98,20 +95,15 @@ export async function submitReview(
     fieldErrors.rating = "یک امتیاز بین ۱ تا ۵ ستاره انتخاب کن.";
   }
 
-  // 2 — Title: optional, 3–80 chars when provided.
+  // 2 — Title: required, 3–80 chars.
   const title = asString(formData.get("title"));
-  if (title && title.length < TITLE_MIN) {
+  if (!title) {
+    fieldErrors.title = "نوشتن عنوان الزامی است.";
+  } else if (title.length < TITLE_MIN) {
     fieldErrors.title = `عنوان حداقل ${faNum(TITLE_MIN)} کاراکتر است.`;
   } else if (title.length > TITLE_MAX) {
     fieldErrors.title = `عنوان حداکثر ${faNum(TITLE_MAX)} کاراکتر است.`;
   }
-
-  // 2b — Title category: optional; must be a known value if provided.
-  const titleCategoryRaw = asString(formData.get("titleCategory"));
-  const titleCategory =
-    titleCategoryRaw && VALID_CATEGORIES.has(titleCategoryRaw)
-      ? titleCategoryRaw
-      : null;
 
   // 3 — Body: required, 30–2000 chars.
   const body = asString(formData.get("body"));
@@ -213,7 +205,6 @@ export async function submitReview(
       author_id: session.id,
       rating,
       title: title || null,
-      title_category: titleCategory,
       body,
       status: "pending",
       verified: false,
