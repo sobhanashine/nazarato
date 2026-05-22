@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { GLASS } from "@/components/ui/styles";
 import { getSession } from "@/lib/auth/session";
-import { profileStats } from "@/lib/data/profile";
 import { getUserById } from "@/lib/data/users";
 
 export const metadata: Metadata = {
@@ -14,12 +13,6 @@ const faNum = (n: number) => n.toLocaleString("fa-IR");
 
 /** Default avatar tint when the account has no `avatar_color` set. */
 const FALLBACK_COLOR = "#5BBB7B";
-
-const stats = [
-  { key: "reviews", label: "نظرات", value: profileStats.reviews },
-  { key: "helpful", label: "مفید بود", value: profileStats.helpful },
-  { key: "followers", label: "فالوور", value: profileStats.followers },
-] as const;
 
 const quickLinks = [
   {
@@ -54,6 +47,12 @@ export default async function ProfilePage() {
   const memberSince = `${joined.toLocaleDateString("fa-IR", {
     month: "long",
   })} ${joined.toLocaleDateString("fa-IR", { year: "numeric" })}`;
+
+  const stats = [
+    { key: "reviews", label: "نظرات", value: user.reviews_count ?? 0 },
+    { key: "helpful", label: "مفید بود", value: user.helpful_votes_received ?? 0 },
+    { key: "reputation", label: "امتیاز اعتبار", value: user.reputation_score ?? 0 },
+  ] as const;
 
   return (
     <div className="flex flex-col gap-5">

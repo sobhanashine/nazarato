@@ -28,6 +28,7 @@ export default async function MyReviewsPage() {
       created_at,
       body,
       status,
+      rejection_reason,
       business:businesses (
         name,
         slug
@@ -49,6 +50,7 @@ export default async function MyReviewsPage() {
     created_at: string;
     body: string;
     status: string;
+    rejection_reason: string | null;
     business: {
       name: string;
       slug: string;
@@ -69,6 +71,7 @@ export default async function MyReviewsPage() {
       rating: r.rating as Rating,
       text: r.body,
       status: r.status as ReviewStatus,
+      rejectionReason: r.rejection_reason,
     };
   });
 
