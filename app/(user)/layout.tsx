@@ -25,9 +25,11 @@ export default async function UserLayout({
     <>
       <Header />
       <Container>
-        {/* Content track is capped + the whole grid is centred, so the cards
-            don't stretch sparse on wide screens. */}
-        <div className="grid gap-5 py-6 lg:grid-cols-[200px_minmax(0,640px)] lg:justify-center lg:gap-8 lg:py-10">
+        {/* `grid-cols-1` (= minmax(0,1fr)) is load-bearing: without an explicit
+            mobile column the implicit `auto` track sizes to content and blows
+            past the viewport. At `lg` the content track is capped + centred so
+            the cards don't stretch sparse on wide screens. */}
+        <div className="grid grid-cols-1 gap-5 py-6 lg:grid-cols-[200px_minmax(0,640px)] lg:justify-center lg:gap-8 lg:py-10">
           <aside className="lg:pt-1">
             <ProfileNav />
           </aside>
