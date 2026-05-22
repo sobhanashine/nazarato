@@ -122,6 +122,33 @@
   50%      { opacity: 0.9;  transform: scale(1.12); }
 }
 
+/* ── Review sheet — the bottom-sheet review wizard ── */
+@keyframes review-step {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes review-pop {
+  0%   { opacity: 0; transform: scale(0.5); }
+  60%  { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes review-ring {
+  from { opacity: 0.7; transform: scale(0.5); }
+  to   { opacity: 0;   transform: scale(2.4); }
+}
+@keyframes review-check {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes review-spark {
+  0%   { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--sx, 0), var(--sy, 0)) scale(0.2); }
+}
+@keyframes review-star {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
 /* ════════════════════════════════ SCROLLBAR ════════════════════════════════
    No Tailwind utility targets ::-webkit-scrollbar — kept as raw CSS. */
 

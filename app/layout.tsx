@@ -5,6 +5,8 @@ import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { RegisterSW } from "@/components/pwa/RegisterSW";
 import { ToastProvider } from "@/components/providers/ToastProvider";
+import { ReviewSheetProvider } from "@/components/review/ReviewSheetProvider";
+import { featuredBusinesses } from "@/lib/data/businesses";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -63,8 +65,10 @@ export default function RootLayout({
     >
       <body className="relative min-h-screen overflow-x-hidden bg-[#06080f] text-strong antialiased [text-rendering:optimizeLegibility] selection:bg-mint/35 selection:text-white pb-[calc(76px+env(safe-area-inset-bottom))] md:pb-0">
         <Backdrop />
-        {children}
-        <MobileTabBar />
+        <ReviewSheetProvider businesses={featuredBusinesses}>
+          {children}
+          <MobileTabBar />
+        </ReviewSheetProvider>
         <InstallPrompt />
         <RegisterSW />
         <ToastProvider />
