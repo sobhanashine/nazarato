@@ -9,10 +9,7 @@ import {
 } from "@/components/ui/RatingStars";
 import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
 import { setFlash } from "@/lib/flash";
-import {
-  REVIEW_TITLE_CATEGORIES,
-  TITLE_SUGGESTIONS,
-} from "@/lib/data/reviews";
+import { TITLE_SUGGESTIONS } from "@/lib/data/reviews";
 import { submitReview, type WriteReviewState } from "./actions";
 
 const initial: WriteReviewState = { ok: false };
@@ -21,13 +18,60 @@ const BODY_MIN = 30;
 const BODY_MAX = 2000;
 const TITLE_MAX = 80;
 
-/** `proof_type` options — mirror the company-side values in `actions.ts`. */
 const PROOF_TYPES = [
   { value: "invoice", label: "فاکتور خرید" },
   { value: "sms", label: "پیامک تأیید سفارش" },
   { value: "tracking", label: "کد رهگیری پستی" },
   { value: "receipt", label: "رسید پرداخت" },
 ];
+
+const JALALI_MONTHS = [
+  "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+  "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند",
+];
+
+const CURRENT_JALALI_YEAR = 1405;
+const JALALI_YEARS = Array.from({ length: 11 }, (_, i) => CURRENT_JALALI_YEAR - i);
+
+function jalaliDaysInMonth(jm: number, jy: number): number {
+  if (jm <= 6) return 31;
+  if (jm <= 11) return 30;
+  const r = jy % 33;
+  return [1, 5, 9, 13, 17, 22, 26, 30].includes(r) ? 30 : 29;
+}
+
+function jalaliToIso(jy: number, jm: number, jd: number): string {
+  const jy0 = jy - 979;
+  const jMonthDays = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+  let j_day = 365 * jy0 + Math.floor(jy0 / 33) * 8 + Math.floor((jy0 % 33 + 3) / 4);
+  for (let i = 0; i < jm - 1; i++) j_day += jMonthDays[i];
+  j_day += jd;
+
+  const g_day = j_day + 79;
+  let gy = 1600 + 400 * Math.floor(g_day / 146097);
+  let g_rem = g_day % 146097;
+  let leap = true;
+  if (g_rem >= 36525) {
+    g_rem--;
+    gy += 100 * Math.floor(g_rem / 36524);
+    g_rem %= 36524;
+    if (g_rem >= 365) g_rem++;
+    else leap = false;
+  }
+  gy += 4 * Math.floor(g_rem / 1461);
+  g_rem %= 1461;
+  if (g_rem >= 366) {
+    leap = false;
+    g_rem--;
+    gy += Math.floor(g_rem / 365);
+    g_rem %= 365;
+  }
+  const gMonths = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  let rem = g_rem + 1;
+  let gm = 0;
+  for (gm = 0; gm < 12 && rem > gMonths[gm]; gm++) rem -= gMonths[gm];
+  return `${gy}-${String(gm + 1).padStart(2, "0")}-${String(rem).padStart(2, "0")}`;
+}
 
 const fa = (n: number) => n.toLocaleString("fa-IR");
 
@@ -38,21 +82,16 @@ const ERR_TEXT = "text-[12px] font-bold text-pomegr";
 const FIELD =
   "w-full rounded-xl border bg-white/[0.03] px-4 py-3.5 text-[16px] text-white " +
   "placeholder:text-white/25 outline-none backdrop-blur-md transition-colors";
+const SELECT =
+  "flex-1 rounded-xl border bg-white/[0.03] px-3 py-3.5 text-[15px] text-white " +
+  "outline-none backdrop-blur-md transition-colors [color-scheme:dark] appearance-none";
 
-/** Field border colour — red when the field carries an error. */
 function fieldBorder(invalid: boolean): string {
   return invalid
     ? "border-pomegr/55 bg-pomegr/[0.05]"
     : "border-glass-border focus:border-mint focus:bg-mint/[0.06]";
 }
 
-/**
- * The `/company/[slug]/write-review` form — a single-page, vertically-stepped
- * review submission. State lives here (controlled title/body for live counters,
- * `rating`/`hover` for the star selector); all validation is re-done in
- * `submitReview` on the server. On success a flash toast is stashed and the
- * client navigates to the company profile.
- */
 export function WriteReviewForm({
   slug,
   businessName,
@@ -66,12 +105,37 @@ export function WriteReviewForm({
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [title, setTitle] = useState("");
-  const [titleCategory, setTitleCategory] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [body, setBody] = useState("");
   const [proofName, setProofName] = useState<string | null>(null);
   const proofInput = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  // Success → stash the toast so it survives the navigation, then go.
+  // Jalali date state
+  const [jYear, setJYear] = useState("");
+  const [jMonth, setJMonth] = useState("");
+  const [jDay, setJDay] = useState("");
+  const isoDate =
+    jYear && jMonth && jDay
+      ? jalaliToIso(Number(jYear), Number(jMonth), Number(jDay))
+      : "";
+
+  const daysInSelectedMonth =
+    jYear && jMonth
+      ? jalaliDaysInMonth(Number(jMonth), Number(jYear))
+      : 31;
+
+  // Close suggestions popover on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    if (showSuggestions) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showSuggestions]);
+
   useEffect(() => {
     if (state.ok && state.redirectUrl) {
       setFlash("نظرت ثبت شد و پس از بررسی منتشر می‌شود.");
@@ -80,8 +144,6 @@ export function WriteReviewForm({
   }, [state.ok, state.redirectUrl, router]);
 
   const fe = state.fieldErrors ?? {};
-  // Hover previews the rating; falls back to the committed value. The whole
-  // row recolours to the shown rating's palette — red at 1★, mint at 5★.
   const shownRating = hover || rating;
   const palette = shownRating ? STAR_PALETTES[shownRating as Rating] : null;
   const gradId = `wr-star-grad-${shownRating}`;
@@ -107,9 +169,9 @@ export function WriteReviewForm({
       <form action={action} noValidate className="mt-6 space-y-6">
         <input type="hidden" name="slug" value={slug} />
         <input type="hidden" name="rating" value={rating || ""} />
+        <input type="hidden" name="purchaseDate" value={isoDate} />
 
-        {/* 1 — Rating selector. Each target is 48×48 (≥ 44×44 UX rule); the
-            stars carry the same per-rating gradient + glow as <RatingStars>. */}
+        {/* 1 — Rating */}
         <fieldset>
           <legend className={LABEL}>امتیاز شما</legend>
           <div
@@ -147,13 +209,7 @@ export function WriteReviewForm({
                     {lit && palette ? (
                       <>
                         <defs>
-                          <linearGradient
-                            id={gradId}
-                            x1="0"
-                            y1="0"
-                            x2="1"
-                            y2="1"
-                          >
+                          <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
                             <stop offset="0%" stopColor={palette.light} />
                             <stop offset="55%" stopColor={palette.mid} />
                             <stop offset="100%" stopColor={palette.dark} />
@@ -178,79 +234,67 @@ export function WriteReviewForm({
           {fe.rating && <p className={`${ERR_TEXT} mt-1.5`}>{fe.rating}</p>}
         </fieldset>
 
-        {/* 2 — Title category chips (optional). */}
-        <div className="flex flex-col gap-2">
-          <span className={LABEL}>
-            دسته‌بندی <span className={OPTIONAL}>(اختیاری)</span>
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {REVIEW_TITLE_CATEGORIES.map((cat) => {
-              const active = titleCategory === cat.value;
-              return (
-                <button
-                  key={cat.value}
-                  type="button"
-                  onClick={() => {
-                    const next = active ? "" : cat.value;
-                    setTitleCategory(next);
-                    if (next && !title) {
-                      const polarity =
-                        rating >= 4 ? "pos" : rating > 0 ? "neg" : "pos";
-                      setTitle(TITLE_SUGGESTIONS[next]?.[polarity] ?? cat.label);
-                    }
-                  }}
-                  className={`rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition-colors ${
-                    active
-                      ? "border-mint bg-mint/15 text-mint"
-                      : "border-glass-border text-muted hover:border-mint/60 hover:text-mint/80"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              );
-            })}
-          </div>
-          <input type="hidden" name="titleCategory" value={titleCategory} />
-        </div>
-
-        {/* 3 — Title (optional). */}
+        {/* 2 — Title (required) with suggestion icon on the left */}
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between">
-            <label htmlFor="title" className={LABEL}>
-              عنوان <span className={OPTIONAL}>(اختیاری)</span>
-            </label>
-            <span
-              className={`text-[11px] ${
-                title.length > TITLE_MAX ? "text-pomegr" : "text-muted"
-              }`}
-            >
+            <label htmlFor="title" className={LABEL}>عنوان</label>
+            <span className={`text-[11px] ${title.length > TITLE_MAX ? "text-pomegr" : "text-muted"}`}>
               {fa(title.length)}/{fa(TITLE_MAX)}
             </span>
           </div>
-          <input
-            id="title"
-            name="title"
-            type="text"
-            maxLength={TITLE_MAX}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="در یک جمله، تجربه‌ات را خلاصه کن"
-            className={`${FIELD} ${fieldBorder(Boolean(fe.title))}`}
-          />
+          <div ref={suggestionsRef} className="relative">
+            {/* Lightbulb icon on the physical left side */}
+            <button
+              type="button"
+              aria-label="پیشنهاد عنوان"
+              onClick={() => setShowSuggestions((v) => !v)}
+              className={`absolute left-3 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                showSuggestions
+                  ? "bg-mint/20 text-mint"
+                  : "text-white/30 hover:bg-white/[0.06] hover:text-mint/80"
+              }`}
+            >
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V17a1 1 0 0 1-1 1H10a1 1 0 0 1-1-1v-2.8C7.2 13.16 6 11.22 6 9a6 6 0 0 1 6-6z" />
+              </svg>
+            </button>
+            <input
+              id="title"
+              name="title"
+              type="text"
+              maxLength={TITLE_MAX}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="در یک جمله، تجربه‌ات را خلاصه کن"
+              className={`${FIELD} pl-12 ${fieldBorder(Boolean(fe.title))}`}
+            />
+            {/* Suggestions popover */}
+            {showSuggestions && (
+              <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 rounded-xl border border-glass-border bg-[rgba(10,13,22,0.92)] backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] overflow-hidden">
+                {TITLE_SUGGESTIONS.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      setTitle(s);
+                      setShowSuggestions(false);
+                    }}
+                    className="w-full px-4 py-2.5 text-right text-[13px] text-muted hover:bg-mint/10 hover:text-mint transition-colors"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {fe.title && <p className={ERR_TEXT}>{fe.title}</p>}
         </div>
 
-        {/* 3 — Body (required, 30–2000 chars). */}
+        {/* 3 — Body (required) */}
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between">
-            <label htmlFor="body" className={LABEL}>
-              متن نظر
-            </label>
-            <span
-              className={`text-[11px] ${
-                bodyInvalid ? "text-pomegr" : "text-muted"
-              }`}
-            >
+            <label htmlFor="body" className={LABEL}>متن نظر</label>
+            <span className={`text-[11px] ${bodyInvalid ? "text-pomegr" : "text-muted"}`}>
               {fa(bodyLen)}/{fa(BODY_MAX)}
             </span>
           </div>
@@ -261,9 +305,7 @@ export function WriteReviewForm({
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="چه چیزی خوب بود؟ چه چیزی می‌توانست بهتر باشد؟ هرچه دقیق‌تر بنویسی، برای بقیه مفیدتر است."
-            className={`${FIELD} resize-y leading-[1.9] ${fieldBorder(
-              Boolean(fe.body),
-            )}`}
+            className={`${FIELD} resize-y leading-[1.9] ${fieldBorder(Boolean(fe.body))}`}
           />
           {fe.body ? (
             <p className={ERR_TEXT}>{fe.body}</p>
@@ -272,23 +314,54 @@ export function WriteReviewForm({
           )}
         </div>
 
-        {/* 5 — Purchase date (optional). */}
+        {/* 4 — Purchase date — Persian calendar (optional) */}
         <div className="flex flex-col gap-2">
-          <label htmlFor="purchaseDate" className={LABEL}>
+          <span className={LABEL}>
             تاریخ خرید <span className={OPTIONAL}>(اختیاری)</span>
-          </label>
-          <input
-            id="purchaseDate"
-            name="purchaseDate"
-            type="date"
-            className={`${FIELD} [color-scheme:dark] ${fieldBorder(
-              Boolean(fe.purchaseDate),
-            )}`}
-          />
+          </span>
+          <div className="grid grid-cols-3 gap-2">
+            {/* Year */}
+            <select
+              value={jYear}
+              onChange={(e) => { setJYear(e.target.value); setJDay(""); }}
+              aria-label="سال"
+              className={`${SELECT} ${fieldBorder(Boolean(fe.purchaseDate))}`}
+            >
+              <option value="">سال</option>
+              {JALALI_YEARS.map((y) => (
+                <option key={y} value={y}>{fa(y)}</option>
+              ))}
+            </select>
+            {/* Month */}
+            <select
+              value={jMonth}
+              onChange={(e) => { setJMonth(e.target.value); setJDay(""); }}
+              aria-label="ماه"
+              className={`${SELECT} ${fieldBorder(Boolean(fe.purchaseDate))}`}
+            >
+              <option value="">ماه</option>
+              {JALALI_MONTHS.map((m, i) => (
+                <option key={m} value={i + 1}>{m}</option>
+              ))}
+            </select>
+            {/* Day */}
+            <select
+              value={jDay}
+              onChange={(e) => setJDay(e.target.value)}
+              aria-label="روز"
+              disabled={!jMonth || !jYear}
+              className={`${SELECT} disabled:opacity-40 ${fieldBorder(Boolean(fe.purchaseDate))}`}
+            >
+              <option value="">روز</option>
+              {Array.from({ length: daysInSelectedMonth }, (_, i) => i + 1).map((d) => (
+                <option key={d} value={d}>{fa(d)}</option>
+              ))}
+            </select>
+          </div>
           {fe.purchaseDate && <p className={ERR_TEXT}>{fe.purchaseDate}</p>}
         </div>
 
-        {/* 6 — Proof of purchase (optional → eligible for «نقد تأییدشده»). */}
+        {/* 5 — Proof of purchase (optional) */}
         <div className="rounded-xl border border-glass-border bg-white/[0.02] p-4">
           <p className={LABEL}>
             سند خرید <span className={OPTIONAL}>(اختیاری)</span>
@@ -302,9 +375,7 @@ export function WriteReviewForm({
           <div className="mt-3 flex flex-col gap-3">
             {proofName ? (
               <div className="flex items-center justify-between gap-3 rounded-xl border border-mint/35 bg-mint/[0.06] px-4 py-3">
-                <span className="truncate text-[13px] font-bold text-mint">
-                  {proofName}
-                </span>
+                <span className="truncate text-[13px] font-bold text-mint">{proofName}</span>
                 <button
                   type="button"
                   onClick={clearProof}
@@ -327,9 +398,7 @@ export function WriteReviewForm({
                   type="file"
                   name="proof"
                   accept="image/jpeg,image/png,image/webp,application/pdf"
-                  onChange={(e) =>
-                    setProofName(e.target.files?.[0]?.name ?? null)
-                  }
+                  onChange={(e) => setProofName(e.target.files?.[0]?.name ?? null)}
                   className="sr-only"
                 />
               </label>
@@ -337,24 +406,16 @@ export function WriteReviewForm({
 
             {proofName && (
               <div className="flex flex-col gap-2">
-                <label htmlFor="proofType" className={LABEL}>
-                  نوع سند
-                </label>
+                <label htmlFor="proofType" className={LABEL}>نوع سند</label>
                 <select
                   id="proofType"
                   name="proofType"
                   defaultValue=""
-                  className={`${FIELD} [color-scheme:dark] ${fieldBorder(
-                    Boolean(fe.proof),
-                  )}`}
+                  className={`${FIELD} [color-scheme:dark] ${fieldBorder(Boolean(fe.proof))}`}
                 >
-                  <option value="" disabled>
-                    یک گزینه را انتخاب کن
-                  </option>
+                  <option value="" disabled>یک گزینه را انتخاب کن</option>
                   {PROOF_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
+                    <option key={t.value} value={t.value}>{t.label}</option>
                   ))}
                 </select>
               </div>
@@ -366,9 +427,7 @@ export function WriteReviewForm({
 
         {state.error && (
           <div className="flex items-start gap-3 rounded-xl border border-pomegr/30 bg-pomegr/10 p-3.5 text-[13.5px] font-medium text-white">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pomegr/20 text-pomegr">
-              !
-            </span>
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pomegr/20 text-pomegr">!</span>
             {state.error}
           </div>
         )}
