@@ -233,7 +233,7 @@ Each entry is structured the same way so it scans fast:
 - **States**: Empty ("چیزی پیدا نشد — این پیشنهادها رو ببین"), loading skeleton, error.
 - **A11y**: live region for result count; first focusable element is the search input (allow refinement without scrolling).
 
-#### Categories index — `/categories` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### Categories index — `/categories` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Purpose**: All categories at a glance.
 - **Layout**: PageBanner + grid of category cards (reuse `Categories` section card design, but full grid not horizontal scroll).
 - **Sections**: Search field (filter visible cards), grid (sorted by popularity).
@@ -257,7 +257,7 @@ Each entry is structured the same way so it scans fast:
 - **Data**: `lib/data/instagram-shops.ts` (already exists; later DB-backed).
 - **Notes**: Reuse `InstagramShops.tsx` card markup; extract `<IgShopCard />` so home + this page share it.
 
-#### Business profile — `/company/[slug]` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### Business profile — `/company/[slug]` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Purpose**: The most important page in the product. Everything funnels here.
 - **Layout (mobile-first)**:
   ```
@@ -294,7 +294,7 @@ Each entry is structured the same way so it scans fast:
 - **Layout**: Mirrors the نظرات tab above, but as its own URL so search engines index review content.
 - **Implementation note**: This can be the same page component as `/company/[slug]` with a default tab; or split it. **Recommendation**: split — better SEO and simpler streaming.
 
-#### Write review (business) — `/company/[slug]/write-review` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
+#### Write review (business) — `/company/[slug]/write-review` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
 - **Purpose**: Submit a review for a specific business.
 - **Layout**: centered single-column form on glass card.
 - **Form steps** (single page, vertical):
@@ -323,7 +323,7 @@ Each entry is structured the same way so it scans fast:
 - **Sort**: Default = جدیدترین. Other: مفیدترین، بحث‌برانگیزترین.
 - **Notes**: Reuse `RecentReviews.tsx` card markup → extract as `<ReviewCard />`.
 
-#### Universal "write review" entry — `/write-review` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
+#### Universal "write review" entry — `/write-review` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
 - **Purpose**: The mobile-tab-bar FAB lands here when the user hasn't pre-selected a business.
 - **Layout**: Big search field "کدوم کسب‌وکار را نقد می‌کنی؟" + suggestions (recently visited / popular) + "نمیتونم پیداش کنم — معرفی‌اش کن →".
 - **Flow**: pick business → redirect to `/company/[slug]/write-review`.
@@ -361,12 +361,12 @@ Each entry is structured the same way so it scans fast:
 
 > Layout note: this route group gets its own `layout.tsx` that hides the marketing Header/Footer and centers a card. The MobileTabBar should also be hidden here (it's distracting during a critical flow).
 
-#### Login (phone entry) — `/login` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### Login (phone entry) — `/login` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Layout**: centered glass card. Brand mark + heading "ورود یا ثبت‌نام" + phone input with `+98` prefix + "ارسال کد" button + terms checkbox.
 - **State**: idle / submitting / rate-limited / error. Show error inline near the field (UX rule `error-placement`).
 - **Submit**: POST `/api/auth/otp/start` → on success redirect to `/login/verify?phone=...&next=...`.
 
-#### Verify OTP — `/login/verify` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0
+#### Verify OTP — `/login/verify` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0
 - **Layout**: 6-digit code input (auto-tab, paste-supported, `inputMode="numeric"` for keyboard — UX rule `input-type-keyboard`). Resend countdown timer. "تغییر شماره" link back to `/login`.
 - **State**: idle / verifying / wrong code / expired / locked-out. Auto-submit on 6th digit.
 - **Submit**: POST `/api/auth/otp/verify` → set HTTP-only JWT cookie → redirect to `?next` or `/`.
@@ -379,11 +379,11 @@ Each entry is structured the same way so it scans fast:
 
 > Layout note: shared `layout.tsx` includes a vertical settings/profile sidebar on desktop, hidden on mobile (replaced by tabs). All pages here require auth — gate at the layout level with `redirect("/login?next=...")`.
 
-#### My profile — `/profile` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0
+#### My profile — `/profile` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0
 - **Purpose**: At-a-glance dashboard for the logged-in consumer.
 - **Sections**: avatar + name + member-since + stats (تعداد نظرات / مفید بود / فالوور) + tab links to "نظرات من" / "ذخیره‌شده‌ها" / "تنظیمات".
 
-#### My reviews — `/profile/reviews` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0
+#### My reviews — `/profile/reviews` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0
 - **Purpose**: List of reviews you wrote, with status (منتشر شده / در انتظار / رد شده).
 - **Actions per row**: ویرایش / حذف. Confirmation dialog on delete (UX rule `confirmation-dialogs`).
 
@@ -478,8 +478,8 @@ These are reusable across pages — extract once, share everywhere.
 | `<Breadcrumb />`   | All non-home pages                                     | ✅ built    | `components/ui/Breadcrumb.tsx`               |
 | `<PageBanner />`   | All sub-pages with a title                             | ✅ built    | `components/ui/PageBanner.tsx`               |
 | `<NavLink />`      | Header nav                                             | ✅ built    | `components/layout/NavLink.tsx`              |
-| `<AuthLayout />`   | `/login`, `/login/verify`, `/signup`                   | 📋 planned  | `app/(auth)/layout.tsx`                       |
-| `<UserShell />`    | `/profile`, `/saved`, `/settings`, `/notifications`    | 📋 planned  | `app/(user)/layout.tsx`                       |
+| `<AuthLayout />`   | `/login`, `/login/verify`, `/signup`                   | ✅ built    | `app/(auth)/layout.tsx`                       |
+| `<UserShell />`    | `/profile`, `/saved`, `/settings`, `/notifications`    | ✅ built    | `app/(user)/layout.tsx`                       |
 | `<OwnerShell />`   | `/business/*`                                          | 📋 planned  | `app/(business)/layout.tsx`                   |
 | `<AdminShell />`   | `/admin/*`                                             | 📋 planned  | `app/(admin)/layout.tsx`                      |
 
