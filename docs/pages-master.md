@@ -221,7 +221,7 @@ Each entry is structured the same way so it scans fast:
 - **States**: Loaded only (no empty state — always populated).
 - **Notes**: Replace popular-search hardcoded array with top-search analytics once data exists.
 
-#### Search results — `/search?q=...&category=...&rating=...` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### Search results — `/search?q=...&category=...&rating=...` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Purpose**: Show businesses & shops matching a query. The hero's main CTA leads here, so it can't be missing in MVP.
 - **Layout**: PageBanner ("نتایج جستجو برای «X»") + sidebar filters (category / rating / has-reviews / verified) + result cards + pagination.
 - **Sections**:
@@ -232,6 +232,7 @@ Each entry is structured the same way so it scans fast:
 - **Data**: `?q`, `?category[]`, `?rating>=`, `?type=biz|insta`, `?page`. Server component reads `searchParams`.
 - **States**: Empty ("چیزی پیدا نشد — این پیشنهادها رو ببین"), loading skeleton, error.
 - **A11y**: live region for result count; first focusable element is the search input (allow refinement without scrolling).
+- **Typeahead**: from the 2nd character the search box shows a live dropdown of matching businesses (companies + IG shops). The same typeahead is on the homepage hero. Logic is shared in `lib/search.ts` (`suggestBusinesses`), UI in `components/search/SearchSuggestions.tsx`.
 
 #### Categories index — `/categories` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Purpose**: All categories at a glance.

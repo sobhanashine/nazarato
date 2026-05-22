@@ -4,11 +4,20 @@ import { MobileMenu } from "@/components/layout/MobileMenu";
 import { NavLink } from "@/components/layout/NavLink";
 import { Container } from "@/components/ui/Container";
 
+// Desktop top-nav — kept short to fit the pill.
 const navItems = [
   { href: "/blog", label: "بلاگ" },
   { href: "/categories", label: "دسته‌بندی‌ها" },
   { href: "/about", label: "درباره ما" },
   { href: "/contact", label: "تماس با ما" },
+];
+
+// Mobile hamburger menu — has room for every primary page, so it also
+// surfaces جستجو and نوشتن نظر (which desktop reaches via the hero / tab bar).
+const mobileNavItems = [
+  { href: "/search", label: "جستجو" },
+  { href: "/write-review", label: "نوشتن نظر" },
+  ...navItems,
 ];
 
 const brandMark =
@@ -62,7 +71,7 @@ export function Header() {
 
           <div className="flex items-center gap-2 shrink-0">
             <HeaderAuth />
-            <MobileMenu items={navItems} />
+            <MobileMenu items={mobileNavItems} />
           </div>
         </Container>
       </div>
