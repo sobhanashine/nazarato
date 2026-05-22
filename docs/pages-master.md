@@ -445,7 +445,7 @@ Each entry is structured the same way so it scans fast:
 
 > Solo-founder note: it's tempting to skip admin pages and do everything in Supabase Studio. **Build the moderation queue at minimum** — you'll be moderating daily, and a 30-minute admin page saves hours every week.
 
-### 4.8 Legal — &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0
+### 4.8 Legal — &nbsp;·&nbsp; ✅ done &nbsp;·&nbsp; P0
 - `/terms`, `/privacy` are linked from the footer and must exist before launch (legal expectation in Iran + Vercel TOS). Use static MDX or markdown-rendered route handler.
 - `/cookies` only if you set non-essential cookies (analytics).
 
