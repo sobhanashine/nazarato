@@ -1,8 +1,8 @@
 import Link from "next/link";
+import { HeaderAuth } from "@/components/layout/HeaderAuth";
 import { MobileMenu } from "@/components/layout/MobileMenu";
 import { NavLink } from "@/components/layout/NavLink";
 import { Container } from "@/components/ui/Container";
-import { BTN_PRIMARY } from "@/components/ui/styles";
 
 const navItems = [
   { href: "/blog", label: "بلاگ" },
@@ -61,9 +61,7 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2 shrink-0">
-            <Link href="/login" className={`${BTN_PRIMARY} max-md:hidden py-[0.6rem] px-5 text-sm`}>
-              ورود
-            </Link>
+            <HeaderAuth />
             <MobileMenu items={navItems} />
           </div>
         </Container>

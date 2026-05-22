@@ -74,6 +74,59 @@ export async function getUserByPhone(phone: string): Promise<UserRow | null> {
   return data === null ? null : asUserRow(data);
 }
 
+/** A user row enriched for the profile dashboard (`/profile`). */
+export type ProfileUser = {
+  id: string;
+  display_name: string;
+  username: string | null;
+  avatar_color: string | null;
+  role: string;
+  /** ISO timestamp — drives the "member since" line. */
+  created_at: string;
+};
+
+const PROFILE_SELECT =
+  "id, display_name, username, avatar_color, role, created_at";
+
+/** Narrow an untrusted DB row to a `ProfileUser`; throws on an unexpected shape. */
+function asProfileUser(value: unknown): ProfileUser {
+  if (typeof value !== "object" || value === null) {
+    throw new Error("users: unexpected row shape");
+  }
+  const o = value as Record<string, unknown>;
+  if (
+    typeof o.id !== "string" ||
+    typeof o.display_name !== "string" ||
+    typeof o.role !== "string" ||
+    typeof o.created_at !== "string"
+  ) {
+    throw new Error("users: unexpected row shape");
+  }
+  return {
+    id: o.id,
+    display_name: o.display_name,
+    username: typeof o.username === "string" ? o.username : null,
+    avatar_color: typeof o.avatar_color === "string" ? o.avatar_color : null,
+    role: o.role,
+    created_at: o.created_at,
+  };
+}
+
+/** Look up an account by `id` (the session subject); `null` if the row is gone. */
+export async function getUserById(id: string): Promise<ProfileUser | null> {
+  const { data, error } = await supabaseAdmin()
+    .from("users")
+    .select(PROFILE_SELECT)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[users] getUserById failed", { id, error: error.message });
+    throw new Error("user lookup failed");
+  }
+  return data === null ? null : asProfileUser(data);
+}
+
 /**
  * Insert a new account. The caller must already hold a verified OTP challenge
  * for `phone` — this function does not re-check it.
