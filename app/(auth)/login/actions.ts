@@ -69,6 +69,10 @@ export async function startOtp(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  if (!formData.get("terms")) {
+    return { ok: false, error: "برای ادامه باید قوانین و حریم خصوصی را بپذیری." };
+  }
+
   const phone = normalizePhone(asString(formData.get("phone")));
   if (!phone) {
     return { ok: false, field: "phone", error: "شماره موبایل معتبر نیست." };
