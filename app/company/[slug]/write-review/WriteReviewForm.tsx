@@ -9,6 +9,10 @@ import {
 } from "@/components/ui/RatingStars";
 import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
 import { setFlash } from "@/lib/flash";
+import {
+  REVIEW_TITLE_CATEGORIES,
+  TITLE_SUGGESTIONS,
+} from "@/lib/data/reviews";
 import { submitReview, type WriteReviewState } from "./actions";
 
 const initial: WriteReviewState = { ok: false };
@@ -62,6 +66,7 @@ export function WriteReviewForm({
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [title, setTitle] = useState("");
+  const [titleCategory, setTitleCategory] = useState("");
   const [body, setBody] = useState("");
   const [proofName, setProofName] = useState<string | null>(null);
   const proofInput = useRef<HTMLInputElement>(null);
@@ -173,11 +178,46 @@ export function WriteReviewForm({
           {fe.rating && <p className={`${ERR_TEXT} mt-1.5`}>{fe.rating}</p>}
         </fieldset>
 
-        {/* 2 — Title (optional). */}
+        {/* 2 — Title category chips (optional). */}
+        <div className="flex flex-col gap-2">
+          <span className={LABEL}>
+            دسته‌بندی <span className={OPTIONAL}>(اختیاری)</span>
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {REVIEW_TITLE_CATEGORIES.map((cat) => {
+              const active = titleCategory === cat.value;
+              return (
+                <button
+                  key={cat.value}
+                  type="button"
+                  onClick={() => {
+                    const next = active ? "" : cat.value;
+                    setTitleCategory(next);
+                    if (next && !title) {
+                      const polarity =
+                        rating >= 4 ? "pos" : rating > 0 ? "neg" : "pos";
+                      setTitle(TITLE_SUGGESTIONS[next]?.[polarity] ?? cat.label);
+                    }
+                  }}
+                  className={`rounded-full border px-3.5 py-1.5 text-[12px] font-bold transition-colors ${
+                    active
+                      ? "border-mint bg-mint/15 text-mint"
+                      : "border-glass-border text-muted hover:border-mint/60 hover:text-mint/80"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+          <input type="hidden" name="titleCategory" value={titleCategory} />
+        </div>
+
+        {/* 3 — Title (optional). */}
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between">
             <label htmlFor="title" className={LABEL}>
-              عنوان
+              عنوان <span className={OPTIONAL}>(اختیاری)</span>
             </label>
             <span
               className={`text-[11px] ${
