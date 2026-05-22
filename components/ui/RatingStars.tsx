@@ -9,12 +9,19 @@
 
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
-type StarPalette = { light: string; mid: string; dark: string; glow: string };
+export type StarPalette = {
+  light: string;
+  mid: string;
+  dark: string;
+  glow: string;
+};
 
-const STAR_PATH =
+/** The star glyph path — shared with the write-review rating picker. */
+export const STAR_PATH =
   "m12 16.3-3.7 2.825q-.275.225-.6.213t-.575-.188-.387-.475-.013-.65L8.15 13.4l-3.625-2.575q-.3-.2-.375-.525t.025-.6.35-.488.6-.212H9.6l1.45-4.8q.125-.35.388-.538T12 3.475t.563.188.387.537L14.4 9h4.475q.35 0 .6.213t.35.487.025.6-.375.525L15.85 13.4l1.425 4.625q.125.35-.012.65t-.388.475-.575.188-.6-.213z";
 
-const STAR_PALETTES: Record<Rating, StarPalette> = {
+/** Per-rating gradient stops + glow colour — red at 1★, mint-green at 5★. */
+export const STAR_PALETTES: Record<Rating, StarPalette> = {
   5: { light: "#A8FFD6", mid: "#5BE6B2", dark: "#1E9A6F", glow: "rgba(91, 230, 178, 0.55)" },
   4: { light: "#E2F8A0", mid: "#BFE85B", dark: "#6FA82A", glow: "rgba(191, 232, 91, 0.55)" },
   3: { light: "#FFE0A0", mid: "#F5C144", dark: "#B07A12", glow: "rgba(245, 193, 68, 0.55)" },

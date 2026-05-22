@@ -294,7 +294,7 @@ Each entry is structured the same way so it scans fast:
 - **Layout**: Mirrors the نظرات tab above, but as its own URL so search engines index review content.
 - **Implementation note**: This can be the same page component as `/company/[slug]` with a default tab; or split it. **Recommendation**: split — better SEO and simpler streaming.
 
-#### Write review (business) — `/company/[slug]/write-review` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
+#### Write review (business) — `/company/[slug]/write-review` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
 - **Purpose**: Submit a review for a specific business.
 - **Layout**: centered single-column form on glass card.
 - **Form steps** (single page, vertical):
@@ -323,7 +323,7 @@ Each entry is structured the same way so it scans fast:
 - **Sort**: Default = جدیدترین. Other: مفیدترین، بحث‌برانگیزترین.
 - **Notes**: Reuse `RecentReviews.tsx` card markup → extract as `<ReviewCard />`.
 
-#### Universal "write review" entry — `/write-review` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
+#### Universal "write review" entry — `/write-review` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
 - **Purpose**: The mobile-tab-bar FAB lands here when the user hasn't pre-selected a business.
 - **Layout**: Big search field "کدوم کسب‌وکار را نقد می‌کنی؟" + suggestions (recently visited / popular) + "نمیتونم پیداش کنم — معرفی‌اش کن →".
 - **Flow**: pick business → redirect to `/company/[slug]/write-review`.
