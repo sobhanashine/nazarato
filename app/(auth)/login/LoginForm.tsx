@@ -57,6 +57,7 @@ export function LoginForm({ next }: { next: string }) {
               autoComplete="tel"
               dir="ltr"
               placeholder="912 345 6789"
+              defaultValue={state.phone || ""}
               required
               className={FIELD_BASE}
             />

@@ -10,10 +10,10 @@ export function Footer() {
             مارا دنبال کنید
           </h5>
           <div className="flex gap-[0.2rem]">
-            <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full text-strong transition-colors duration-200 hover:bg-glass-hover hover:text-mint" aria-label="اینستاگرام"><InstagramIcon /></a>
-            <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full text-strong transition-colors duration-200 hover:bg-glass-hover hover:text-mint" aria-label="توییتر"><TwitterIcon /></a>
-            <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full text-strong transition-colors duration-200 hover:bg-glass-hover hover:text-mint" aria-label="فیسبوک"><FacebookIcon /></a>
-            <a href="#" className="flex items-center justify-center w-10 h-10 rounded-full text-strong transition-colors duration-200 hover:bg-glass-hover hover:text-mint" aria-label="لینکدین"><LinkedInIcon /></a>
+            <a href="#" className="flex items-center justify-center w-11 h-11 rounded-full text-strong transition-colors duration-200 hover:bg-glass-hover hover:text-mint" aria-label="اینستاگرام"><InstagramIcon /></a>
+            <a href="#" className="flex items-center justify-center w-11 h-11 rounded-full text-strong transition-colors duration-200 hover:bg-glass-hover hover:text-mint" aria-label="توییتر"><TwitterIcon /></a>
+            <a href="#" className="flex items-center justify-center w-11 h-11 rounded-full text-strong transition-colors duration-200 hover:bg-glass-hover hover:text-mint" aria-label="فیسبوک"><FacebookIcon /></a>
+            <a href="#" className="flex items-center justify-center w-11 h-11 rounded-full text-strong transition-colors duration-200 hover:bg-glass-hover hover:text-mint" aria-label="لینکدین"><LinkedInIcon /></a>
           </div>
         </div>
         <div className="flex flex-col items-center gap-3 md:flex-row md:gap-6">
@@ -21,11 +21,11 @@ export function Footer() {
             © تمامی حقوق برای nazarato.ir محفوظ است.
           </p>
           <div className="flex items-center gap-4 text-[13px] text-muted font-medium">
-            <Link href="/terms" className="hover:text-mint transition-colors duration-200">
+            <Link href="/terms" className="hover:text-mint transition-colors duration-200 inline-flex items-center min-h-11 py-2">
               قوانین و مقررات
             </Link>
             <span className="text-glass-border" aria-hidden>·</span>
-            <Link href="/privacy" className="hover:text-mint transition-colors duration-200">
+            <Link href="/privacy" className="hover:text-mint transition-colors duration-200 inline-flex items-center min-h-11 py-2">
               حریم خصوصی
             </Link>
           </div>

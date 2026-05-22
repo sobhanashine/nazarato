@@ -13,6 +13,7 @@ import {
   StarIcon,
   UsersIcon,
 } from "@/components/icons";
+import { AboutWriteReview } from "@/components/sections/AboutWriteReview";
 
 export const metadata: Metadata = {
   title: "درباره ما – نظراتو",
@@ -336,15 +337,7 @@ export default function AboutPage() {
                   هر نظر، چه مثبت و چه منفی، آجری از بنای اعتماد است.
                 </p>
                 
-                <Link href="/write-review" className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-white px-10 py-4 font-bold text-black transition-transform hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-                  <span className="relative z-10 flex items-center gap-2 text-[18px]">
-                    همین حالا نظر بنویس
-                    <svg className="w-5 h-5 -rotate-180 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-mint to-[#a8f0d3] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                </Link>
+                <AboutWriteReview />
               </div>
             </div>
           </section>

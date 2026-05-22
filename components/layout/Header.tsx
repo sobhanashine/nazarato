@@ -31,7 +31,7 @@ export function Header() {
           <Link
             href="/"
             aria-label="نظراتو"
-            className="inline-flex items-center gap-2.5 text-strong shrink-0"
+            className="inline-flex items-center gap-2.5 text-strong shrink-0 py-2 min-h-11"
           >
             <span
               className={`${brandMark} hidden md:inline-block w-[38px] h-[38px]`}

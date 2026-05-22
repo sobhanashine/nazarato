@@ -72,7 +72,7 @@ const items: Item[] = [
 
 /** Shared chip shape — colours are appended per state. */
 const chipBase =
-  "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-[0.85rem] font-semibold whitespace-nowrap transition-colors duration-200 lg:rounded-2xl [&_svg]:h-[18px] [&_svg]:w-[18px] [&_svg]:shrink-0";
+  "inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-[0.85rem] font-semibold whitespace-nowrap transition-colors duration-200 lg:rounded-2xl [&_svg]:h-[18px] [&_svg]:w-[18px] [&_svg]:shrink-0 min-h-11";
 
 interface ProfileNavProps {
   userRole?: string;

@@ -13,6 +13,7 @@ import {
   TwitterIcon,
 } from "@/components/icons";
 import { BTN_PRIMARY } from "@/components/ui/styles";
+import { useReviewSheet } from "@/components/review/ReviewSheetProvider";
 import { useSessionStatus } from "./useSessionStatus";
 
 type NavItem = { href: string; label: string };
@@ -28,7 +29,7 @@ const useMounted = () =>
   );
 
 const glassButtonClasses =
-  "inline-flex items-center justify-center w-[42px] h-[42px] rounded-xl bg-glass-strong backdrop-blur-[12px] backdrop-saturate-[160%] text-strong border border-glass-border cursor-pointer transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi [&_svg]:w-[22px] [&_svg]:h-[22px]";
+  "inline-flex items-center justify-center w-11 h-11 rounded-xl bg-glass-strong backdrop-blur-[12px] backdrop-saturate-[160%] text-strong border border-glass-border cursor-pointer transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi [&_svg]:w-[22px] [&_svg]:h-[22px]";
 
 const brandMark =
   "[filter:drop-shadow(0_6px_16px_rgba(91,230,178,0.45))] [&_svg]:w-full [&_svg]:h-full [&_svg]:block";
@@ -41,6 +42,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
   const mounted = useMounted();
   const pathname = usePathname() ?? "";
   const status = useSessionStatus();
+  const { openReviewSheet } = useReviewSheet();
 
   useEffect(() => {
     if (!open) return;
@@ -108,27 +110,59 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
       </div>
 
       <nav className="flex-1 flex flex-col gap-3 py-8 px-5 relative z-[1] standalone:pt-12">
-        {items.map((item, i) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={() => setOpen(false)}
-            className={`${navLinkBase} ${
-              isActive(item.href)
-                ? "bg-[linear-gradient(135deg,rgba(91,230,178,0.22),rgba(91,230,178,0.08))] border-mint/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_0_24px_rgba(91,230,178,0.22)]"
-                : "bg-glass border-glass-border hover:bg-glass-hover hover:border-glass-border-hi"
-            }`}
-            style={{ animationDelay: `${0.08 * i + 0.05}s` }}
-          >
-            <span>{item.label}</span>
-            <span
-              aria-hidden="true"
-              className="text-[1.1rem] opacity-50 transition-[opacity,transform] duration-200 group-hover/link:opacity-100 group-hover/link:-translate-x-[3px]"
+        {items.map((item, i) => {
+          if (item.href === "/write-review") {
+            return (
+              <button
+                key={item.href}
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  openReviewSheet();
+                }}
+                className={`${navLinkBase} relative z-[1] w-full ${
+                  isActive(item.href)
+                    ? "bg-[linear-gradient(135deg,rgba(91,230,178,0.22),rgba(91,230,178,0.08))] border-mint/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_0_24px_rgba(91,230,178,0.22)]"
+                    : "bg-glass border-glass-border hover:bg-glass-hover hover:border-glass-border-hi"
+                }`}
+                style={{ animationDelay: `${0.08 * i + 0.05}s` }}
+              >
+                <span
+                  aria-hidden
+                  className="absolute inset-[-8px] rounded-2xl bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
+                />
+                <span>{item.label}</span>
+                <span
+                  aria-hidden="true"
+                  className="text-[1.1rem] opacity-50 transition-[opacity,transform] duration-200 group-hover/link:opacity-100 group-hover/link:-translate-x-[3px]"
+                >
+                  ←
+                </span>
+              </button>
+            );
+          }
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              className={`${navLinkBase} relative z-[1] ${
+                isActive(item.href)
+                  ? "bg-[linear-gradient(135deg,rgba(91,230,178,0.22),rgba(91,230,178,0.08))] border-mint/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_0_24px_rgba(91,230,178,0.22)]"
+                  : "bg-glass border-glass-border hover:bg-glass-hover hover:border-glass-border-hi"
+              }`}
+              style={{ animationDelay: `${0.08 * i + 0.05}s` }}
             >
-              ←
-            </span>
-          </Link>
-        ))}
+              <span>{item.label}</span>
+              <span
+                aria-hidden="true"
+                className="text-[1.1rem] opacity-50 transition-[opacity,transform] duration-200 group-hover/link:opacity-100 group-hover/link:-translate-x-[3px]"
+              >
+                ←
+              </span>
+            </Link>
+          );
+        })}
       </nav>
 
       <div className="px-5 pt-6 pb-8 border-t border-glass-border flex flex-col gap-5 relative z-[1]">
@@ -150,7 +184,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
               key={label}
               href="#"
               aria-label={label}
-              className="grid place-items-center w-10 h-10 rounded-full bg-glass-strong border border-glass-border text-strong transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi [&_svg]:w-4 [&_svg]:h-4"
+              className="grid place-items-center w-11 h-11 rounded-full bg-glass-strong border border-glass-border text-strong transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi [&_svg]:w-4 [&_svg]:h-4"
             >
               <Icon />
             </a>

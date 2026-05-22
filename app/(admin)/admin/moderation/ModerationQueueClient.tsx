@@ -260,7 +260,7 @@ export function ModerationQueueClient({
                           type="button"
                           onClick={() => handleViewProof(review)}
                           disabled={loadingProofId !== null || isPending}
-                          className="inline-flex items-center justify-center gap-1.5 rounded-full border border-mint/45 bg-mint/10 hover:bg-mint/20 text-mint font-bold px-4 py-2 text-xs transition-colors duration-200 cursor-pointer disabled:opacity-50 shrink-0"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-full border border-mint/45 bg-mint/10 hover:bg-mint/20 text-mint font-bold px-4 py-2.5 min-h-11 text-xs transition-colors duration-200 cursor-pointer disabled:opacity-50 shrink-0"
                         >
                           {loadingProofId === review.id ? (
                             <>
@@ -320,7 +320,7 @@ export function ModerationQueueClient({
                         type="button"
                         onClick={() => handleApprove(review.id)}
                         disabled={isPending}
-                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-mint hover:bg-mint-hi text-[#06231b] font-black px-5 py-3 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-mint hover:bg-mint-hi text-[#06231b] font-black px-5 py-3 min-h-11 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
                       >
                         <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12" />
@@ -331,7 +331,7 @@ export function ModerationQueueClient({
                         type="button"
                         onClick={() => setRejectingId(review.id)}
                         disabled={isPending}
-                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-full border border-red-500/30 hover:border-red-500/50 hover:bg-red-500/10 text-red-400 font-bold px-5 py-3 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-full border border-red-500/30 hover:border-red-500/50 hover:bg-red-500/10 text-red-400 font-bold px-5 py-3 min-h-11 text-xs transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
                       >
                         <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                           <line x1="18" y1="6" x2="6" y2="18" />
@@ -360,7 +360,7 @@ export function ModerationQueueClient({
               <button
                 type="button"
                 onClick={() => setViewingProof(null)}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-glass-border/30 hover:bg-glass-border/60 text-strong hover:text-red-400 transition-colors cursor-pointer"
+                className="w-11 h-11 rounded-full flex items-center justify-center bg-glass-border/30 hover:bg-glass-border/60 text-strong hover:text-red-400 transition-colors cursor-pointer"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
@@ -392,7 +392,7 @@ export function ModerationQueueClient({
                 <Link
                   href={viewingProof.url}
                   target="_blank"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-glass-border hover:border-mint/45 px-4 py-2 text-xs font-bold text-muted hover:text-mint transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-glass-border hover:border-mint/45 px-4 py-2.5 min-h-11 text-xs font-bold text-muted hover:text-mint transition-colors cursor-pointer"
                 >
                   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
@@ -404,7 +404,7 @@ export function ModerationQueueClient({
                 <button
                   type="button"
                   onClick={() => setViewingProof(null)}
-                  className="px-5 py-2 rounded-full border border-glass-border bg-glass-border/10 hover:bg-glass-border/30 text-strong font-bold text-xs cursor-pointer transition-colors"
+                  className="px-5 py-2.5 min-h-11 rounded-full border border-glass-border bg-glass-border/10 hover:bg-glass-border/30 text-strong font-bold text-xs cursor-pointer transition-colors"
                 >
                   بستن
                 </button>
@@ -467,14 +467,14 @@ export function ModerationQueueClient({
                   setRejectionReason("");
                 }}
                 disabled={isPending}
-                className="px-5 py-2.5 rounded-full border border-glass-border hover:bg-glass-border/30 text-strong font-bold text-xs cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 min-h-11 rounded-full border border-glass-border hover:bg-glass-border/30 text-strong font-bold text-xs cursor-pointer disabled:opacity-50"
               >
                 انصراف
               </button>
               <button
                 type="submit"
                 disabled={isPending}
-                className="px-6 py-2.5 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                className="px-6 py-2.5 min-h-11 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
               >
                 {isPending ? "در حال ثبت..." : "تأیید و رد نظر"}
               </button>

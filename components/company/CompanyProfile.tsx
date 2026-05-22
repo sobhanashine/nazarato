@@ -12,6 +12,7 @@ import { InstagramIcon, MailIcon, PhoneIcon } from "@/components/icons";
 import { BusinessCard } from "@/components/ui/BusinessCard";
 import { RatingBars } from "@/components/ui/RatingBars";
 import { RatingStars, type Rating } from "@/components/ui/RatingStars";
+import { useReviewSheet } from "@/components/review/ReviewSheetProvider";
 import { ReviewCard } from "@/components/ui/ReviewCard";
 import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
 import type { Business, BusinessDetail } from "@/lib/data/businesses";
@@ -77,6 +78,7 @@ function ShareIcon() {
 }
 
 export function CompanyProfile({ business, reviews, stats, averageLabel, similar }: Props) {
+  const { openReviewSheet } = useReviewSheet();
   const [tab, setTab] = useState<TabId>("overview");
   const [ratingFilter, setRatingFilter] = useState<Rating | 0>(0);
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
@@ -176,12 +178,17 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
       {/* ── Action bar — on mobile the save/share pair sits above a
           full-width primary CTA; from sm up it's a single inline row. ── */}
       <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <Link
-          href={`/company/${business.slug}/write-review`}
-          className={`${BTN_PRIMARY} w-full justify-center px-6 py-3 text-[0.9rem] sm:w-auto sm:py-2.5`}
+        <button
+          type="button"
+          onClick={() => openReviewSheet({ slug: business.slug, name: business.name })}
+          className={`${BTN_PRIMARY} relative z-[1] w-full justify-center px-6 py-3 text-[0.9rem] sm:w-auto sm:py-2.5`}
         >
+          <span
+            aria-hidden
+            className="absolute inset-[-8px] rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
+          />
           نوشتن نظر
-        </Link>
+        </button>
         <div className="grid grid-cols-2 gap-3 sm:flex">
           <button
             type="button"
@@ -276,7 +283,7 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
                   </div>
                 </>
               ) : (
-                <NoReviews slug={business.slug} />
+                <NoReviews business={business} />
               )}
             </section>
           </div>
@@ -373,7 +380,7 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
             </>
           ) : (
             <div className="mt-4">
-              <NoReviews slug={business.slug} />
+              <NoReviews business={business} />
             </div>
           )}
         </div>
@@ -428,19 +435,25 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
   );
 }
 
-function NoReviews({ slug }: { slug: string }) {
+function NoReviews({ business }: { business: { slug: string; name: string } }) {
+  const { openReviewSheet } = useReviewSheet();
   return (
     <div className="mt-3 flex flex-col items-center gap-3 rounded-glass border border-dashed border-glass-border-hi px-6 py-10 text-center">
       <p className="text-[0.92rem] font-bold text-strong">هنوز نظری ثبت نشده</p>
       <p className="max-w-[34ch] text-[0.83rem] leading-[1.9] text-muted">
         اولین نفری باش که تجربه‌اش رو با بقیه به اشتراک می‌ذاره.
       </p>
-      <Link
-        href={`/company/${slug}/write-review`}
-        className={`${BTN_PRIMARY} px-6 py-2.5 text-[0.88rem]`}
+      <button
+        type="button"
+        onClick={() => openReviewSheet({ slug: business.slug, name: business.name })}
+        className={`${BTN_PRIMARY} relative z-[1] px-6 py-2.5 text-[0.88rem]`}
       >
+        <span
+          aria-hidden
+          className="absolute inset-[-8px] rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
+        />
         اولین نظر را تو بنویس
-      </Link>
+      </button>
     </div>
   );
 }

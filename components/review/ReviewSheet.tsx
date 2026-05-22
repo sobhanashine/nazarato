@@ -637,8 +637,12 @@ function WriteStep({
         <button
           type="submit"
           disabled={pending || !ready}
-          className={`${BTN_PRIMARY} mt-4 w-full py-3.5 text-[15px] disabled:cursor-not-allowed disabled:opacity-45`}
+          className={`${BTN_PRIMARY} relative z-[1] mt-4 w-full py-3.5 text-[15px] disabled:cursor-not-allowed disabled:opacity-45`}
         >
+          <span
+            aria-hidden
+            className="absolute inset-[-8px] rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
+          />
           {pending ? "در حال ثبت…" : "ثبت نظر"}
         </button>
         <p className="mt-2.5 text-center text-[11.5px] leading-[1.9] text-muted">
