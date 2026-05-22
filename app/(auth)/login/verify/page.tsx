@@ -15,7 +15,19 @@ export default async function VerifyPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  if (await getSession()) redirect("/");
+  const params = await searchParams;
+  const rawNext = typeof params.next === "string" ? params.next : "";
+
+  // Already signed in → honour the ?next destination rather than always "/".
+  if (await getSession()) {
+    const dest =
+      rawNext.startsWith("/") &&
+      !rawNext.startsWith("//") &&
+      !rawNext.startsWith("/\\")
+        ? rawNext
+        : "/";
+    redirect(dest);
+  }
 
   const challenge = await getOtpChallenge();
 
@@ -39,11 +51,10 @@ export default async function VerifyPage({
     );
   }
 
-  const next = (await searchParams).next;
   return (
     <VerifyForm
       phone={formatPhone(challenge.phone)}
-      next={typeof next === "string" ? next : ""}
+      next={rawNext}
       devCode={process.env.NODE_ENV !== "production" ? DEV_OTP : null}
     />
   );
