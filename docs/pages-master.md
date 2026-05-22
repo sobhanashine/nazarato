@@ -324,10 +324,10 @@ Each entry is structured the same way so it scans fast:
 - **Sort**: Default = جدیدترین. Other: مفیدترین، بحث‌برانگیزترین.
 - **Notes**: Reuse `RecentReviews.tsx` card markup → extract as `<ReviewCard />`.
 
-#### Universal "write review" entry — `/write-review` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
-- **Purpose**: The mobile-tab-bar FAB lands here when the user hasn't pre-selected a business.
-- **Layout**: Big search field "کدوم کسب‌وکار را نقد می‌کنی؟" + suggestions (recently visited / popular) + "نمیتونم پیداش کنم — معرفی‌اش کن →".
-- **Flow**: pick business → redirect to `/company/[slug]/write-review`.
+#### Universal "write review" entry — `ReviewSheet` (Global Modal) &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; auth
+- **Purpose**: The mobile-tab-bar FAB, header menu, and other global CTAs open this bottom sheet.
+- **Layout**: Bottom sheet containing a multi-step wizard.
+- **Flow**: step 1: pick business (if not pre-filled) → step 2: rate → step 3: write review → submit. Replaces the older `/write-review` standalone route pattern to keep the user in context.
 
 ### 4.2 Public — content & marketing
 

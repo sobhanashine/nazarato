@@ -29,6 +29,8 @@ export type FormState = {
   reason?: "expired" | "locked";
   /** Optional URL to redirect to on the client side after success. */
   redirectUrl?: string;
+  /** Optional phone number to preserve value on errors. */
+  phone?: string;
 };
 
 const RESEND_COOLDOWN_MS = 60_000;
@@ -69,25 +71,26 @@ export async function startOtp(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const rawPhone = asString(formData.get("phone"));
   if (!formData.get("terms")) {
-    return { ok: false, error: "برای ادامه باید قوانین و حریم خصوصی را بپذیری." };
+    return { ok: false, error: "برای ادامه باید قوانین و حریم خصوصی را بپذیری.", phone: rawPhone };
   }
 
-  const phone = normalizePhone(asString(formData.get("phone")));
+  const phone = normalizePhone(rawPhone);
   if (!phone) {
-    return { ok: false, field: "phone", error: "شماره موبایل معتبر نیست." };
+    return { ok: false, field: "phone", error: "شماره موبایل معتبر نیست.", phone: rawPhone };
   }
 
   const since = Date.now() - (lastSentAt.get(phone) ?? 0);
   if (since < RESEND_COOLDOWN_MS) {
-    return { ok: false, error: "کد به‌تازگی ارسال شده — کمی صبر کن." };
+    return { ok: false, error: "کد به‌تازگی ارسال شده — کمی صبر کن.", phone: rawPhone };
   }
 
   try {
     await sendOtp(phone, DEV_OTP);
   } catch (err) {
     console.error("[auth] sendOtp failed", { route: "/login", phone, err });
-    return { ok: false, error: "ارسال کد ناموفق بود. کمی بعد دوباره تلاش کن." };
+    return { ok: false, error: "ارسال کد ناموفق بود. کمی بعد دوباره تلاش کن.", phone: rawPhone };
   }
 
   lastSentAt.set(phone, Date.now());
