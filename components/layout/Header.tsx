@@ -60,7 +60,7 @@ export function Header() {
           </Link>
 
           <nav aria-label="ناوبری اصلی" className="hidden md:block">
-            <ul className="flex items-center gap-7 list-none py-[0.45rem] px-5 bg-glass border border-glass-border rounded-full backdrop-blur-[14px] backdrop-saturate-[160%]">
+            <ul className="flex items-center gap-2 list-none py-0 px-3 bg-glass border border-glass-border rounded-full backdrop-blur-[14px] backdrop-saturate-[160%]">
               {navItems.map((item) => (
                 <li key={item.href}>
                   <NavLink href={item.href}>{item.label}</NavLink>

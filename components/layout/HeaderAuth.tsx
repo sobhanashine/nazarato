@@ -18,7 +18,7 @@ export function HeaderAuth() {
   if (status === null) {
     return (
       <span
-        className="hidden h-[38px] w-[38px] animate-pulse rounded-full border border-glass-border bg-glass md:block"
+        className="hidden h-11 w-11 animate-pulse rounded-full border border-glass-border bg-glass md:block"
         aria-hidden
       />
     );
@@ -31,7 +31,7 @@ export function HeaderAuth() {
         href="/profile"
         aria-label="پروفایل من"
         title="پروفایل من"
-        className="hidden h-[38px] w-[38px] place-items-center rounded-full bg-[linear-gradient(135deg,#5BE6B2_0%,#3FBF92_100%)] text-[0.95rem] font-bold text-[#06231b] shadow-[0_6px_18px_-6px_rgba(91,230,178,0.6)] transition-[transform,filter] duration-200 hover:-translate-y-px hover:brightness-105 md:grid"
+        className="hidden h-11 w-11 place-items-center rounded-full bg-[linear-gradient(135deg,#5BE6B2_0%,#3FBF92_100%)] text-[0.95rem] font-bold text-[#06231b] shadow-[0_6px_18px_-6px_rgba(91,230,178,0.6)] transition-[transform,filter] duration-200 hover:-translate-y-px hover:brightness-105 md:grid"
       >
         {initial}
       </Link>
@@ -41,7 +41,7 @@ export function HeaderAuth() {
   return (
     <Link
       href="/login"
-      className={`${BTN_PRIMARY} max-md:hidden px-5 py-[0.6rem] text-sm`}
+      className={`${BTN_PRIMARY} max-md:hidden px-5 min-h-11 text-sm`}
     >
       ورود
     </Link>
