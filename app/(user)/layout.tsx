@@ -33,7 +33,7 @@ export default async function UserLayout({
           <aside className="lg:pt-1">
             <ProfileNav />
           </aside>
-          <div className="min-w-0 pb-16 lg:pb-24">{children}</div>
+          <div className="min-w-0">{children}</div>
         </div>
       </Container>
       <Footer />
