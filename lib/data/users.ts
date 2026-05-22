@@ -83,10 +83,13 @@ export type ProfileUser = {
   role: string;
   /** ISO timestamp — drives the "member since" line. */
   created_at: string;
+  reviews_count?: number;
+  helpful_votes_received?: number;
+  reputation_score?: number;
 };
 
 const PROFILE_SELECT =
-  "id, display_name, username, avatar_color, role, created_at";
+  "id, display_name, username, avatar_color, role, created_at, reviews_count, helpful_votes_received, reputation_score";
 
 /** Narrow an untrusted DB row to a `ProfileUser`; throws on an unexpected shape. */
 function asProfileUser(value: unknown): ProfileUser {
@@ -109,6 +112,9 @@ function asProfileUser(value: unknown): ProfileUser {
     avatar_color: typeof o.avatar_color === "string" ? o.avatar_color : null,
     role: o.role,
     created_at: o.created_at,
+    reviews_count: typeof o.reviews_count === "number" ? o.reviews_count : 0,
+    helpful_votes_received: typeof o.helpful_votes_received === "number" ? o.helpful_votes_received : 0,
+    reputation_score: typeof o.reputation_score === "number" ? o.reputation_score : 0,
   };
 }
 

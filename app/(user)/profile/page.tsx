@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { GLASS } from "@/components/ui/styles";
 import { getSession } from "@/lib/auth/session";
-import { profileStats } from "@/lib/data/profile";
 import { getUserById } from "@/lib/data/users";
 
 export const metadata: Metadata = {
@@ -14,12 +13,6 @@ const faNum = (n: number) => n.toLocaleString("fa-IR");
 
 /** Default avatar tint when the account has no `avatar_color` set. */
 const FALLBACK_COLOR = "#5BBB7B";
-
-const stats = [
-  { key: "reviews", label: "نظرات", value: profileStats.reviews },
-  { key: "helpful", label: "مفید بود", value: profileStats.helpful },
-  { key: "followers", label: "فالوور", value: profileStats.followers },
-] as const;
 
 const quickLinks = [
   {
@@ -55,6 +48,12 @@ export default async function ProfilePage() {
     month: "long",
   })} ${joined.toLocaleDateString("fa-IR", { year: "numeric" })}`;
 
+  const stats = [
+    { key: "reviews", label: "نظرات", value: user.reviews_count ?? 0 },
+    { key: "helpful", label: "مفید بود", value: user.helpful_votes_received ?? 0 },
+    { key: "reputation", label: "امتیاز اعتبار", value: user.reputation_score ?? 0 },
+  ] as const;
+
   return (
     <div className="flex flex-col gap-5">
       <h1 className="sr-only">پروفایل من</h1>
@@ -69,9 +68,16 @@ export default async function ProfilePage() {
           {initial}
         </div>
         <div className="min-w-0">
-          <h2 className="truncate text-[1.15rem] font-black text-strong sm:text-[1.3rem]">
-            {user.display_name}
-          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="truncate text-[1.15rem] font-black text-strong sm:text-[1.3rem]">
+              {user.display_name}
+            </h2>
+            {user.role === "admin" && (
+              <span className="inline-flex items-center rounded-full bg-rose-500/15 px-2 py-0.5 text-[0.7rem] font-bold text-rose-400 border border-rose-500/30">
+                مدیر سیستم
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-[0.8rem] text-muted">عضو از {memberSince}</p>
           {user.username && (
             <p className="mt-0.5 text-[0.8rem] text-mint">@{user.username}</p>
@@ -101,33 +107,43 @@ export default async function ProfilePage() {
 
       {/* Quick links */}
       <section className="grid gap-3 sm:grid-cols-3" aria-label="بخش‌های حساب">
-        {quickLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`${GLASS} group flex flex-col gap-1.5 p-4 transition-colors duration-200 hover:border-mint/40`}
-          >
-            <span className="flex items-center justify-between gap-2 text-[0.95rem] font-bold text-strong">
-              {link.title}
-              <svg
-                viewBox="0 0 24 24"
-                className="h-4 w-4 shrink-0 text-muted transition-colors group-hover:text-mint"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                {/* RTL: chevron points left toward the destination */}
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </span>
-            <span className="text-[0.8rem] leading-[1.7] text-muted">
-              {link.desc}
-            </span>
-          </Link>
-        ))}
+        {(() => {
+          const links = [...quickLinks];
+          if (user.role === "admin") {
+            links.push({
+              href: "/admin/moderation",
+              title: "پنل مدیریت",
+              desc: "بررسی، تایید و مدیریت نظرات کاربران",
+            });
+          }
+          return links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`${GLASS} group flex flex-col gap-1.5 p-4 transition-colors duration-200 hover:border-mint/40`}
+            >
+              <span className="flex items-center justify-between gap-2 text-[0.95rem] font-bold text-strong">
+                {link.title}
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4 shrink-0 text-muted transition-colors group-hover:text-mint"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  {/* RTL: chevron points left toward the destination */}
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </span>
+              <span className="text-[0.8rem] leading-[1.7] text-muted">
+                {link.desc}
+              </span>
+            </Link>
+          ));
+        })()}
       </section>
     </div>
   );

@@ -16,7 +16,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const business = getBusiness(slug);
+  const business = await getBusiness(slug);
   return {
     title: business ? `نوشتن نظر برای ${business.name} — نظراتو` : "نوشتن نظر — نظراتو",
     description: "تجربه‌ات از این کسب‌وکار را ثبت کن.",
@@ -38,7 +38,7 @@ export default async function WriteReviewPage({
   params: Promise<Params>;
 }) {
   const { slug } = await params;
-  const business = getBusiness(slug);
+  const business = await getBusiness(slug);
   if (!business) notFound();
 
   if (!(await getSession())) {

@@ -26,7 +26,7 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const business = getBusiness(slug);
+  const business = await getBusiness(slug);
   if (!business) return { title: "کسب‌وکار – نظراتو" };
   return {
     title: `${business.name} – نظراتو`,
@@ -40,7 +40,7 @@ export default async function CompanyPage({
   params: Promise<Params>;
 }) {
   const { slug } = await params;
-  const business = getBusiness(slug);
+  const business = await getBusiness(slug);
   if (!business) notFound();
 
   return (
@@ -56,7 +56,7 @@ export default async function CompanyPage({
             reviews={toReviews(business)}
             stats={ratingStats(business.reviews)}
             averageLabel={averageLabel(business.reviews)}
-            similar={getSimilarBusinesses(business)}
+            similar={await getSimilarBusinesses(business)}
           />
         </main>
       </Container>

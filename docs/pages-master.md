@@ -433,12 +433,12 @@ Each entry is structured the same way so it scans fast:
 #### Insights / Team / Billing — &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P2 &nbsp;·&nbsp; owner
 - v2+. Defer until owners actually ask.
 
-### 4.7 Admin — `(admin)` route group &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1 &nbsp;·&nbsp; admin
+### 4.7 Admin — `(admin)` route group &nbsp;·&nbsp; 🚧 partial &nbsp;·&nbsp; P1 &nbsp;·&nbsp; admin
 
 > Internal-only. Gate by Supabase RLS + `viewer.role === "admin"`.
 
 - `/admin` — overview tiles (pending reviews, pending claims, reported items, new businesses).
-- `/admin/moderation` — review queue with approve/reject/edit.
+- `/admin/moderation` — ✅ built — review queue with approve/reject (including private purchase proof viewing/deletion).
 - `/admin/reports` — reports inbox with action buttons.
 - `/admin/businesses` — list/edit/merge/approve-claim.
 - `/admin/users` — list/ban/role-toggle.
@@ -482,7 +482,7 @@ These are reusable across pages — extract once, share everywhere.
 | `<AuthLayout />`   | `/login`, `/login/verify`, `/signup`                   | ✅ built    | `app/(auth)/layout.tsx`                       |
 | `<UserShell />`    | `/profile`, `/saved`, `/settings`, `/notifications`    | ✅ built    | `app/(user)/layout.tsx`                       |
 | `<OwnerShell />`   | `/business/*`                                          | 📋 planned  | `app/(business)/layout.tsx`                   |
-| `<AdminShell />`   | `/admin/*`                                             | 📋 planned  | `app/(admin)/layout.tsx`                      |
+| `<AdminShell />`   | `/admin/*`                                             | ✅ built    | `app/(admin)/layout.tsx`                      |
 
 ### 5.2 Reusable cards / blocks (extract these from the home-page sections)
 
@@ -536,8 +536,8 @@ You're a solo founder. Don't try to build the sitemap top-down. Build the minimu
 5. `/company/[slug]` (the centerpiece — overview + inline reviews + write-review CTA).
 6. `/company/[slug]/write-review` (auth-gated form).
 7. `/search` (so the hero search actually works).
-8. `/terms` + `/privacy` (legal).
-9. `/admin/moderation` (the one admin page you can't avoid).
+8. `/terms` + `/privacy` (legal) — ✅ built.
+9. `/admin/moderation` (the one admin page you can't avoid) — ✅ built.
 
 ### Phase 2 — v1.0 (2–4 weeks)
 1. `/categories` + `/categories/[slug]`.
