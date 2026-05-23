@@ -121,8 +121,9 @@ describe("Bookmarks Data Layer", () => {
 
       await getUserBookmarks("user-1", "ig_shop");
 
-      expect(mockSupabaseClient.eq).toHaveBeenCalledWith("businesses.type", "ig_shop");
-      expect(mockSupabaseClient.not).toHaveBeenCalledWith("businesses", "is", null);
+      // The inner-join filter uses the embedded alias `business.type` so it
+      // actually restricts the parent rows instead of producing nulls.
+      expect(mockSupabaseClient.eq).toHaveBeenCalledWith("business.type", "ig_shop");
     });
 
     it("returns empty array on db error", async () => {
