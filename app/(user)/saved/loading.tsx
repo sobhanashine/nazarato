@@ -1,8 +1,6 @@
-import { Container } from "@/components/ui/Container";
-
 export default function SavedLoading() {
   return (
-    <Container className="pb-16 pt-6">
+    <div className="flex flex-col gap-0 pb-8">
       <div className="mb-6 animate-pulse">
         <div className="h-8 w-48 rounded bg-glass-border"></div>
         <div className="mt-2 h-4 w-64 rounded bg-glass-border"></div>
@@ -27,6 +25,6 @@ export default function SavedLoading() {
           </div>
         ))}
       </div>
-    </Container>
+    </div>
   );
 }

@@ -4,7 +4,6 @@ import { getSession } from "@/lib/auth/session";
 import { getUserBookmarks, getPopularBusinesses } from "@/lib/data/bookmarks";
 import { BusinessCard } from "@/components/ui/BusinessCard";
 import { IgShopCard } from "@/components/ui/IgShopCard";
-import { Container } from "@/components/ui/Container";
 import type { InstagramShop } from "@/lib/data/instagram-shops";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
@@ -34,7 +33,7 @@ export default async function SavedPage({
   };
 
   return (
-    <Container className="pb-16 pt-6">
+    <div className="flex flex-col gap-0 pb-8">
       <div className="mb-6">
         <h1 className="text-2xl font-black text-strong">ذخیره‌شده‌ها</h1>
         <p className="mt-2 text-sm text-muted">
@@ -123,6 +122,6 @@ export default async function SavedPage({
           )}
         </div>
       )}
-    </Container>
+    </div>
   );
 }
