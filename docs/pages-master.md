@@ -252,7 +252,7 @@ Each entry is structured the same way so it scans fast:
 - **States**: Empty (category has zero businesses yet) shows CTA "اولین کسب‌وکار را معرفی کن".
 - **`generateStaticParams`**: yes — categories change infrequently.
 
-#### Instagram shops — `/instagram-shops` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### Instagram shops — `/instagram-shops` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Purpose**: Browse all IG shops (with niche tabs, same UX as homepage section but full-page).
 - **Layout**: PageBanner + niche tabs sticky + grid + pagination.
 - **Data**: `lib/data/instagram-shops.ts` (already exists; later DB-backed).
@@ -312,7 +312,7 @@ Each entry is structured the same way so it scans fast:
 - **Purpose**: Business owner asserts ownership of an unclaimed listing.
 - **Flow**: identity (phone OTP already done) → proof of association (work email at domain OR upload doc) → moderation queue → email/SMS once approved.
 
-#### Instagram-shop profile — `/shop/[handle]` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### Instagram-shop profile — `/shop/[handle]` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - Mirror of `/company/[slug]` but:
   - Hero shows IG-style conic-gradient avatar ring (already styled in `InstagramShops.tsx` — extract as `<IgAvatar />`).
   - "اطلاعات تماس" replaces "ساعات کاری" — handle, DM link, website.
