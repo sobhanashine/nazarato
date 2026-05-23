@@ -6,7 +6,6 @@ import { BusinessCard } from "@/components/ui/BusinessCard";
 import { IgShopCard } from "@/components/ui/IgShopCard";
 import { Container } from "@/components/ui/Container";
 import type { InstagramShop } from "@/lib/data/instagram-shops";
-import type { Business } from "@/lib/data/businesses";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 

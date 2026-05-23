@@ -60,12 +60,24 @@ export async function getUserBookmarks(
   // Map to Business card shape
   const bookmarks: Business[] = [];
 
+  interface DbBookmarkBusinessRow {
+    slug: string;
+    name: string;
+    type: string;
+    category_slug: string;
+    city: string | null;
+    initial: string;
+    color: string;
+    review_count: number;
+    rating_avg: number | null;
+    verified: boolean;
+  }
+
   for (const row of data) {
     const b = row.business;
     if (!b) continue; // Skip if null due to filter
 
-    // Type casting because we know the schema
-    const bRow = b as any;
+    const bRow = b as unknown as DbBookmarkBusinessRow;
 
     if (type && bRow.type !== type) {
         continue;
