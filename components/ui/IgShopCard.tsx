@@ -8,13 +8,19 @@ import Link from "next/link";
 import { StarIcon } from "@/components/icons";
 import { GLASS } from "@/components/ui/styles";
 import type { InstagramShop } from "@/lib/data/instagram-shops";
+import { BookmarkButton } from "@/components/ui/BookmarkButton";
 
-export function IgShopCard({ shop }: { shop: InstagramShop }) {
+type IgShopCardProps = {
+  shop: InstagramShop;
+  isBookmarked?: boolean;
+};
+
+export function IgShopCard({ shop, isBookmarked }: IgShopCardProps) {
   const s = shop;
   return (
     <Link
       href={s.href}
-      className={`${GLASS} flex items-center gap-4 px-[1.35rem] py-5 cursor-pointer transition-[transform,background,border-color] duration-300 ease-out hover:bg-glass-hover hover:border-glass-border-hi hover:-translate-y-[2px]`}
+      className={`${GLASS} flex items-center gap-4 px-[1.35rem] py-5 cursor-pointer transition-[transform,background,border-color] duration-300 ease-out hover:bg-glass-hover hover:border-glass-border-hi hover:-translate-y-[2px] relative group`}
     >
       <div className="w-[60px] h-[60px] rounded-full p-[3px] [background:conic-gradient(from_45deg,#feda75_0%,#fa7e1e_20%,#d62976_45%,#962fbf_70%,#4f5bd5_90%,#feda75_100%)] flex items-center justify-center shrink-0 shadow-[0_4px_14px_rgba(214,41,118,0.35)]">
         <div
@@ -24,7 +30,7 @@ export function IgShopCard({ shop }: { shop: InstagramShop }) {
           {s.initial}
         </div>
       </div>
-      <div className="min-w-0 flex flex-col gap-[3px]">
+      <div className="min-w-0 flex flex-col gap-[3px] flex-1">
         <span className="inline-flex items-center gap-1.5 text-[0.95rem] font-semibold text-strong whitespace-nowrap overflow-hidden text-ellipsis">
           {s.name}
           <span
@@ -51,6 +57,11 @@ export function IgShopCard({ shop }: { shop: InstagramShop }) {
           </span>
         </div>
       </div>
+      {typeof isBookmarked === "boolean" && (
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2" onClick={(e) => e.preventDefault()}>
+          <BookmarkButton businessSlug={s.slug} initialIsBookmarked={isBookmarked} />
+        </div>
+      )}
     </Link>
   );
 }

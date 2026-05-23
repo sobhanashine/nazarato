@@ -13,6 +13,8 @@ import {
   ratingStats,
   toReviews,
 } from "@/lib/data/businesses";
+import { getBookmarkStatus } from "@/lib/data/bookmarks";
+import { getSession } from "@/lib/auth/session";
 
 type Params = { slug: string };
 
@@ -40,8 +42,15 @@ export default async function CompanyPage({
   params: Promise<Params>;
 }) {
   const { slug } = await params;
-  const business = await getBusiness(slug);
+  const sessionPromise = getSession();
+  const businessPromise = getBusiness(slug);
+  
+  const [session, business] = await Promise.all([sessionPromise, businessPromise]);
   if (!business) notFound();
+
+  const isBookmarked = session?.id
+    ? await getBookmarkStatus(session.id, business.slug)
+    : false;
 
   return (
     <>
@@ -57,6 +66,7 @@ export default async function CompanyPage({
             stats={ratingStats(business.reviews)}
             averageLabel={averageLabel(business.reviews)}
             similar={await getSimilarBusinesses(business)}
+            isBookmarked={isBookmarked}
           />
         </main>
       </Container>
