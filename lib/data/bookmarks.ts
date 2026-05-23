@@ -28,26 +28,36 @@ export async function getBookmarkStatus(userId: string, businessSlug: string): P
   return !!data;
 }
 
+interface DbBookmarkBusinessRow {
+  slug: string;
+  name: string;
+  type: string;
+  category_slug: string;
+  city: string | null;
+  initial: string;
+  color: string;
+  review_count: number;
+  rating_avg: number | null;
+  verified: boolean;
+}
+
 export async function getUserBookmarks(
   userId: string,
   type?: "company" | "ig_shop"
 ): Promise<Business[]> {
   const supabase = supabaseAdmin();
 
-  // We join bookmarks with businesses
+  // Inner-join `businesses` so that the type filter actually restricts the
+  // parent bookmark rows (a plain embedded select would return bookmarks with
+  // `business: null` for the unmatched type, which the page can't show anyway).
   let query = supabase
     .from("bookmarks")
-    .select(`
-      created_at,
-      business:businesses (*)
-    `)
+    .select("created_at, business:businesses!inner(*)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
-  // Currently Supabase JS doesn't support filtering on joined tables cleanly without inner joins if type is specified
-  // Wait, if it's an inner join we can filter.
   if (type) {
-    query = query.eq("businesses.type", type).not("businesses", "is", null);
+    query = query.eq("business.type", type);
   }
 
   const { data, error } = await query;
@@ -57,50 +67,28 @@ export async function getUserBookmarks(
     return [];
   }
 
-  // Map to Business card shape
-  const bookmarks: Business[] = [];
+  return data
+    .map((row): Business | null => {
+      const b = row.business as unknown as DbBookmarkBusinessRow | null;
+      if (!b) return null;
 
-  interface DbBookmarkBusinessRow {
-    slug: string;
-    name: string;
-    type: string;
-    category_slug: string;
-    city: string | null;
-    initial: string;
-    color: string;
-    review_count: number;
-    rating_avg: number | null;
-    verified: boolean;
-  }
-
-  for (const row of data) {
-    const b = row.business;
-    if (!b) continue; // Skip if null due to filter
-
-    const bRow = b as unknown as DbBookmarkBusinessRow;
-
-    if (type && bRow.type !== type) {
-        continue;
-    }
-
-    const scoreVal = bRow.rating_avg ? Number(bRow.rating_avg) : 0.0;
-    
-    bookmarks.push({
-      slug: bRow.slug,
-      name: bRow.name,
-      category: getCategoryTitle(bRow.category_slug),
-      city: bRow.city || "نامشخص",
-      initial: bRow.initial,
-      color: bRow.color,
-      score: bRow.review_count > 0 
-        ? scoreVal.toLocaleString("fa-IR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) 
-        : "—",
-      reviews: bRow.review_count.toLocaleString("fa-IR"),
-      verified: bRow.verified,
-    });
-  }
-
-  return bookmarks;
+      const scoreVal = b.rating_avg ? Number(b.rating_avg) : 0.0;
+      return {
+        slug: b.slug,
+        name: b.name,
+        category: getCategoryTitle(b.category_slug),
+        city: b.city || "نامشخص",
+        initial: b.initial,
+        color: b.color,
+        score:
+          b.review_count > 0
+            ? scoreVal.toLocaleString("fa-IR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+            : "—",
+        reviews: b.review_count.toLocaleString("fa-IR"),
+        verified: b.verified,
+      };
+    })
+    .filter((b): b is Business => b !== null);
 }
 
 export async function getPopularBusinesses(): Promise<Business[]> {
