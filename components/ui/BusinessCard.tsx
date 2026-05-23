@@ -11,13 +11,19 @@ import Link from "next/link";
 import { LocationIcon, ShieldCheckIcon, StarIcon } from "@/components/icons";
 import { GLASS } from "@/components/ui/styles";
 import type { Business } from "@/lib/data/businesses";
+import { BookmarkButton } from "@/components/ui/BookmarkButton";
 
-export function BusinessCard({ business }: { business: Business }) {
+type BusinessCardProps = {
+  business: Business;
+  isBookmarked?: boolean;
+};
+
+export function BusinessCard({ business, isBookmarked }: BusinessCardProps) {
   const b = business;
   return (
     <Link
       href={`/company/${b.slug}`}
-      className={`${GLASS} flex items-center gap-4 px-[1.35rem] py-5 cursor-pointer transition-[transform,background,border-color] duration-300 ease-out hover:bg-glass-hover hover:border-glass-border-hi hover:-translate-y-[2px]`}
+      className={`${GLASS} flex items-center gap-4 px-[1.35rem] py-5 cursor-pointer transition-[transform,background,border-color] duration-300 ease-out hover:bg-glass-hover hover:border-glass-border-hi hover:-translate-y-[2px] relative group`}
     >
       <div
         className="w-[60px] h-[60px] rounded-2xl flex items-center justify-center text-white text-[1.3rem] font-bold leading-none shrink-0 shadow-[0_6px_18px_-4px_rgba(0,0,0,0.45)]"
@@ -25,7 +31,7 @@ export function BusinessCard({ business }: { business: Business }) {
       >
         {b.initial}
       </div>
-      <div className="min-w-0 flex flex-col gap-[3px]">
+      <div className="min-w-0 flex flex-col gap-[3px] flex-1">
         <span className="inline-flex items-center gap-1.5 text-[0.95rem] font-semibold text-strong whitespace-nowrap overflow-hidden text-ellipsis">
           {b.name}
           {b.verified && (
@@ -52,6 +58,11 @@ export function BusinessCard({ business }: { business: Business }) {
           </span>
         </div>
       </div>
+      {typeof isBookmarked === "boolean" && (
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2" onClick={(e) => e.preventDefault()}>
+          <BookmarkButton businessSlug={b.slug} initialIsBookmarked={isBookmarked} />
+        </div>
+      )}
     </Link>
   );
 }

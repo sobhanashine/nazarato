@@ -11,6 +11,8 @@ import {
   instagramShops,
 } from "@/lib/data/instagram-shops";
 import { ratingStats, averageLabel, toReviews } from "@/lib/data/businesses";
+import { getBookmarkStatus } from "@/lib/data/bookmarks";
+import { getSession } from "@/lib/auth/session";
 
 type Params = { handle: string };
 
@@ -38,8 +40,15 @@ export default async function ShopPage({
   params: Promise<Params>;
 }) {
   const { handle } = await params;
-  const shop = await getShopByHandle(handle);
+  const sessionPromise = getSession();
+  const shopPromise = getShopByHandle(handle);
+
+  const [session, shop] = await Promise.all([sessionPromise, shopPromise]);
   if (!shop) notFound();
+
+  const isBookmarked = session?.id
+    ? await getBookmarkStatus(session.id, shop.slug)
+    : false;
 
   // Mapping rating average and counts
   const stats = ratingStats(shop.reviews);
@@ -64,6 +73,7 @@ export default async function ShopPage({
             stats={stats}
             averageLabel={avgLabel}
             similar={similar}
+            isBookmarked={isBookmarked}
           />
         </main>
       </Container>
