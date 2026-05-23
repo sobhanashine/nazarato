@@ -142,6 +142,21 @@ Only when every check above is green AND the user has confirmed (single batched 
 
 `--delete-branch=false` on **both** merges. Never pass `--delete-branch` or `git branch -D dev` / `git branch -D main`. The branches stay.
 
+### 8b. Close the linked issue
+
+Per [[project_pr_dev_close]], PRs in this repo target `dev`, so GitHub's `Closes #N` magic does NOT auto-close the issue when the PR merges — neither at PR→dev nor at dev→main. You must close it explicitly **only after** the dev→main promotion has merged AND every acceptance-criterion row in step 9's table is ✅.
+
+```
+gh issue close <N> --comment "Shipped in PR #<PR>, promoted to main via #<release-PR>. All acceptance criteria verified — see PR thread for the manager report."
+```
+
+Skip this step if:
+- Any acceptance-criterion row is ❌ (drop back to step 7).
+- The dev→main PR didn't actually merge (CI failed, conflict, etc.).
+- The user explicitly says to keep the issue open (e.g. it tracks broader follow-up work the PR only partially addressed).
+
+Confirm the close with `gh issue view <N> --json state` afterwards — it should report `CLOSED`.
+
 ### 9. Report
 
 One concise message to the user. **The acceptance-criteria table is mandatory** — without it the user has no way to verify that the issue is actually closed.
@@ -161,6 +176,7 @@ One concise message to the user. **The acceptance-criteria table is mandatory** 
 - What you fixed (if anything) on the fix branch.
 - Playwright specs added (paths).
 - Both merge commits / PR URLs.
+- **Issue close confirmation** — the `gh issue close` output / link to the now-closed issue. If you skipped the close per step 8b, say why.
 - Anything you noticed but did not fix (tech debt flagged, not blocked).
 
 ## Hard rules
