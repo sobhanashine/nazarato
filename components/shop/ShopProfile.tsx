@@ -9,6 +9,7 @@ import { useReviewSheet } from "@/components/review/ReviewSheetProvider";
 import { ReviewCard } from "@/components/ui/ReviewCard";
 import { IgShopCard } from "@/components/ui/IgShopCard";
 import { IgAvatar } from "@/components/ui/IgAvatar";
+import { BookmarkButton } from "@/components/ui/BookmarkButton";
 import { IgVerifiedBadge } from "@/components/ui/IgVerifiedBadge";
 import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
 import type { BusinessDetail } from "@/lib/data/businesses";
@@ -27,6 +28,7 @@ type Props = {
   stats: Stats;
   averageLabel: string;
   similar: InstagramShop[];
+  isBookmarked: boolean;
 };
 
 const TABS = [
@@ -41,14 +43,6 @@ const RATING_FILTERS: Rating[] = [5, 4, 3, 2, 1];
 const CARD = `${GLASS} p-5 sm:p-6`;
 const SECTION_H2 = "text-[1.05rem] font-extrabold text-strong";
 
-function BookmarkIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" className="h-[18px].w-[18px]" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M6 4.5h12a1 1 0 0 1 1 1v14l-7-4-7 4v-14a1 1 0 0 1 1-1z" />
-    </svg>
-  );
-}
-
 function ShareIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -60,12 +54,11 @@ function ShareIcon() {
   );
 }
 
-export function ShopProfile({ business, reviews, stats, averageLabel, similar }: Props) {
+export function ShopProfile({ business, reviews, stats, averageLabel, similar, isBookmarked }: Props) {
   const { openReviewSheet } = useReviewSheet();
   const [tab, setTab] = useState<TabId>("overview");
   const [ratingFilter, setRatingFilter] = useState<Rating | 0>(0);
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
-  const [saved, setSaved] = useState(false);
   const [shareNote, setShareNote] = useState("");
 
   const hasReviews = stats.count > 0;
@@ -167,19 +160,12 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar }:
           نوشتن نظر
         </button>
         <div className="grid grid-cols-2 gap-3 sm:flex">
-          <button
-            type="button"
-            onClick={() => setSaved((s) => !s)}
-            aria-pressed={saved}
-            className={`inline-flex items-center justify-center gap-2 rounded-full border px-5 py-3 text-[0.85rem] font-semibold transition-colors duration-200 sm:py-2.5 ${
-              saved
-                ? "border-mint/55 bg-mint/[0.12] text-mint"
-                : "border-glass-border bg-glass text-muted hover:border-mint/45 hover:text-strong"
-            }`}
-          >
-            <BookmarkIcon filled={saved} />
-            {saved ? "ذخیره شد" : "ذخیره"}
-          </button>
+          <BookmarkButton
+            businessSlug={business.slug}
+            initialIsBookmarked={isBookmarked}
+            label={isBookmarked ? "ذخیره شد" : "ذخیره"}
+            className="border px-5 py-3 text-[0.85rem] font-semibold transition-colors duration-200 sm:py-2.5 border-glass-border bg-glass text-muted hover:border-mint/45 hover:text-strong data-[active=true]:border-mint/55 data-[active=true]:bg-mint/[0.12] data-[active=true]:text-mint"
+          />
           <button
             type="button"
             onClick={handleShare}
