@@ -14,7 +14,8 @@ import {
   type Niche,
   type InstagramShopSortKey,
 } from "@/lib/data/instagram-shops";
-import { InstagramShopsSortSelect, instagramShopsHref } from "@/components/instagram-shops/InstagramShopsClient";
+import { InstagramShopsSortSelect } from "@/components/instagram-shops/InstagramShopsClient";
+import { instagramShopsHref } from "@/components/instagram-shops/href";
 
 type SearchParams = Promise<{
   niche?: string;

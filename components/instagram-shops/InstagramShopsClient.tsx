@@ -2,25 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ChevronLeftIcon } from "@/components/icons";
-
-/** Generates Instagram shops URLs maintaining current state. */
-export function instagramShopsHref(params: {
-  niche?: string;
-  sort?: string;
-  page?: number;
-}) {
-  const url = new URL("/instagram-shops", "http://localhost");
-  if (params.niche && params.niche !== "all") {
-    url.searchParams.set("niche", params.niche);
-  }
-  if (params.sort && params.sort !== "rating") {
-    url.searchParams.set("sort", params.sort);
-  }
-  if (params.page && params.page !== 1) {
-    url.searchParams.set("page", params.page.toString());
-  }
-  return `${url.pathname}${url.search}`;
-}
+import { instagramShopsHref } from "./href";
 
 export function InstagramShopsSortSelect({
   niche,
