@@ -1,3 +1,6 @@
+import { supabaseAdmin } from "@/lib/supabase/server";
+import { toRelativePersianTime } from "./businesses";
+
 /** Pre-written title suggestions shown via the lightbulb icon on the title field. */
 export const TITLE_SUGGESTIONS: string[] = [
   "محصول دقیقاً مطابق توضیحات بود",
@@ -72,3 +75,127 @@ export const recentReviews: Review[] = [
     text: "چند تا قاب دکوری و گلدون سفارش دادم. کیفیت ساخت بالا و بسته‌بندی فوق‌العاده. دقیقاً همونی بود که می‌خواستم.",
   },
 ];
+
+export type GlobalReviewSortKey = "newest" | "helpful" | "controversial";
+
+export async function getReviewsFromDb(options?: {
+  rating?: number;
+  categorySlug?: string;
+  igOnly?: boolean;
+  sort?: GlobalReviewSortKey;
+  page?: number;
+  limit?: number;
+}): Promise<{ reviews: Review[]; total: number }> {
+  const supabase = supabaseAdmin();
+  const rating = options?.rating || 0;
+  const categorySlug = options?.categorySlug || "all";
+  const igOnly = options?.igOnly || false;
+  const sort = options?.sort || "newest";
+  const page = options?.page || 1;
+  const limit = options?.limit || 6;
+
+  let query = supabase
+    .from("reviews")
+    .select(`
+      id,
+      rating,
+      created_at,
+      body,
+      verified,
+      helpful_count,
+      report_count,
+      author:users (
+        id,
+        display_name,
+        avatar_color
+      ),
+      business:businesses!inner (
+        id,
+        name,
+        slug,
+        type,
+        category_slug
+      )
+    `, { count: "exact" })
+    .eq("status", "published");
+
+  if (rating > 0) {
+    query = query.eq("rating", rating);
+  }
+
+  if (categorySlug && categorySlug !== "all") {
+    query = query.eq("business.category_slug", categorySlug);
+  }
+
+  if (igOnly) {
+    query = query.eq("business.type", "ig_shop");
+  }
+
+  if (sort === "helpful") {
+    query = query.order("helpful_count", { ascending: false }).order("created_at", { ascending: false });
+  } else if (sort === "controversial") {
+    query = query.order("report_count", { ascending: false }).order("created_at", { ascending: false });
+  } else {
+    query = query.order("created_at", { ascending: false });
+  }
+
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+  query = query.range(from, to);
+
+  const { data, error, count } = await query;
+
+  if (error || !data) {
+    console.error("[reviews] Failed to fetch global reviews:", error?.message);
+    return { reviews: [], total: 0 };
+  }
+
+  interface DbReviewRow {
+    id: string;
+    rating: number;
+    created_at: string;
+    body: string;
+    verified: boolean;
+    helpful_count: number;
+    report_count: number;
+    author: {
+      id: string;
+      display_name: string;
+      avatar_color: string | null;
+    } | null;
+    business: {
+      id: string;
+      name: string;
+      slug: string;
+      type: string;
+      category_slug: string;
+    } | null;
+  }
+
+  const rows = data as unknown as DbReviewRow[];
+  const reviews: Review[] = rows.map((r) => {
+    const author = r.author || { display_name: "کاربر نظراتو", avatar_color: "#3B82F6" };
+    const biz = r.business || { name: "کسب‌وکار ناشناس", slug: "unknown", type: "company" };
+    const isIg = biz.type === "ig_shop";
+
+    return {
+      id: r.id,
+      user: {
+        name: author.display_name,
+        initial: author.display_name.charAt(0) || "ک",
+        color: author.avatar_color || "#3B82F6",
+      },
+      shop: {
+        name: biz.name,
+        href: isIg ? `/shop/${biz.slug}` : `/company/${biz.slug}`,
+      },
+      date: toRelativePersianTime(r.created_at),
+      rating: r.rating as 1 | 2 | 3 | 4 | 5,
+      text: r.body,
+      verified: r.verified,
+    };
+  });
+
+  return { reviews, total: count || 0 };
+}
+
