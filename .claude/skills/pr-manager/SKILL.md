@@ -25,10 +25,11 @@ request and wants you to verify it is shippable, fix it if not, and ship it.
 
 ## The pipeline (run in order, do not skip)
 
-### 1. Locate the task
+### 1. Locate the task AND extract its acceptance criteria
 
 - `gh pr view <PR>` — title, body, base branch, head branch, author, state.
-- Find the linked issue (`Closes #N`, `Refs #N`, body mentions). `gh issue view <N>` for acceptance criteria.
+- Find the linked issue (`Closes #N`, `Refs #N`, body mentions). **`gh issue view <N>` is mandatory** — never run the pipeline without reading the issue. If no issue is linked, STOP and ask the user which issue this PR fulfils.
+- **Copy the issue's acceptance criteria verbatim into a checklist** (the `## Acceptance` / `### Acceptance` section, usually `- [ ]` bullets). This list becomes the contract for step 9 — every box must be ticked with a concrete file path, route, or test name as evidence. A PR that ships without satisfying its acceptance criteria does not merge, no matter how green the automated checks are.
 - Note the **base branch**. In this repo PRs target `dev` (see [[project_pr_dev_close]]). If a PR targets `main` directly, flag it before doing anything else.
 
 ### 2. Check out the PR branch locally
@@ -45,6 +46,7 @@ Read `AGENTS.md` / `CLAUDE.md` and the linked issue. Check:
 - New files in the right place; no `pages/` directory introduced.
 - No secrets, no `node_modules/` edits, no direct edits to generated output.
 - Commit messages follow [[commit-style]] (Conventional Commits with scope).
+- **Server/client boundary**: no server component calls a non-component export from a `"use client"` module. See step 5b for the mechanical check.
 
 ### 4. Invoke the `senior-frontend` skill
 
@@ -52,12 +54,57 @@ For any changed file under `app/`, `components/`, `src/`, or matching `*.tsx`/`*
 
 ### 5. Automated checks
 
-Run, in parallel where possible:
+Run, in parallel where possible. **All four are mandatory — none may be skipped, and a non-zero exit on any of them blocks the merge.**
 
-- `pnpm typecheck` (or `npm run typecheck` / `tsc --noEmit` — match the project's script).
-- `pnpm lint`
-- `pnpm test` (unit / Vitest)
-- `pnpm build` — production build must succeed.
+- `pnpm typecheck` (or `npm run typecheck` / `tsc --noEmit` — match the project's script). 0 errors.
+- `pnpm lint`. 0 errors (warnings noted, not blocking).
+- `pnpm test` (unit / Vitest). All pass.
+- `pnpm build` — **production build must succeed.** This is the non-negotiable one: if `next build` fails, the PR cannot ship to Vercel at all. Do not paper over a build failure by reverting only the failing file; investigate and fix the root cause. Common build failures to watch for: missing env vars in `next.config`, type errors that `tsc --noEmit` missed due to differing `tsconfig` paths, `generateStaticParams` returning malformed data, server/client boundary violations on pages that prerender (see step 5b).
+
+### 5b. Server/client boundary scan (Next.js App Router)
+
+**Why this exists**: a `"use client"` module can re-export *components* across the boundary, but a server component cannot **call** a non-component export from one. The build does not catch this — it only fires at request time, and only on routes you actually hit. Static (`○`) and SSG (`●`) routes get hit at build; dynamic (`ƒ`) routes do not, so the error ships silently. (We hit this on PR #52: `instagramShopsHref` was a plain function exported from `InstagramShopsClient.tsx`, called by the dynamic `/instagram-shops` server page — typecheck, lint, vitest, and `next build` all passed.)
+
+Run this scan over the diff:
+
+```bash
+# 1. Find every "use client" file changed in this PR
+git diff --name-only origin/dev...HEAD -- '*.ts' '*.tsx' \
+  | xargs grep -l '^"use client"' 2>/dev/null
+
+# 2. For each, list its non-component exports (functions starting with lowercase)
+#    These are the dangerous ones — anything PascalCase is a component and is fine.
+grep -E '^export (async )?function [a-z]' <client-file>
+
+# 3. For every name found, search server-side code (files under app/ that are NOT
+#    "use client", plus route handlers and server actions) for calls to it.
+grep -RnE "\b<name>\s*\(" app/ components/ lib/ \
+  | grep -v "$(grep -lE '^\"use client\"' -r app components)"
+```
+
+If a server file imports a non-component export from a `"use client"` module, that export must be moved to a plain `.ts` module (no directive). Prefer co-locating the helper next to the client component as `href.ts` / `utils.ts`.
+
+The check is also worth running for re-exports: a barrel file that re-exports from a `"use client"` module inherits the same restriction.
+
+### 5c. Route smoke test (catches what `next build` misses)
+
+Boot the dev server and `curl` every route the PR adds or changes. Static analysis does not run dynamic routes — runtime-only errors (server/client boundary, missing env vars, failed server fetches) only show up here.
+
+```bash
+# Start the dev server in the background (re-use one already running on :3000 if present)
+lsof -i:3000 >/dev/null || (npm run dev >/tmp/dev.log 2>&1 &)
+# wait until ready
+until curl -sf http://localhost:3000 -o /dev/null; do sleep 1; done
+
+# For each new/changed route from the diff, fetch it and assert no boundary/runtime error
+for route in /instagram-shops "/shop/<a-real-handle>"; do
+  body=$(curl -s "http://localhost:3000$route")
+  echo "$body" | grep -qE "Attempted to call|Runtime Error|Unhandled Runtime" \
+    && { echo "RUNTIME ERROR on $route"; exit 1; }
+done
+```
+
+A `200` with the expected page title is the bar. A `200` with an error overlay in the HTML is still a failure.
 
 ### 6. Playwright E2E (always)
 
@@ -97,13 +144,24 @@ Only when every check above is green AND the user has confirmed (single batched 
 
 ### 9. Report
 
-One concise message to the user:
+One concise message to the user. **The acceptance-criteria table is mandatory** — without it the user has no way to verify that the issue is actually closed.
 
-- PR # + issue # shipped
-- What you fixed (if anything) on the fix branch
-- Playwright specs added (paths)
-- Both merge commits / PR URLs
-- Anything you noticed but did not fix (tech debt flagged, not blocked)
+- PR # + issue # shipped, with the issue title.
+- **Acceptance-criteria table** — the checklist captured in step 1, with each box marked ✅ / ❌ and a concrete artifact next to it (file path, route URL, test name, screenshot). Example:
+
+  | # | Criterion | Evidence |
+  |---|---|---|
+  | 1 | `/instagram-shops` with niche tabs + pagination | `app/instagram-shops/page.tsx:73-202`, smoke test 200 |
+  | 2 | `/shop/[handle]` profile with `<IgAvatar />` | `components/shop/ShopProfile.tsx:114`, route GET 200 |
+  | 3 | `/shop/[handle]/write-review` auth-gated | `app/shop/[handle]/write-review/page.tsx:35` (`redirect(/login?next=...)`) |
+  | 4 | `generateStaticParams` + `notFound()` | `app/shop/[handle]/page.tsx:17,42` |
+
+  If any row is ❌, the PR does NOT ship — drop back to step 7 and fix.
+- Automated-check results (typecheck / lint / unit / **build** / Playwright) — one line each, pass or fail. Always cite the build result explicitly; it's the one that gates Vercel.
+- What you fixed (if anything) on the fix branch.
+- Playwright specs added (paths).
+- Both merge commits / PR URLs.
+- Anything you noticed but did not fix (tech debt flagged, not blocked).
 
 ## Hard rules
 
@@ -117,7 +175,7 @@ One concise message to the user:
 
 ## What "green" means
 
-All of these are true at the same time, on the final commit of the PR branch:
+All of these are true at the same time, on the final commit of the PR branch. **Every acceptance-criterion box from the linked issue is ticked with a concrete artifact (file:line, route, or test name). No exceptions — a PR with green CI but unmet criteria is not green, it is incomplete.**
 
 - typecheck: 0 errors
 - lint: 0 errors (warnings noted, not blocking)
