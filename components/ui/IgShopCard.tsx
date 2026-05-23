@@ -58,8 +58,8 @@ export function IgShopCard({ shop, isBookmarked }: IgShopCardProps) {
         </div>
       </div>
       {typeof isBookmarked === "boolean" && (
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2" onClick={(e) => e.preventDefault()}>
-          <BookmarkButton businessSlug={s.slug} initialIsBookmarked={isBookmarked} />
+        <div className="absolute left-4 top-1/2 -translate-y-1/2">
+          <BookmarkButton businessSlug={s.slug} initialIsBookmarked={isBookmarked} className="p-2 -m-2" />
         </div>
       )}
     </Link>

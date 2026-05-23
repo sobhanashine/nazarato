@@ -2,9 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/lib/auth/session";
 import { getUserBookmarks, getPopularBusinesses } from "@/lib/data/bookmarks";
-import { BusinessCard } from "@/components/ui/BusinessCard";
-import { IgShopCard } from "@/components/ui/IgShopCard";
-import { Container } from "@/components/ui/Container";
+import { SavedBusinessCard } from "@/components/saved/SavedBusinessCard";
+import { SavedIgShopCard } from "@/components/saved/SavedIgShopCard";
 import type { InstagramShop } from "@/lib/data/instagram-shops";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
@@ -34,7 +33,7 @@ export default async function SavedPage({
   };
 
   return (
-    <Container className="pb-16 pt-6">
+    <div className="flex flex-col gap-0 pb-8">
       <div className="mb-6">
         <h1 className="text-2xl font-black text-strong">ذخیره‌شده‌ها</h1>
         <p className="mt-2 text-sm text-muted">
@@ -68,7 +67,7 @@ export default async function SavedPage({
       </div>
 
       {bookmarks.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-4">
           {bookmarks.map((b) => {
             if (currentTab === "ig") {
               const shop: InstagramShop = {
@@ -82,9 +81,9 @@ export default async function SavedPage({
                 score: b.score,
                 reviews: b.reviews,
               };
-              return <IgShopCard key={b.slug} shop={shop} isBookmarked={true} />;
+              return <SavedIgShopCard key={b.slug} shop={shop} />;
             }
-            return <BusinessCard key={b.slug} business={b} isBookmarked={true} />;
+            return <SavedBusinessCard key={b.slug} business={b} />;
           })}
         </div>
       ) : (
@@ -116,13 +115,13 @@ export default async function SavedPage({
               </h3>
               <div className="grid gap-4 sm:grid-cols-2 text-right">
                 {popularBusinesses.map((b) => (
-                  <BusinessCard key={b.slug} business={b} />
+                  <SavedBusinessCard key={b.slug} business={b} />
                 ))}
               </div>
             </div>
           )}
         </div>
       )}
-    </Container>
+    </div>
   );
 }

@@ -20,10 +20,7 @@ export default async function UserLayout({
   children: ReactNode;
 }) {
   const session = await getSession();
-  if (!session) redirect("/login?next=/profile");
-
-  const user = await getUserById(session.id);
-  if (!user) redirect("/login?next=/profile");
+  const user = session ? await getUserById(session.id) : null;
 
   return (
     <>
@@ -35,7 +32,7 @@ export default async function UserLayout({
             the cards don't stretch sparse on wide screens. */}
         <div className="grid grid-cols-1 gap-5 py-6 lg:grid-cols-[200px_minmax(0,640px)] lg:justify-center lg:gap-8 lg:py-10">
           <aside className="lg:pt-1">
-            <ProfileNav userRole={user.role} />
+            <ProfileNav userRole={user?.role} />
           </aside>
           <div className="min-w-0">{children}</div>
         </div>
