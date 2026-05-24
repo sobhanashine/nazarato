@@ -2,17 +2,26 @@ import webpush from "web-push";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 let configured = false;
+let configureFailed = false;
 function configure(): boolean {
   if (configured) return true;
+  if (configureFailed) return false;
   const publicKey = process.env.VAPID_PUBLIC_KEY;
   const privateKey = process.env.VAPID_PRIVATE_KEY;
   const subject = process.env.VAPID_SUBJECT;
   if (!publicKey || !privateKey || !subject) {
+    configureFailed = true;
     return false;
   }
-  webpush.setVapidDetails(subject, publicKey, privateKey);
-  configured = true;
-  return true;
+  try {
+    webpush.setVapidDetails(subject, publicKey, privateKey);
+    configured = true;
+    return true;
+  } catch (err) {
+    console.error("[push] setVapidDetails failed", err);
+    configureFailed = true;
+    return false;
+  }
 }
 
 export type PushPayload = {
@@ -58,48 +67,58 @@ export async function sendPushToUser(
   userId: string,
   payload: PushPayload
 ): Promise<void> {
-  if (!configure()) {
-    return;
-  }
+  try {
+    if (!configure()) {
+      return;
+    }
 
-  const subs = await listUserSubscriptions(userId);
-  if (subs.length === 0) return;
+    const subs = await listUserSubscriptions(userId);
+    if (subs.length === 0) return;
 
-  const body = JSON.stringify(payload);
+    const body = JSON.stringify(payload);
 
-  await Promise.all(
-    subs.map(async (sub) => {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: { p256dh: sub.p256dh, auth: sub.auth },
-          },
-          body
-        );
-      } catch (err: unknown) {
-        const statusCode =
-          typeof err === "object" && err && "statusCode" in err
-            ? (err as { statusCode: number }).statusCode
-            : 0;
-        if (statusCode === 404 || statusCode === 410) {
-          await deleteSubscription(sub.id);
-        } else {
-          console.error("[push] sendNotification failed", {
-            userId,
-            subscriptionId: sub.id,
-            statusCode,
-          });
+    await Promise.all(
+      subs.map(async (sub) => {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: sub.endpoint,
+              keys: { p256dh: sub.p256dh, auth: sub.auth },
+            },
+            body
+          );
+        } catch (err: unknown) {
+          const statusCode =
+            typeof err === "object" && err && "statusCode" in err
+              ? (err as { statusCode: number }).statusCode
+              : 0;
+          if (statusCode === 404 || statusCode === 410) {
+            await deleteSubscription(sub.id).catch(() => {});
+          } else {
+            console.error("[push] sendNotification failed", {
+              userId,
+              subscriptionId: sub.id,
+              statusCode,
+            });
+          }
         }
-      }
-    })
-  );
+      })
+    );
+  } catch (err) {
+    // Web-push delivery must never break the caller (review submission,
+    // moderation action, etc). Log loudly but absorb the exception.
+    console.error("[push] sendPushToUser threw", { userId, err });
+  }
 }
 
-/** Send a push to many users in parallel. */
+/** Send a push to many users in parallel. Never throws. */
 export async function sendPushToUsers(
   userIds: string[],
   payload: PushPayload
 ): Promise<void> {
-  await Promise.all(userIds.map((id) => sendPushToUser(id, payload)));
+  try {
+    await Promise.all(userIds.map((id) => sendPushToUser(id, payload)));
+  } catch (err) {
+    console.error("[push] sendPushToUsers threw", { count: userIds.length, err });
+  }
 }
