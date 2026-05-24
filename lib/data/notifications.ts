@@ -1,3 +1,4 @@
+import { sendPushToUser, sendPushToUsers } from "@/lib/push/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 export type NotificationType =
@@ -146,15 +147,21 @@ export async function notifyAdminsOfNewReview(args: {
     return;
   }
 
-  const rows: NewNotification[] = (admins ?? []).map((a: { id: string }) => ({
-    user_id: a.id,
+  const adminIds = (admins ?? []).map((a: { id: string }) => a.id);
+  const title = "نظر جدید در انتظار بررسی";
+  const body = `یک نظر جدید برای «${args.businessName}» ثبت شده و آماده بررسی است.`;
+  const link = "/admin/moderation";
+
+  const rows: NewNotification[] = adminIds.map((id) => ({
+    user_id: id,
     type: "admin_new_review",
-    title: "نظر جدید در انتظار بررسی",
-    body: `یک نظر جدید برای «${args.businessName}» ثبت شده و آماده بررسی است.`,
-    link: "/admin/moderation",
+    title,
+    body,
+    link,
   }));
 
   await insertMany(rows);
+  await sendPushToUsers(adminIds, { title, body, link, tag: "admin_new_review" });
 }
 
 /** Notify the review author that the moderation decision is in. */
@@ -166,14 +173,24 @@ export async function notifyReviewDecision(args: {
   businessType: "company" | "ig_shop";
 }): Promise<void> {
   const linkBase = args.businessType === "ig_shop" ? "/shop" : "/company";
+  const title = args.approved ? "نظر شما تأیید شد" : "نظر شما رد شد";
+  const body = args.approved
+    ? `نظر شما برای «${args.businessName}» منتشر شد.`
+    : `نظر شما برای «${args.businessName}» توسط تیم بررسی رد شد.`;
+  const link = `${linkBase}/${args.businessSlug}`;
+
   const row: NewNotification = {
     user_id: args.authorId,
     type: args.approved ? "review_approved" : "review_rejected",
-    title: args.approved ? "نظر شما تأیید شد" : "نظر شما رد شد",
-    body: args.approved
-      ? `نظر شما برای «${args.businessName}» منتشر شد.`
-      : `نظر شما برای «${args.businessName}» توسط تیم بررسی رد شد.`,
-    link: `${linkBase}/${args.businessSlug}`,
+    title,
+    body,
+    link,
   };
   await insertMany([row]);
+  await sendPushToUser(args.authorId, {
+    title,
+    body,
+    link,
+    tag: args.approved ? "review_approved" : "review_rejected",
+  });
 }
