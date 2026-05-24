@@ -55,6 +55,15 @@ function IconLogout() {
   );
 }
 
+function IconBell() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
+
 function IconShield() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -66,6 +75,7 @@ function IconShield() {
 const items: Item[] = [
   { href: "/profile", label: "نمای کلی", icon: <IconGrid /> },
   { href: "/profile/reviews", label: "نظرات من", icon: <IconStar /> },
+  { href: "/profile/notifications", label: "اعلان‌ها", icon: <IconBell /> },
   { href: "/saved", label: "ذخیره‌شده‌ها", icon: <IconBookmark /> },
   { href: "/settings", label: "تنظیمات", icon: <IconGear /> },
 ];
@@ -76,9 +86,10 @@ const chipBase =
 
 interface ProfileNavProps {
   userRole?: string;
+  unreadCount?: number;
 }
 
-export function ProfileNav({ userRole }: ProfileNavProps) {
+export function ProfileNav({ userRole, unreadCount = 0 }: ProfileNavProps) {
   const pathname = usePathname() ?? "";
 
   const navItems = [...items];
@@ -113,6 +124,14 @@ export function ProfileNav({ userRole }: ProfileNavProps) {
           >
             <span className="inline-flex">{item.icon}</span>
             {item.label}
+            {item.href === "/profile/notifications" && unreadCount > 0 && (
+              <span
+                aria-label={`${unreadCount} اعلان خوانده‌نشده`}
+                className="inline-flex min-w-5 items-center justify-center rounded-full bg-mint px-1.5 py-0.5 text-[0.65rem] font-black text-black"
+              >
+                {unreadCount > 99 ? "+۹۹" : unreadCount}
+              </span>
+            )}
           </Link>
         );
       })}

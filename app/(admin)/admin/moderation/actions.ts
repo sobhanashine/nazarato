@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth/session";
+import { notifyReviewDecision } from "@/lib/data/notifications";
 import { getUserById } from "@/lib/data/users";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
@@ -31,7 +32,7 @@ export async function approveReview(reviewId: string) {
   // 1. Fetch review to check if it has a proof_url
   const { data: review, error: fetchError } = await supabase
     .from("reviews")
-    .select("proof_url, business_id, proof_status")
+    .select("proof_url, business_id, proof_status, author_id")
     .eq("id", reviewId)
     .single();
 
@@ -80,15 +81,22 @@ export async function approveReview(reviewId: string) {
     }
   }
 
-  // 4. Revalidate cache
+  // 4. Revalidate cache + notify the author of the approval.
   const { data: biz } = await supabase
     .from("businesses")
-    .select("slug")
+    .select("slug, name, type")
     .eq("id", review.business_id)
     .single();
 
   if (biz) {
-    revalidatePath(`/company/${biz.slug}`);
+    revalidatePath(`/${biz.type === "ig_shop" ? "shop" : "company"}/${biz.slug}`);
+    await notifyReviewDecision({
+      authorId: review.author_id,
+      approved: true,
+      businessName: biz.name,
+      businessSlug: biz.slug,
+      businessType: biz.type as "company" | "ig_shop",
+    });
   }
   revalidatePath("/admin/moderation");
 
@@ -108,7 +116,7 @@ export async function rejectReview(reviewId: string, rejectionReason?: string) {
   // 1. Fetch review to check if it has a proof_url
   const { data: review, error: fetchError } = await supabase
     .from("reviews")
-    .select("proof_url, business_id, proof_status")
+    .select("proof_url, business_id, proof_status, author_id")
     .eq("id", reviewId)
     .single();
 
@@ -157,15 +165,22 @@ export async function rejectReview(reviewId: string, rejectionReason?: string) {
     }
   }
 
-  // 4. Revalidate cache
+  // 4. Revalidate cache + notify the author of the rejection.
   const { data: biz } = await supabase
     .from("businesses")
-    .select("slug")
+    .select("slug, name, type")
     .eq("id", review.business_id)
     .single();
 
   if (biz) {
-    revalidatePath(`/company/${biz.slug}`);
+    revalidatePath(`/${biz.type === "ig_shop" ? "shop" : "company"}/${biz.slug}`);
+    await notifyReviewDecision({
+      authorId: review.author_id,
+      approved: false,
+      businessName: biz.name,
+      businessSlug: biz.slug,
+      businessType: biz.type as "company" | "ig_shop",
+    });
   }
   revalidatePath("/admin/moderation");
 

@@ -2,6 +2,7 @@
 
 import { getSession } from "@/lib/auth/session";
 import { getShopByHandle } from "@/lib/data/instagram-shops";
+import { notifyAdminsOfNewReview } from "@/lib/data/notifications";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 const BODY_MIN = 30;
@@ -138,7 +139,7 @@ export async function submitShopReview(
   // Fetch business ID from DB
   const { data: businessRow, error: bizError } = await supabase
     .from("businesses")
-    .select("id")
+    .select("id, name")
     .eq("slug", slug)
     .single();
 
@@ -214,6 +215,8 @@ export async function submitShopReview(
     }
     return { ok: false, error: "خطا در ثبت نظر در سیستم." };
   }
+
+  await notifyAdminsOfNewReview({ businessName: businessRow.name });
 
   return { ok: true, redirectUrl: `/shop/${slug}` };
 }
