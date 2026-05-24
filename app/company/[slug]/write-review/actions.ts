@@ -18,6 +18,7 @@
 
 import { getSession } from "@/lib/auth/session";
 import { getBusiness } from "@/lib/data/businesses";
+import { notifyAdminsOfNewReview } from "@/lib/data/notifications";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 const BODY_MIN = 30;
@@ -157,7 +158,7 @@ export async function submitReview(
   // 1. Fetch business ID from DB
   const { data: businessRow, error: bizError } = await supabase
     .from("businesses")
-    .select("id")
+    .select("id, name")
     .eq("slug", slug)
     .single();
 
@@ -233,6 +234,8 @@ export async function submitReview(
     }
     return { ok: false, error: "خطا در ثبت نظر در سیستم." };
   }
+
+  await notifyAdminsOfNewReview({ businessName: businessRow.name });
 
   return { ok: true, redirectUrl: `/company/${slug}` };
 }

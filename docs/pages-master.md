@@ -401,12 +401,12 @@ Each entry is structured the same way so it scans fast:
 - **Layout**: chronological list grouped by day; mark-all-read button.
 - **A11y**: items use `aria-live="polite"` only for in-page updates.
 
-#### Settings — `/settings` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0
-- Index page with quick links into sub-settings.
+#### Settings — `/settings` &nbsp;·&nbsp; 🚧 partial &nbsp;·&nbsp; P0
+- **Purpose**: Index page with quick links into sub-settings.
 - **Sub-pages**:
-  - `/settings/security` — change phone, sessions list, logout-all.
-  - `/settings/notifications` — toggles: SMS / email / web push.
-  - `/settings/privacy` — public profile visibility, delete account.
+  - `/settings/security` — change phone, sessions list, logout-all (deferred for next phase).
+  - `/settings/notifications` — toggles: in-website notifications (built).
+  - `/settings/privacy` — public profile visibility (built), delete account (deferred).
 
 ### 4.5 Public profile of any user — `/users/[username]` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1
 - **Purpose**: When you click a reviewer's name, you see their public history.

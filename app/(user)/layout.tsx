@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { ProfileNav } from "@/components/profile/ProfileNav";
 import { Container } from "@/components/ui/Container";
 import { getSession } from "@/lib/auth/session";
+import { getUnreadCount } from "@/lib/data/notifications";
 import { getUserById } from "@/lib/data/users";
 
 /**
@@ -21,6 +21,7 @@ export default async function UserLayout({
 }) {
   const session = await getSession();
   const user = session ? await getUserById(session.id) : null;
+  const unreadCount = session ? await getUnreadCount(session.id) : 0;
 
   return (
     <>
@@ -32,7 +33,7 @@ export default async function UserLayout({
             the cards don't stretch sparse on wide screens. */}
         <div className="grid grid-cols-1 gap-5 py-6 lg:grid-cols-[200px_minmax(0,640px)] lg:justify-center lg:gap-8 lg:py-10">
           <aside className="lg:pt-1">
-            <ProfileNav userRole={user?.role} />
+            <ProfileNav userRole={user?.role} unreadCount={unreadCount} />
           </aside>
           <div className="min-w-0">{children}</div>
         </div>
