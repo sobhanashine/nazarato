@@ -86,10 +86,13 @@ export type ProfileUser = {
   reviews_count?: number;
   helpful_votes_received?: number;
   reputation_score?: number;
+  public_profile?: boolean;
+  notification_replies?: boolean;
+  notification_bookmarks?: boolean;
 };
 
 const PROFILE_SELECT =
-  "id, display_name, username, avatar_color, role, created_at, reviews_count, helpful_votes_received, reputation_score";
+  "id, display_name, username, avatar_color, role, created_at, reviews_count, helpful_votes_received, reputation_score, public_profile, notification_replies, notification_bookmarks";
 
 /** Narrow an untrusted DB row to a `ProfileUser`; throws on an unexpected shape. */
 function asProfileUser(value: unknown): ProfileUser {
@@ -115,6 +118,9 @@ function asProfileUser(value: unknown): ProfileUser {
     reviews_count: typeof o.reviews_count === "number" ? o.reviews_count : 0,
     helpful_votes_received: typeof o.helpful_votes_received === "number" ? o.helpful_votes_received : 0,
     reputation_score: typeof o.reputation_score === "number" ? o.reputation_score : 0,
+    public_profile: typeof o.public_profile === "boolean" ? o.public_profile : true,
+    notification_replies: typeof o.notification_replies === "boolean" ? o.notification_replies : true,
+    notification_bookmarks: typeof o.notification_bookmarks === "boolean" ? o.notification_bookmarks : true,
   };
 }
 
@@ -163,3 +169,43 @@ export async function createUser(input: {
   }
   return asUserRow(data);
 }
+
+/** Update a user's in-website notification preferences. */
+export async function updateUserNotificationSettings(
+  id: string,
+  updates: { notification_replies: boolean; notification_bookmarks: boolean }
+): Promise<void> {
+  const { error } = await supabaseAdmin()
+    .from("users")
+    .update({
+      notification_replies: updates.notification_replies,
+      notification_bookmarks: updates.notification_bookmarks,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error("[users] updateUserNotificationSettings failed", { id, error: error.message });
+    throw new Error("failed to update notification settings");
+  }
+}
+
+/** Update a user's public profile privacy preference. */
+export async function updateUserPrivacy(
+  id: string,
+  publicProfile: boolean
+): Promise<void> {
+  const { error } = await supabaseAdmin()
+    .from("users")
+    .update({
+      public_profile: publicProfile,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error("[users] updateUserPrivacy failed", { id, error: error.message });
+    throw new Error("failed to update privacy settings");
+  }
+}
+
