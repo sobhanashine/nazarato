@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { NotificationsForm } from "@/components/settings/NotificationsForm";
+import { PushToggle } from "@/components/settings/PushToggle";
 import { getSession } from "@/lib/auth/session";
 import { getUserById } from "@/lib/data/users";
 
@@ -53,6 +54,8 @@ export default async function NotificationsSettingsPage() {
         initialReplies={user.notification_replies ?? true}
         initialBookmarks={user.notification_bookmarks ?? true}
       />
+
+      <PushToggle vapidPublicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null} />
     </div>
   );
 }
