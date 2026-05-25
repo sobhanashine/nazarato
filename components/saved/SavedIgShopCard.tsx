@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { StarIcon } from "@/components/icons";
-import { GLASS } from "@/components/ui/styles";
 import type { InstagramShop } from "@/lib/data/instagram-shops";
 import { BookmarkButton } from "@/components/ui/BookmarkButton";
 

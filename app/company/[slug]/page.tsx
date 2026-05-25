@@ -42,10 +42,8 @@ export default async function CompanyPage({
   params: Promise<Params>;
 }) {
   const { slug } = await params;
-  const sessionPromise = getSession();
-  const businessPromise = getBusiness(slug);
-  
-  const [session, business] = await Promise.all([sessionPromise, businessPromise]);
+  const session = await getSession();
+  const business = await getBusiness(slug, session?.id);
   if (!business) notFound();
 
   const isBookmarked = session?.id

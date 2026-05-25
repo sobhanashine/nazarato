@@ -12,7 +12,6 @@
  * reviews backend exists.
  */
 import Link from "next/link";
-import { useRef, useState } from "react";
 import { RatingStars } from "@/components/ui/RatingStars";
 import { GLASS } from "@/components/ui/styles";
 import type { MyReview, ReviewStatus } from "@/lib/data/profile";
@@ -41,24 +40,7 @@ const actionBtn =
   "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[0.78rem] font-semibold transition-colors duration-200 [&_svg]:h-[14px] [&_svg]:w-[14px]";
 
 export function MyReviewsList({ reviews }: { reviews: MyReview[] }) {
-  const [list, setList] = useState(reviews);
-  const [pending, setPending] = useState<MyReview | null>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  function askDelete(review: MyReview) {
-    setPending(review);
-    dialogRef.current?.showModal();
-  }
-
-  function closeDialog() {
-    dialogRef.current?.close();
-    setPending(null);
-  }
-
-  function confirmDelete() {
-    if (pending) setList((prev) => prev.filter((r) => r.id !== pending.id));
-    closeDialog();
-  }
+  const list = reviews;
 
   return (
     <div className="flex flex-col gap-4">
@@ -156,16 +138,6 @@ export function MyReviewsList({ reviews }: { reviews: MyReview[] }) {
                   </svg>
                   ویرایش
                 </button>
-                <button
-                  type="button"
-                  onClick={() => askDelete(review)}
-                  className={`${actionBtn} border-rose-400/35 text-rose-300 hover:bg-rose-400/12`}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
-                  </svg>
-                  حذف
-                </button>
               </div>
             </li>
           );
@@ -173,42 +145,6 @@ export function MyReviewsList({ reviews }: { reviews: MyReview[] }) {
         </ul>
       )}
 
-      <dialog
-        ref={dialogRef}
-        aria-labelledby="delete-review-title"
-        onCancel={closeDialog}
-        className="m-auto w-[min(92vw,380px)] rounded-glass border border-glass-border bg-[#0e1320] p-0 text-strong backdrop:bg-black/65 backdrop:backdrop-blur-sm"
-      >
-        <div className="flex flex-col gap-3 p-5 sm:p-6">
-          <h2
-            id="delete-review-title"
-            className="text-[1.05rem] font-black text-strong"
-          >
-            حذف این نظر؟
-          </h2>
-          <p className="text-[0.85rem] leading-[1.9] text-muted">
-            {pending
-              ? `نظر شما درباره «${pending.shop.name}» برای همیشه حذف می‌شود. این کار قابل بازگشت نیست.`
-              : ""}
-          </p>
-          <div className="mt-1 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={closeDialog}
-              className="rounded-full border border-glass-border bg-glass px-4 py-2 text-[0.83rem] font-semibold text-muted transition-colors hover:text-strong"
-            >
-              انصراف
-            </button>
-            <button
-              type="button"
-              onClick={confirmDelete}
-              className="rounded-full border border-rose-400/45 bg-rose-400/15 px-4 py-2 text-[0.83rem] font-bold text-rose-200 transition-colors hover:bg-rose-400/25"
-            >
-              حذف نظر
-            </button>
-          </div>
-        </div>
-      </dialog>
     </div>
   );
 }

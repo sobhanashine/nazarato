@@ -209,3 +209,56 @@ export async function updateUserPrivacy(
   }
 }
 
+/** Look up an account by public `username` or database UUID `id`; `null` if none exists. */
+export async function getUserByUsername(username: string): Promise<ProfileUser | null> {
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(username);
+
+  const query = supabaseAdmin()
+    .from("users")
+    .select(PROFILE_SELECT);
+
+  const { data, error } = await (isUuid
+    ? query.eq("id", username)
+    : query.eq("username", username)
+  ).maybeSingle();
+
+  if (error) {
+    console.error("[users] getUserByUsername failed", { username, error: error.message });
+    throw new Error("user lookup failed");
+  }
+  
+  if (data === null) {
+    // Fallback for mock users
+    const mockMap: Record<string, { id: string; name: string; color: string }> = {
+      "sara_ahmadi": { id: "user-mock-1", name: "سارا احمدی", color: "#5BBB7B" },
+      "niloofar_h": { id: "user-mock-2", name: "نیلوفر حسینی", color: "#8B5CF6" },
+      "zahra_m": { id: "user-mock-3", name: "زهرا موسوی", color: "#F59E0B" },
+      "ali_k": { id: "user-mock-4", name: "علی کریمی", color: "#3B82F6" },
+      "mohammad_r": { id: "user-mock-5", name: "محمد رضایی", color: "#EC4899" },
+      "reza_j": { id: "user-mock-6", name: "رضا جعفری", color: "#14B8A6" },
+    };
+    
+    if (mockMap[username]) {
+      return {
+        id: mockMap[username].id,
+        display_name: mockMap[username].name,
+        username: username,
+        avatar_color: mockMap[username].color,
+        role: "user",
+        created_at: new Date("2023-01-01").toISOString(),
+        reviews_count: 0,
+        helpful_votes_received: 0,
+        reputation_score: 100,
+        public_profile: true,
+        notification_replies: true,
+        notification_bookmarks: true,
+      };
+    }
+    
+    return null;
+  }
+  
+  return asProfileUser(data);
+}
+
+

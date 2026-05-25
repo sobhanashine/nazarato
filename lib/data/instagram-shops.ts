@@ -130,7 +130,10 @@ export async function getInstagramShopsFromDb(options?: {
 }
 
 /** Get individual Instagram shop profile by handle (slug) and fetch its reviews */
-export async function getShopByHandle(handle: string): Promise<BusinessDetail | undefined> {
+export async function getShopByHandle(
+  handle: string,
+  viewerId?: string,
+): Promise<BusinessDetail | undefined> {
   const supabase = supabaseAdmin();
   
   // 1. Fetch shop row
@@ -184,6 +187,22 @@ export async function getShopByHandle(handle: string): Promise<BusinessDetail | 
 
   const reviewsList = (reviewsData || []) as unknown as DbReview[];
 
+  // Resolve which of these reviews the viewer has already voted on.
+  let votedSet: Set<string> = new Set();
+  if (viewerId && reviewsList.length > 0) {
+    const { data: votes, error: vError } = await supabase
+      .from("review_votes")
+      .select("review_id")
+      .eq("user_id", viewerId)
+      .in("review_id", reviewsList.map((r) => r.id));
+    if (vError && vError.code !== "PGRST205") {
+      console.error("[instagram-shops] Failed to fetch review votes:", vError.message);
+    }
+    if (votes) {
+      votedSet = new Set((votes as Array<{ review_id: string }>).map((v) => v.review_id));
+    }
+  }
+
   const reviews = reviewsList.map((r) => {
     const author = r.author || { display_name: "کاربر نظراتو", avatar_color: "#3B82F6" };
     return {
@@ -197,6 +216,7 @@ export async function getShopByHandle(handle: string): Promise<BusinessDetail | 
       date: toRelativePersianTime(r.created_at),
       text: r.body,
       verified: r.verified,
+      has_voted: votedSet.has(r.id),
     };
   });
   

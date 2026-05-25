@@ -40,10 +40,8 @@ export default async function ShopPage({
   params: Promise<Params>;
 }) {
   const { handle } = await params;
-  const sessionPromise = getSession();
-  const shopPromise = getShopByHandle(handle);
-
-  const [session, shop] = await Promise.all([sessionPromise, shopPromise]);
+  const session = await getSession();
+  const shop = await getShopByHandle(handle, session?.id);
   if (!shop) notFound();
 
   const isBookmarked = session?.id
