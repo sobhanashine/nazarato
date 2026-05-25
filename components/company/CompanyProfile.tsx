@@ -153,18 +153,44 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
         </div>
       </div>
 
-      {/* ── Unclaimed banner ── */}
+      {/* ── Unclaimed banner — owner-acquisition surface (#27). Sized to catch
+          a googling owner without overpowering the page for everyone else. ── */}
       {!business.claimed && (
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-glass border border-saffron/30 bg-saffron/[0.08] px-4 py-3">
-          <p className="text-[0.83rem] text-strong">
-            این کسب‌وکار هنوز صاحبش رو ثبت نکرده.
-          </p>
-          <Link
-            href={`/company/${business.slug}/claim`}
-            className="text-[0.83rem] font-bold text-saffron hover:underline"
-          >
-            ادعای مالکیت ←
-          </Link>
+        <div className="mt-5 relative overflow-hidden rounded-glass border border-saffron/35 bg-[linear-gradient(135deg,rgba(244,177,68,0.10),rgba(244,177,68,0.03))] p-5 sm:p-6">
+          <div
+            className="absolute -top-12 -left-12 h-32 w-32 rounded-full bg-saffron/20 blur-[60px]"
+            aria-hidden
+          />
+          <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3 sm:items-center">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-saffron/40 bg-saffron/[0.12] text-saffron">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M3 21h18" />
+                  <path d="M5 21V7l7-4 7 4v14" />
+                  <path d="M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01" />
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <p className="text-[0.92rem] font-black text-strong">
+                  صاحب این کسب‌وکار شما هستید؟
+                </p>
+                <p className="mt-1 text-[0.82rem] leading-[1.8] text-muted">
+                  این صفحه هنوز توسط مالک رسمی ثبت نشده. ادعای مالکیت کن تا به
+                  نظرات پاسخ بدهی و اطلاعات صفحه را خودت مدیریت کنی.
+                </p>
+              </div>
+            </div>
+            <Link
+              href={`/company/${business.slug}/claim`}
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-saffron px-5 py-2.5 text-[0.85rem] font-black text-[#2a1a05] shadow-[0_6px_18px_-6px_rgba(244,177,68,0.55)] transition-transform duration-200 hover:-translate-y-px"
+            >
+              ادعای مالکیت
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+              </svg>
+            </Link>
+          </div>
         </div>
       )}
 

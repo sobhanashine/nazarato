@@ -21,6 +21,10 @@ export function Footer() {
             © تمامی حقوق برای nazarato.ir محفوظ است.
           </p>
           <div className="flex items-center gap-4 text-[13px] text-muted font-medium">
+            <Link href="/for-business" className="hover:text-mint transition-colors duration-200 inline-flex items-center min-h-11 py-2">
+              برای کسب‌وکارها
+            </Link>
+            <span className="text-glass-border" aria-hidden>·</span>
             <Link href="/terms" className="hover:text-mint transition-colors duration-200 inline-flex items-center min-h-11 py-2">
               قوانین و مقررات
             </Link>
