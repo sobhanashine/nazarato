@@ -26,6 +26,14 @@ export type Review = {
   helpful_count?: number;
   /** True when the current viewer has cast a helpful vote on this review. */
   has_voted?: boolean;
+  /** Public reply from the business owner, set via `/business/reviews`. */
+  owner_response?: {
+    body: string;
+    /** Pre-formatted Persian relative time, e.g. «۲ روز پیش». */
+    date: string;
+    /** The owning business — kept on the response so the badge can say "پاسخ از X". */
+    business: { name: string };
+  };
 };
 
 /** Fetch which review IDs the given viewer has already voted on. */

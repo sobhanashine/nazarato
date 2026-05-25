@@ -71,6 +71,8 @@ type RawReview = {
   helpful_count?: number;
   /** True when the current viewer has cast a helpful vote on this review. */
   has_voted?: boolean;
+  /** Public owner reply, when one exists. */
+  owner_response?: { body: string; date: string };
 };
 
 /** Full business profile — the `/company/[slug]` source of truth. */
@@ -147,6 +149,9 @@ export function toReviews(detail: BusinessDetail): Review[] {
       verified: r.verified,
       helpful_count: r.helpful_count || 0,
       has_voted: r.has_voted || false,
+      owner_response: r.owner_response
+        ? { ...r.owner_response, business: { name: detail.name } }
+        : undefined,
     };
   });
 }
@@ -341,6 +346,8 @@ export async function getBusiness(
       body,
       verified,
       helpful_count,
+      owner_response_body,
+      owner_response_at,
       author:users (
         id,
         display_name,
@@ -363,6 +370,8 @@ export async function getBusiness(
     body: string;
     verified: boolean;
     helpful_count: number;
+    owner_response_body: string | null;
+    owner_response_at: string | null;
     author: {
       id: string;
       display_name: string;
@@ -403,6 +412,13 @@ export async function getBusiness(
       verified: r.verified,
       helpful_count: r.helpful_count || 0,
       has_voted: votedSet.has(r.id),
+      owner_response:
+        r.owner_response_body && r.owner_response_at
+          ? {
+              body: r.owner_response_body,
+              date: toRelativePersianTime(r.owner_response_at),
+            }
+          : undefined,
     };
   });
   

@@ -75,6 +75,20 @@ export function ReviewCard({ review }: { review: Review }) {
       <p className="text-[0.88rem] leading-[1.8] text-strong opacity-[0.86] line-clamp-3 min-h-[calc(0.88rem*1.8*3)] flex-1">
         {r.text}
       </p>
+      {r.owner_response ? (
+        <div className="rounded-2xl border border-mint/25 bg-mint/[0.06] p-3 -mt-1">
+          <div className="flex items-center gap-1.5 text-[0.72rem] font-bold text-mint">
+            <span className="h-1.5 w-1.5 rounded-full bg-mint" />
+            پاسخ از {r.owner_response.business.name}
+            <span className="text-[0.7rem] font-medium text-muted">
+              · {r.owner_response.date}
+            </span>
+          </div>
+          <p className="mt-1.5 text-[0.82rem] leading-[1.85] text-strong opacity-[0.92] line-clamp-3">
+            {r.owner_response.body}
+          </p>
+        </div>
+      ) : null}
       <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 pt-3 border-t border-glass-border mt-auto">
         <span className="tabular-nums text-[0.75rem] text-muted whitespace-nowrap shrink-0">
           {r.date}

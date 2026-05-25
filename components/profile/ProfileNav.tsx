@@ -72,6 +72,16 @@ function IconShield() {
   );
 }
 
+function IconStore() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M3 9l1.5-5h15L21 9" />
+      <path d="M3 9v11h18V9" />
+      <path d="M9 21V14h6v7" />
+    </svg>
+  );
+}
+
 const items: Item[] = [
   { href: "/profile", label: "نمای کلی", icon: <IconGrid /> },
   { href: "/profile/reviews", label: "نظرات من", icon: <IconStar /> },
@@ -87,12 +97,21 @@ const chipBase =
 interface ProfileNavProps {
   userRole?: string;
   unreadCount?: number;
+  /** True when the viewer owns at least one claimed business. Surfaces /business. */
+  isOwner?: boolean;
 }
 
-export function ProfileNav({ userRole, unreadCount = 0 }: ProfileNavProps) {
+export function ProfileNav({ userRole, unreadCount = 0, isOwner = false }: ProfileNavProps) {
   const pathname = usePathname() ?? "";
 
   const navItems = [...items];
+  if (isOwner) {
+    navItems.push({
+      href: "/business",
+      label: "پنل کسب‌وکار",
+      icon: <IconStore />,
+    });
+  }
   if (userRole === "admin") {
     navItems.push({
       href: "/admin/moderation",

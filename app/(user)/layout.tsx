@@ -5,6 +5,7 @@ import { ProfileNav } from "@/components/profile/ProfileNav";
 import { Container } from "@/components/ui/Container";
 import { getSession } from "@/lib/auth/session";
 import { getUnreadCount } from "@/lib/data/notifications";
+import { getOwnedBusinesses } from "@/lib/data/owner";
 import { getUserById } from "@/lib/data/users";
 
 /**
@@ -20,8 +21,14 @@ export default async function UserLayout({
   children: ReactNode;
 }) {
   const session = await getSession();
-  const user = session ? await getUserById(session.id) : null;
-  const unreadCount = session ? await getUnreadCount(session.id) : 0;
+  const [user, unreadCount, ownedBusinesses] = session
+    ? await Promise.all([
+        getUserById(session.id),
+        getUnreadCount(session.id),
+        getOwnedBusinesses(session.id),
+      ])
+    : [null, 0, []];
+  const isOwner = ownedBusinesses.length > 0;
 
   return (
     <>
@@ -33,7 +40,7 @@ export default async function UserLayout({
             the cards don't stretch sparse on wide screens. */}
         <div className="grid grid-cols-1 gap-5 py-6 lg:grid-cols-[200px_minmax(0,640px)] lg:justify-center lg:gap-8 lg:py-10">
           <aside className="lg:pt-1">
-            <ProfileNav userRole={user?.role} unreadCount={unreadCount} />
+            <ProfileNav userRole={user?.role} unreadCount={unreadCount} isOwner={isOwner} />
           </aside>
           <div className="min-w-0">{children}</div>
         </div>
