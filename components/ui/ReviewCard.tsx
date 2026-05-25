@@ -7,6 +7,7 @@
 import Link from "next/link";
 import { RatingStars } from "@/components/ui/RatingStars";
 import type { Review } from "@/lib/data/reviews";
+import { HelpfulButton } from "@/components/ui/HelpfulButton";
 
 // Soft diagonal gradient surface — was `.review-card` (overrode `.glass`).
 const reviewCard =
@@ -24,8 +25,9 @@ export function ReviewCard({ review }: { review: Review }) {
     >
       <div className="flex flex-row items-center justify-between gap-3 min-w-0">
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div
-            className="relative w-12 h-12 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0 shadow-[0_6px_18px_-4px_rgba(0,0,0,0.45),0_0_24px_-4px_var(--avatar-glow,rgba(255,122,142,0.35))]"
+          <Link
+            href={`/users/${r.user.username || r.user.id}`}
+            className="relative w-12 h-12 rounded-full flex items-center justify-center text-white text-base font-bold shrink-0 shadow-[0_6px_18px_-4px_rgba(0,0,0,0.45),0_0_24px_-4px_var(--avatar-glow,rgba(255,122,142,0.35))] hover:scale-105 transition-transform duration-200 cursor-pointer"
             style={{ background: r.user.color, ["--avatar-glow" as string]: r.user.color }}
           >
             {r.user.initial}
@@ -38,12 +40,15 @@ export function ReviewCard({ review }: { review: Review }) {
                 <path d="M2.5 6.2l2.4 2.3 4.6-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </span>
-          </div>
+          </Link>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <div className="text-[0.95rem] font-semibold text-strong whitespace-nowrap overflow-hidden text-ellipsis">
+              <Link
+                href={`/users/${r.user.username || r.user.id}`}
+                className="text-[0.95rem] font-semibold text-strong whitespace-nowrap overflow-hidden text-ellipsis hover:text-mint transition-colors cursor-pointer"
+              >
                 {r.user.name}
-              </div>
+              </Link>
               {r.verified && (
                 <span
                   className="inline-flex items-center gap-1 rounded-full border border-mint/35 bg-mint/10 px-2 py-0.5 text-[0.68rem] font-bold text-mint shrink-0 shadow-[0_0_10px_rgba(91,230,178,0.2)]"
@@ -75,16 +80,11 @@ export function ReviewCard({ review }: { review: Review }) {
           {r.date}
         </span>
         <div className="inline-flex items-center gap-1 sm:gap-1.5 shrink-0 min-w-0">
-          <button
-            type="button"
-            className="inline-flex items-center gap-[0.3rem] text-[0.72rem] sm:text-[0.75rem] font-medium text-muted whitespace-nowrap bg-transparent border border-transparent rounded-full cursor-pointer [&>svg]:w-[12px] [&>svg]:h-[12px] sm:[&>svg]:w-[13px] sm:[&>svg]:h-[13px] [&>svg]:shrink-0"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1z" />
-              <path d="M7 11l4-8a2 2 0 0 1 3 1.7V9h5a2 2 0 0 1 2 2.3l-1.4 7A2 2 0 0 1 17.6 20H7" />
-            </svg>
-            مفید بود
-          </button>
+          <HelpfulButton
+            reviewId={r.id}
+            initialCount={r.helpful_count || 0}
+            initialVoted={r.has_voted || false}
+          />
         </div>
       </div>
     </article>

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { LocationIcon, ShieldCheckIcon, StarIcon } from "@/components/icons";
-import { GLASS } from "@/components/ui/styles";
 import type { Business } from "@/lib/data/businesses";
 import { BookmarkButton } from "@/components/ui/BookmarkButton";
 

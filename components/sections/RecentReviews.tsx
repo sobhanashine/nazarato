@@ -3,9 +3,21 @@ import { ArrowLeftIcon } from "@/components/icons";
 import { Container } from "@/components/ui/Container";
 import { ReviewCard } from "@/components/ui/ReviewCard";
 import { HIDE_SCROLL } from "@/components/ui/styles";
-import { recentReviews } from "@/lib/data/reviews";
+import { getReviewsFromDb, recentReviews } from "@/lib/data/reviews";
+import { getSession } from "@/lib/auth/session";
 
-export function RecentReviews() {
+export async function RecentReviews() {
+  // Fall back to the static mock list only when the DB has nothing yet, so the
+  // helpful-vote toggle on the home page hits real review IDs and persists.
+  const viewer = await getSession();
+  const { reviews } = await getReviewsFromDb({
+    sort: "newest",
+    page: 1,
+    limit: 6,
+    viewerId: viewer?.id,
+  });
+  const list = reviews.length > 0 ? reviews : recentReviews;
+
   return (
     <section className="py-10">
       <Container>
@@ -32,7 +44,7 @@ export function RecentReviews() {
         </div>
 
         <div className={`flex items-stretch gap-4 overflow-x-auto px-5 py-2 -mx-5 [scroll-snap-type:x_mandatory] [scroll-padding-inline:1.25rem] ${HIDE_SCROLL} [&>*]:flex-[0_0_85%] [&>*]:max-w-[340px] [&>*]:[scroll-snap-align:start] sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:p-0 sm:m-0 sm:[&>*]:flex-initial sm:[&>*]:max-w-none lg:grid-cols-3`}>
-          {recentReviews.map((r) => (
+          {list.map((r) => (
             <ReviewCard key={r.id} review={r} />
           ))}
         </div>
