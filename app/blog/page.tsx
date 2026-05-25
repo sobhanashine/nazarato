@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   description: "بلاگ‌های نظراتو – راهنما، تحلیل و معرفی برندهای ایرانی",
 };
 
+/** Posts per page on the blog listing. */
+const PAGE_SIZE = 5;
+
 async function loadPosts(): Promise<BlogPost[]> {
   if (!isWpEnabled) return fallbackPosts;
   try {
@@ -27,8 +30,24 @@ async function loadPosts(): Promise<BlogPost[]> {
   }
 }
 
-export default async function BlogListPage() {
+/** Coerce a `?page=` searchParam (Next can deliver string | string[] | undefined). */
+function parsePage(raw: string | string[] | undefined): number {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  const n = Number.parseInt(v ?? "1", 10);
+  return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+export default async function BlogListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string | string[] }>;
+}) {
   const posts = await loadPosts();
+  const { page: rawPage } = await searchParams;
+  const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
+  const page = Math.min(parsePage(rawPage), totalPages);
+  const start = (page - 1) * PAGE_SIZE;
+  const visible = posts.slice(start, start + PAGE_SIZE);
 
   return (
     <>
@@ -52,12 +71,16 @@ export default async function BlogListPage() {
             </div>
 
             <div className="flex flex-col gap-8">
-              {posts.map((post) => (
+              {visible.map((post) => (
                 <PostCard key={post.slug} post={post} />
               ))}
             </div>
 
-            <Pagination totalPages={Math.max(1, Math.ceil(posts.length / 5))} />
+            <Pagination
+              basePath="/blog"
+              totalPages={totalPages}
+              currentPage={page}
+            />
           </main>
 
           <BlogSidebar />
