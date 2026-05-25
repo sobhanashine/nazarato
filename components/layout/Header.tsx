@@ -30,11 +30,12 @@ export function Header() {
     <header className="sticky top-0 z-[100] h-[72px] sm:h-20 bg-[rgba(8,11,20,0.55)] backdrop-blur-[22px] backdrop-saturate-[180%] not-supports-[backdrop-filter]:bg-[rgba(8,11,20,0.92)] border-b border-glass-border shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_8px_30px_rgba(0,0,0,0.35)] standalone:h-[calc(72px+env(safe-area-inset-top)+16px)] standalone:pt-[calc(env(safe-area-inset-top)+16px)] standalone:sm:h-[calc(80px+env(safe-area-inset-top)+16px)]">
       <div className="w-full h-[72px] sm:h-20 flex items-center">
         <Container className="flex flex-row justify-between items-center gap-4 h-full">
-          <Link
-            href="/"
-            aria-label="نظراتو"
-            className="inline-flex items-center gap-2.5 text-strong shrink-0 py-2 min-h-11"
-          >
+          <div className="flex flex-1 justify-start">
+            <Link
+              href="/"
+              aria-label="نظراتو"
+              className="inline-flex items-center gap-2.5 text-strong shrink-0 py-2 min-h-11"
+            >
             <span
               className={`${brandMark} hidden md:inline-block w-[38px] h-[38px]`}
               aria-hidden="true"
@@ -60,8 +61,9 @@ export function Header() {
               نظراتو
             </span>
           </Link>
+          </div>
 
-          <nav aria-label="ناوبری اصلی" className="hidden md:block">
+          <nav aria-label="ناوبری اصلی" className="hidden md:block shrink-0">
             <ul className="flex items-center gap-2 list-none py-0 px-3 bg-glass border border-glass-border rounded-full backdrop-blur-[14px] backdrop-saturate-[160%]">
               {navItems.map((item) => (
                 <li key={item.href}>
@@ -71,7 +73,7 @@ export function Header() {
             </ul>
           </nav>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-1 justify-end items-center gap-2 shrink-0">
             <Link
               href="/for-business"
               className="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-mint/35 bg-mint/[0.08] px-3.5 py-2 min-h-11 text-[12.5px] font-bold text-mint transition-colors duration-200 hover:bg-mint/[0.16] hover:border-mint/55"
