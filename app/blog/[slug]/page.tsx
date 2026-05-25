@@ -5,13 +5,30 @@ import { Container } from "@/components/ui/Container";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { PostContent } from "@/components/blog/PostContent";
-import { blogPosts, getBlogPost } from "@/lib/data/blog-posts";
+import { RelatedPosts } from "@/components/blog/RelatedPosts";
+import {
+  blogPosts,
+  getBlogPost,
+  getRelatedPosts,
+} from "@/lib/data/blog-posts";
 import type { BlogPost } from "@/lib/data/blog-posts";
 import {
+  fetchPostsFromWp,
   fetchPostBySlugFromWp,
   fetchPostSlugsFromWp,
   isWpEnabled,
 } from "@/lib/wp";
+
+/** Pool of posts we score against for related-posts ranking. */
+async function loadPool(): Promise<BlogPost[]> {
+  if (!isWpEnabled) return blogPosts;
+  try {
+    return await fetchPostsFromWp();
+  } catch (err) {
+    console.error("[blog] WP pool fetch failed, using static fallback:", err);
+    return blogPosts;
+  }
+}
 
 type Params = { slug: string };
 
@@ -57,8 +74,10 @@ export default async function BlogPostPage({
   params: Promise<Params>;
 }) {
   const { slug } = await params;
-  const post = await loadPost(slug);
+  const [post, pool] = await Promise.all([loadPost(slug), loadPool()]);
   if (!post) notFound();
+
+  const related = getRelatedPosts(pool, post.slug, 3);
 
   return (
     <>
@@ -73,6 +92,9 @@ export default async function BlogPostPage({
         />
       </Container>
       <PostContent post={post} />
+      <Container>
+        <RelatedPosts posts={related} />
+      </Container>
       <Footer />
     </>
   );
