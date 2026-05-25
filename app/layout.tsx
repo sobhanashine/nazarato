@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Vazirmatn } from "next/font/google";
+import { SmflowWidget } from "@/components/integrations/SmflowWidget";
 import { Backdrop } from "@/components/layout/Backdrop";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
@@ -72,6 +73,7 @@ export default function RootLayout({
         <InstallPrompt />
         <RegisterSW />
         <ToastProvider />
+        <SmflowWidget />
       </body>
     </html>
   );
