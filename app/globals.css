@@ -208,3 +208,63 @@
   direction: ltr;
 }
 .wp-content code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.95em; }
+
+/* ── SMFlow chat widget — pin to bottom-right.
+   The widget injects its own LTR DOM into our RTL body. Without these
+   overrides the floating button ends up centered (its host element has
+   `direction: rtl` inherited, which flips its internal layout). */
+#smflow-fab,
+#smflow-widget-container {
+  direction: ltr !important;
+  inset-inline-end: auto !important;
+  inset-inline-start: auto !important;
+  left: auto !important;
+  right: 20px !important;
+}
+#smflow-fab { bottom: 20px !important; }
+/* Container holds the FAB (closed state) AND the chat panel (open state).
+   Pinning it to bottom:20px puts the bubble at the corner; the panel grows
+   upward inside the container when opened, so it still has room. */
+#smflow-widget-container { bottom: 20px !important; }
+
+/* Mobile: lift above the floating <MobileTabBar /> (76px + safe-area, with
+   the center button protruding ~24px above that), and let the open chat
+   panel use the full screen width minus a small margin. */
+@media (max-width: 767px) {
+  #smflow-widget-container {
+    bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+  /* On mobile the FAB is hidden by default and revealed by <SmflowMobileToggle />,
+     which sets `data-smflow-open` on <body>. We animate opacity + a small slide
+     so the reveal feels intentional. We can't use `display: none` because that
+     kills the transition, so we drop pointer-events to keep the hidden FAB from
+     intercepting taps. `transform-origin: bottom right` makes the scale-in feel
+     like it's blooming from the toggle handle. */
+  /* Default (closed) state — see overrides below for the open state. The
+     visibility transition is delayed by the fade duration so the FAB stays
+     interactive until it fully fades, and is removed from the a11y tree once
+     hidden. */
+  #smflow-widget-container {
+    transform-origin: bottom right;
+    transition:
+      opacity 220ms ease,
+      transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      visibility 0s linear 220ms !important;
+  }
+  body:not([data-smflow-open]) #smflow-widget-container {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateX(40px) scale(0.6) !important;
+    pointer-events: none !important;
+  }
+  body[data-smflow-open] #smflow-widget-container {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    transition:
+      opacity 220ms ease,
+      transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      visibility 0s linear 0s !important;
+  }
+}
