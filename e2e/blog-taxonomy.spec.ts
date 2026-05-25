@@ -51,6 +51,51 @@ test.describe("Blog taxonomy", () => {
     ).toBeVisible();
   });
 
+  test("related-posts row is horizontally scrollable on mobile", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/blog/how-to-choose-the-best-business");
+    const region = page.getByRole("region", { name: "مطالب مرتبط" });
+    await expect(region).toBeVisible();
+
+    // The cards live inside the first scroll container under the region.
+    // We assert the container is wider than its visible viewport, which is
+    // what makes it scrollable — and that scrollLeft moves freely.
+    const dims = await region.evaluate((root) => {
+      const row = root.querySelector("div.flex") as HTMLElement | null;
+      if (!row) return null;
+      return {
+        scrollWidth: row.scrollWidth,
+        clientWidth: row.clientWidth,
+        canScroll: row.scrollWidth > row.clientWidth,
+      };
+    });
+    expect(dims).not.toBeNull();
+    expect(dims!.canScroll).toBe(true);
+  });
+
+  test("related-posts row is a static grid on desktop (no horizontal scroll)", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/blog/how-to-choose-the-best-business");
+    const region = page.getByRole("region", { name: "مطالب مرتبط" });
+    await expect(region).toBeVisible();
+
+    const dims = await region.evaluate((root) => {
+      const row = root.querySelector("div.flex") as HTMLElement | null;
+      if (!row) return null;
+      // On desktop the row switches to `md:grid` so scrollWidth ≈ clientWidth.
+      return {
+        scrollWidth: row.scrollWidth,
+        clientWidth: row.clientWidth,
+      };
+    });
+    expect(dims).not.toBeNull();
+    expect(dims!.scrollWidth - dims!.clientWidth).toBeLessThanOrEqual(2);
+  });
+
   test("/blog pagination shows real page count and navigates", async ({
     page,
   }) => {
