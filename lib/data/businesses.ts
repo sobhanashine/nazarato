@@ -68,6 +68,9 @@ type RawReview = {
   date: string;
   text: string;
   verified?: boolean;
+  helpful_count?: number;
+  /** True when the current viewer has cast a helpful vote on this review. */
+  has_voted?: boolean;
 };
 
 /** Full business profile — the `/company/[slug]` source of truth. */
@@ -114,15 +117,38 @@ export function averageLabel(reviews: RawReview[]): string {
 
 /** Attach the parent business as `shop` so the row renders in `<ReviewCard />`. */
 export function toReviews(detail: BusinessDetail): Review[] {
-  return detail.reviews.map((r) => ({
-    id: r.id,
-    user: r.user,
-    shop: { name: detail.name, href: `/company/${detail.slug}` },
-    date: r.date,
-    rating: r.rating,
-    text: r.text,
-    verified: r.verified,
-  }));
+  return detail.reviews.map((r) => {
+    const mockMap: Record<string, { id: string; username: string }> = {
+      "سارا احمدی": { id: "user-mock-1", username: "sara_ahmadi" },
+      "نیلوفر حسینی": { id: "user-mock-2", username: "niloofar_h" },
+      "زهرا موسوی": { id: "user-mock-3", username: "zahra_m" },
+      "علی کریمی": { id: "user-mock-4", username: "ali_k" },
+      "محمد رضایی": { id: "user-mock-5", username: "mohammad_r" },
+      "رضا جعفری": { id: "user-mock-6", username: "reza_j" },
+    };
+
+    const mockUser = mockMap[r.user.name];
+    const userId = mockUser ? mockUser.id : `mock-user-${r.user.name.replace(/\s+/g, "-")}`;
+    const username = mockUser ? mockUser.username : null;
+
+    return {
+      id: r.id,
+      user: {
+        id: userId,
+        name: r.user.name,
+        initial: r.user.initial,
+        color: r.user.color,
+        username,
+      },
+      shop: { name: detail.name, href: `/company/${detail.slug}` },
+      date: r.date,
+      rating: r.rating,
+      text: r.text,
+      verified: r.verified,
+      helpful_count: r.helpful_count || 0,
+      has_voted: r.has_voted || false,
+    };
+  });
 }
 
 function toCard(d: BusinessDetail): Business {
@@ -290,7 +316,10 @@ export const businessDetails: BusinessDetail[] = [
 
 export const featuredBusinesses: Business[] = businessDetails.map(toCard);
 
-export async function getBusiness(slug: string): Promise<BusinessDetail | undefined> {
+export async function getBusiness(
+  slug: string,
+  viewerId?: string,
+): Promise<BusinessDetail | undefined> {
   const supabase = supabaseAdmin();
   
   // 1. Fetch business row
@@ -311,6 +340,7 @@ export async function getBusiness(slug: string): Promise<BusinessDetail | undefi
       created_at,
       body,
       verified,
+      helpful_count,
       author:users (
         id,
         display_name,
@@ -332,6 +362,7 @@ export async function getBusiness(slug: string): Promise<BusinessDetail | undefi
     created_at: string;
     body: string;
     verified: boolean;
+    helpful_count: number;
     author: {
       id: string;
       display_name: string;
@@ -340,6 +371,22 @@ export async function getBusiness(slug: string): Promise<BusinessDetail | undefi
   }
 
   const reviewsList = (reviewsData || []) as unknown as DbReview[];
+
+  // Resolve which of these reviews the viewer has already voted on.
+  let votedSet: Set<string> = new Set();
+  if (viewerId && reviewsList.length > 0) {
+    const { data: votes, error: vError } = await supabase
+      .from("review_votes")
+      .select("review_id")
+      .eq("user_id", viewerId)
+      .in("review_id", reviewsList.map((r) => r.id));
+    if (vError && vError.code !== "PGRST205") {
+      console.error("[businesses] Failed to fetch review votes", vError.message);
+    }
+    if (votes) {
+      votedSet = new Set((votes as Array<{ review_id: string }>).map((v) => v.review_id));
+    }
+  }
 
   const reviews: RawReview[] = reviewsList.map((r) => {
     const author = r.author || { display_name: "کاربر نظراتو", avatar_color: "#3B82F6" };
@@ -354,6 +401,8 @@ export async function getBusiness(slug: string): Promise<BusinessDetail | undefi
       date: toRelativePersianTime(r.created_at),
       text: r.body,
       verified: r.verified,
+      helpful_count: r.helpful_count || 0,
+      has_voted: votedSet.has(r.id),
     };
   });
   

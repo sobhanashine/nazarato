@@ -9,6 +9,7 @@ import { ReviewCard } from "@/components/ui/ReviewCard";
 import { ChevronLeftIcon, ChevronRightIcon, SparklesIcon } from "@/components/icons";
 import { GLASS } from "@/components/ui/styles";
 import { getReviewsFromDb } from "@/lib/data/reviews";
+import { getSession } from "@/lib/auth/session";
 
 type SearchParams = Promise<{ page?: string }>;
 
@@ -33,10 +34,12 @@ export default async function ReviewsPage({
   const page = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
   const limit = 12;
 
+  const viewer = await getSession();
   const { reviews, total } = await getReviewsFromDb({
     sort: "newest",
     page,
     limit,
+    viewerId: viewer?.id,
   });
 
   const totalPages = Math.max(1, Math.ceil(total / limit));

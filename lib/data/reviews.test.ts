@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getReviewsFromDb } from "./reviews";
+import { getReviewsFromDb, getUserReviews } from "./reviews";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 // Mock the server file that returns the supabaseAdmin client
@@ -148,3 +148,72 @@ describe("getReviewsFromDb", () => {
     expect(result.total).toBe(0);
   });
 });
+
+describe("getUserReviews", () => {
+  let mockSupabaseClient: {
+    from: ReturnType<typeof vi.fn>;
+    select: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+    order: ReturnType<typeof vi.fn>;
+    then: ReturnType<typeof vi.fn>;
+  };
+
+  beforeEach(() => {
+    mockSupabaseClient = supabaseAdmin() as unknown as typeof mockSupabaseClient;
+    vi.clearAllMocks();
+  });
+
+  it("successfully retrieves, filters by author_id and status, and maps reviews", async () => {
+    const mockDbData = [
+      {
+        id: "rev-1",
+        rating: 4,
+        created_at: "2026-05-24T10:00:00Z",
+        body: "محصول عالی بود و در زمان مناسبی تحویل داده شد.",
+        verified: true,
+        helpful_count: 5,
+        author: {
+          id: "user-abc",
+          display_name: "مریم علوی",
+          avatar_color: "#10B981",
+        },
+        business: {
+          id: "biz-1",
+          name: "دیجی‌کالا",
+          slug: "digikala",
+          type: "company",
+        },
+      },
+    ];
+
+    mockSupabaseClient.then.mockImplementation((callback: (value: unknown) => unknown) =>
+      Promise.resolve(callback({ data: mockDbData, error: null }))
+    );
+
+    const result = await getUserReviews("user-abc");
+
+    expect(mockSupabaseClient.from).toHaveBeenCalledWith("reviews");
+    expect(mockSupabaseClient.eq).toHaveBeenCalledWith("author_id", "user-abc");
+    expect(mockSupabaseClient.eq).toHaveBeenCalledWith("status", "published");
+    expect(mockSupabaseClient.order).toHaveBeenCalledWith("created_at", { ascending: false });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("rev-1");
+    expect(result[0].user.name).toBe("مریم علوی");
+    expect(result[0].user.color).toBe("#10B981");
+    expect(result[0].shop.name).toBe("دیجی‌کالا");
+    expect(result[0].shop.href).toBe("/company/digikala");
+    expect(result[0].rating).toBe(4);
+    expect(result[0].verified).toBe(true);
+  });
+
+  it("returns empty array if DB query fails", async () => {
+    mockSupabaseClient.then.mockImplementation((callback: (value: unknown) => unknown) =>
+      Promise.resolve(callback({ data: null, error: new Error("DB Error") }))
+    );
+
+    const result = await getUserReviews("user-abc");
+    expect(result).toHaveLength(0);
+  });
+});
+

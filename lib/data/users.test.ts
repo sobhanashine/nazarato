@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { updateUserNotificationSettings, updateUserPrivacy } from "./users";
+import { updateUserNotificationSettings, updateUserPrivacy, getUserByUsername } from "./users";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 // Mock the server file that returns the supabaseAdmin client
@@ -7,7 +7,9 @@ vi.mock("@/lib/supabase/server", () => {
   const mockSupabase = {
     from: vi.fn().mockReturnThis(),
     update: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockReturnThis(),
     then: vi.fn(), // to allow awaiting the query
   };
   return {
@@ -19,7 +21,9 @@ describe("Users Data Layer Settings Updates", () => {
   let mockSupabaseClient: {
     from: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
+    select: ReturnType<typeof vi.fn>;
     eq: ReturnType<typeof vi.fn>;
+    maybeSingle: ReturnType<typeof vi.fn>;
     then: ReturnType<typeof vi.fn>;
   };
 
@@ -100,4 +104,62 @@ describe("Users Data Layer Settings Updates", () => {
       ).rejects.toThrow("failed to update privacy settings");
     });
   });
+
+  describe("getUserByUsername", () => {
+    it("successfully retrieves and parses a user by username", async () => {
+      const mockDbUser = {
+        id: "user-uuid-123",
+        display_name: "سهراب سپهری",
+        username: "sohrab",
+        avatar_color: "#8B5CF6",
+        role: "consumer",
+        created_at: "2026-05-20T12:00:00Z",
+        reviews_count: 5,
+        helpful_votes_received: 10,
+        reputation_score: 100,
+        public_profile: true,
+        notification_replies: true,
+        notification_bookmarks: false,
+      };
+
+      mockSupabaseClient.then.mockImplementation((callback: (value: unknown) => unknown) =>
+        Promise.resolve(callback({ data: mockDbUser, error: null }))
+      );
+
+      const result = await getUserByUsername("sohrab");
+
+      expect(mockSupabaseClient.from).toHaveBeenCalledWith("users");
+      expect(mockSupabaseClient.eq).toHaveBeenCalledWith("username", "sohrab");
+      expect(result).not.toBeNull();
+      expect(result?.id).toBe("user-uuid-123");
+      expect(result?.display_name).toBe("سهراب سپهری");
+      expect(result?.username).toBe("sohrab");
+      expect(result?.avatar_color).toBe("#8B5CF6");
+      expect(result?.role).toBe("consumer");
+      expect(result?.reviews_count).toBe(5);
+      expect(result?.helpful_votes_received).toBe(10);
+      expect(result?.reputation_score).toBe(100);
+      expect(result?.public_profile).toBe(true);
+      expect(result?.notification_replies).toBe(true);
+      expect(result?.notification_bookmarks).toBe(false);
+    });
+
+    it("returns null if user is not found", async () => {
+      mockSupabaseClient.then.mockImplementation((callback: (value: unknown) => unknown) =>
+        Promise.resolve(callback({ data: null, error: null }))
+      );
+
+      const result = await getUserByUsername("nonexistent");
+      expect(result).toBeNull();
+    });
+
+    it("throws an error if DB lookup fails", async () => {
+      mockSupabaseClient.then.mockImplementation((callback: (value: unknown) => unknown) =>
+        Promise.resolve(callback({ data: null, error: { message: "Database lookup failure" } }))
+      );
+
+      await expect(getUserByUsername("sohrab")).rejects.toThrow("user lookup failed");
+    });
+  });
 });
+
