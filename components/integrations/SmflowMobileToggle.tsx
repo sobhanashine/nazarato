@@ -25,14 +25,17 @@ export function SmflowMobileToggle() {
   return (
     // Pin to the same bottom offset as the FAB so they sit at the same height.
     // FAB has bottom: calc(100px + safe-area), height 64px; toggle is 56px,
-    // so +4px nudge centers them.
+    // so +4px nudge centers them. z-index is high enough to stay above the
+    // SMFlow chat panel when opened (chat widgets typically use very large
+    // z-index values) so the toggle remains tappable to close.
     <button
       type="button"
       aria-label={open ? "بستن دستیار هوشمند" : "باز کردن دستیار هوشمند"}
-      aria-pressed={open}
+      aria-expanded={open}
+      aria-controls="smflow-widget-container"
       onClick={() => setOpen((v) => !v)}
       style={{ bottom: "calc(104px + env(safe-area-inset-bottom))" }}
-      className="md:hidden fixed right-0 z-[150] w-7 h-14 grid place-items-center rounded-l-xl bg-[rgba(10,13,22,0.85)] backdrop-blur-md border border-glass-border border-r-0 text-mint shadow-[0_8px_24px_rgba(0,0,0,0.4)] active:scale-95 transition-transform"
+      className="md:hidden fixed right-0 z-[2147483646] w-7 h-14 grid place-items-center rounded-l-xl bg-[rgba(10,13,22,0.85)] backdrop-blur-md border border-glass-border border-r-0 text-mint shadow-[0_8px_24px_rgba(0,0,0,0.4)] active:scale-95 transition-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-mint focus-visible:outline-offset-2"
     >
       <svg
         viewBox="0 0 24 24"

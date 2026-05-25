@@ -28,11 +28,18 @@ export type SmflowIdentity = {
 };
 
 /**
- * Resolve env-driven config, or `null` if either half is missing.
- * Returning null (instead of throwing) lets the layout render fine in local
- * dev and preview environments that don't have the integration set up.
+ * Resolve env-driven config, or `null` if disabled / missing.
+ *
+ * The widget is gated behind an explicit kill switch
+ * (`NEXT_PUBLIC_SMFLOW_ENABLED`, must equal the string `"true"`) so it stays
+ * off by default — in local dev, in preview deploys, and in production —
+ * until a deployer opts in. This is intentional: we want the integration
+ * code shipped and tested, but invisible to end users until we're ready.
+ *
+ * Returning `null` (instead of throwing) keeps render paths simple.
  */
 export function getSmflowConfig(): SmflowConfig | null {
+  if (process.env.NEXT_PUBLIC_SMFLOW_ENABLED !== "true") return null;
   const businessId = process.env.NEXT_PUBLIC_SMFLOW_BUSINESS_ID;
   const secret = process.env.SMFLOW_WIDGET_SECRET;
   if (!businessId || !secret) return null;

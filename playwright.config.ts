@@ -24,5 +24,12 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: true,
     timeout: 60_000,
+    // Enable the SMFlow widget for E2E runs even though it ships off by
+    // default. This only applies when Playwright is the one starting the
+    // server (reuseExistingServer: true keeps an existing dev session,
+    // whatever its env). For a clean local run, kill the dev server first.
+    env: {
+      NEXT_PUBLIC_SMFLOW_ENABLED: "true",
+    },
   },
 });

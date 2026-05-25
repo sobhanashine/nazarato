@@ -8,6 +8,22 @@ import { expect, test } from "@playwright/test";
  * overlapping it.
  */
 test.describe("SMFlow widget", () => {
+  // The widget is gated behind NEXT_PUBLIC_SMFLOW_ENABLED. When it's off
+  // (the default), there's nothing to test — skip rather than fail noisily.
+  // We detect the enabled state by looking for our SSR'd mobile toggle (the
+  // button is in the initial HTML; the loader <script> only appears after
+  // hydration, so it's racey to gate on that).
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    const hasToggle = await page
+      .locator('button[aria-controls="smflow-widget-container"]')
+      .count();
+    test.skip(
+      hasToggle === 0,
+      "SMFlow widget disabled (NEXT_PUBLIC_SMFLOW_ENABLED != 'true')",
+    );
+  });
+
   test("loader script is present on the homepage", async ({ page }) => {
     await page.goto("/");
     const loader = page.locator(

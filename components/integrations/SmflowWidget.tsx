@@ -12,7 +12,8 @@ import { SmflowMobileToggle } from "./SmflowMobileToggle";
  * tags before the widget loader so the in-page `window.smflowSettings` is
  * defined when widget.js boots.
  *
- * Renders nothing if env vars are missing (e.g. local dev without secrets).
+ * Renders nothing when the widget is disabled (default) or env is missing,
+ * so this is a safe no-op in local dev and preview deploys.
  */
 export async function SmflowWidget() {
   const config = getSmflowConfig();
@@ -28,7 +29,9 @@ export async function SmflowWidget() {
           id="smflow-identify"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
-            __html: `window.smflowSettings = ${JSON.stringify(identity)};`,
+            __html: `window.smflowSettings = ${escapeForInlineScript(
+              identity,
+            )};`,
           }}
         />
       )}
@@ -41,4 +44,33 @@ export async function SmflowWidget() {
       <SmflowMobileToggle />
     </>
   );
+}
+
+/**
+ * U+2028 (LINE SEPARATOR) and U+2029 (PARAGRAPH SEPARATOR) are valid JSON
+ * but illegal in JavaScript string literals — they're treated as line
+ * terminators by the JS parser. JSON.stringify happily emits them raw, so
+ * we have to escape them before inlining into a <script>. Built with
+ * `new RegExp` because the same characters break this file's own parsing
+ * if written as a regex literal.
+ */
+const LINE_PARA_SEP = new RegExp("[\\u2028\\u2029]", "g");
+
+/**
+ * Serialize `value` for safe embedding inside an inline `<script>` tag.
+ *
+ * JSON.stringify alone is **not** safe here: a string field containing
+ * `</script>` would close our script tag early and let an attacker inject
+ * arbitrary markup. We escape `<` and `>` to their `\u00XX` forms (still
+ * valid JSON, harmless to the receiving JSON.parse if any), and finally
+ * convert any U+2028 / U+2029 to JS-legal escapes.
+ */
+function escapeForInlineScript(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(
+      LINE_PARA_SEP,
+      (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`,
+    );
 }
