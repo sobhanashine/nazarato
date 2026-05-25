@@ -3,7 +3,7 @@
 > Single source of truth for every page in the product: what exists, what's planned, what each page is for, and how it's structured.
 > Update this when you add/rename/remove a route.
 
-Last edited: 2026-05-25
+Last edited: 2026-05-25 (post-#27 claim flow)
 Owner: Sobhan (solo founder)
 Stack assumptions: Next.js 16 App Router, React 19, Tailwind v4, Supabase + Kavenegar OTP, RTL Persian (`lang="fa" dir="rtl"`).
 
@@ -308,9 +308,11 @@ Each entry is structured the same way so it scans fast:
 - **States**: Loading, success (toast + redirect to /company/[slug]/reviews), validation errors inline. Auth gate → redirect to `/login?next=...`.
 - **Validation**: server-side at the API boundary (AGENTS.md rule: "Validate all API/route inputs at the boundary").
 
-#### Claim business — `/company/[slug]/claim` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1 &nbsp;·&nbsp; auth
+#### Claim business — `/company/[slug]/claim` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1 &nbsp;·&nbsp; auth
 - **Purpose**: Business owner asserts ownership of an unclaimed listing.
-- **Flow**: identity (phone OTP already done) → proof of association (work email at domain OR upload doc) → moderation queue → email/SMS once approved.
+- **Flow**: identity (phone OTP already done) → choose proof type (work email on the business domain / document upload / other + notes) → submit → admin queue (`/admin/claims`) → on approve, `tr_business_claim_approved` trigger flips `businesses.claimed=true` and sets `owner_id`; on reject, the metro reason is shown back on the form.
+- **Storage**: proof files go to private bucket `claim-proofs` (5 MB cap, JPG/PNG/WebP/PDF). The DB `proof_url` is nulled and the file is deleted on either decision — same private-proof pattern as review verification.
+- **Refusals**: already-claimed slug → redirect to `/company/[slug]`; a pending claim by the same user → form is replaced with an "in review" card. Unique partial index `(business_id, user_id) where status='pending'` enforces it at the DB level.
 
 #### Instagram-shop profile — `/shop/[handle]` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - Mirror of `/company/[slug]` but:
@@ -408,17 +410,18 @@ Each entry is structured the same way so it scans fast:
   - `/settings/notifications` — toggles: in-website notifications and browser Web Push notifications via VAPID (built).
   - `/settings/privacy` — public profile visibility (built), delete account (deferred).
 
-### 4.5 Public profile of any user — `/users/[username]` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1
+### 4.5 Public profile of any user — `/users/[username]` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1
 - **Purpose**: When you click a reviewer's name, you see their public history.
 - **Layout**: hero (avatar/name/joined) + stats + their reviews list + "گزارش این کاربر" link.
-- **Privacy**: respects `settings.privacy.publicProfile=false` → 404 to non-owner viewers.
+- **Privacy**: respects `settings.privacy.public_profile=false` → `notFound()` to anyone other than the profile owner (enforced server-side in `app/users/[username]/page.tsx`, #74).
+- **Helpful votes**: `<ReviewCard />` rows show real `helpful_count` from `reviews.helpful_count`, kept in sync by the `review_votes` trigger (migration `0007`).
 
 ### 4.6 Business owner — `(business)` route group
 
 > Layout note: separate shell with a left sidebar nav. Gated by `viewer.role === "owner"` at the layout — otherwise redirect.
 
-#### Marketing landing — `/for-business` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1 &nbsp;·&nbsp; public
-- **Purpose**: Sell the owner-side product. Hero pitch ("نظرات واقعی، اعتماد بیشتر، فروش بهتر") + features grid + pricing teaser + CTA "ادعای مالکیت کسب‌وکار" / "ثبت کسب‌وکار جدید".
+#### Marketing landing — `/for-business` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1 &nbsp;·&nbsp; public
+- **Purpose**: Sell the owner-side product. Hero pitch ("نظرات واقعی، اعتماد بیشتر، فروش بهتر") + 3-step how-it-works + features grid + FAQ accordion + CTA "ادعای مالکیت کسب‌وکار" (links to `/search`) / "ثبت کسب‌وکار جدید" (links to `/contact`). Linked from the footer.
 
 #### Owner dashboard — `/business` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1 &nbsp;·&nbsp; owner
 - KPI tiles: avg rating, total reviews, new this week, unanswered count → links to each.
@@ -439,6 +442,7 @@ Each entry is structured the same way so it scans fast:
 
 - `/admin` — overview tiles (pending reviews, pending claims, reported items, new businesses).
 - `/admin/moderation` — ✅ built — review queue with approve/reject (including private purchase proof viewing/deletion), optional rejection reasons, dynamic dashboard statistics, and template violation chips.
+- `/admin/claims` — ✅ built (#27) — business-owner claim queue. Approve/reject with optional reason templates, signed-URL proof viewer, proof deletion on either decision. Approval is what flips `businesses.claimed`+`owner_id` (via DB trigger).
 - `/admin/reports` — reports inbox with action buttons.
 - `/admin/businesses` — list/edit/merge/approve-claim.
 - `/admin/users` — list/ban/role-toggle.
@@ -545,8 +549,8 @@ You're a solo founder. Don't try to build the sitemap top-down. Build the minimu
 3. `/reviews` (global feed) — ✅ built.
 4. `/saved` + bookmark API — ✅ built.
 5. `/settings` (security + notifications + privacy + delete account) — 🚧 partial (notifications and privacy built, security deferred).
-6. `/users/[username]` (public profile).
-7. `/for-business` (owner marketing) + `/company/[slug]/claim`.
+6. `/users/[username]` (public profile) — ✅ built.
+7. `/for-business` (owner marketing) + `/company/[slug]/claim` — ✅ built.
 8. `/business` + `/business/reviews` + `/business/profile`.
 9. Blog: `/blog/category/[slug]`, `/blog/tag/[slug]`, related posts.
 
@@ -623,8 +627,8 @@ GitHub issues mirror the build order in §6. Repo: [`sobhanashine/nazarato`](htt
 | ✅ | `/reviews` | [#23](https://github.com/sobhanashine/nazarato/issues/23) |
 | ✅ | `/saved` (+ bookmark API) | [#24](https://github.com/sobhanashine/nazarato/issues/24) |
 | 🚧 | `/settings` · `/settings/security` · `/settings/notifications` · `/settings/privacy` | [#25](https://github.com/sobhanashine/nazarato/issues/25) |
-| 📋 | `/users/[username]` | [#26](https://github.com/sobhanashine/nazarato/issues/26) |
-| 📋 | `/for-business` · `/company/[slug]/claim` | [#27](https://github.com/sobhanashine/nazarato/issues/27) |
+| ✅ | `/users/[username]` (+ persisted helpful votes, #74) | [#26](https://github.com/sobhanashine/nazarato/issues/26) |
+| ✅ | `/for-business` · `/company/[slug]/claim` · `/admin/claims` | [#27](https://github.com/sobhanashine/nazarato/issues/27) |
 | 📋 | `/business` · `/business/reviews` · `/business/profile` | [#28](https://github.com/sobhanashine/nazarato/issues/28) |
 | 📋 | `/blog/category/[slug]` · `/blog/tag/[slug]` · related posts (+ `/blog` pagination) | [#29](https://github.com/sobhanashine/nazarato/issues/29) |
 
