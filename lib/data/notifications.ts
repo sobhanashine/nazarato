@@ -4,7 +4,12 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 export type NotificationType =
   | "admin_new_review"
   | "review_approved"
-  | "review_rejected";
+  | "review_rejected"
+  | "admin_new_claim"
+  | "claim_approved"
+  | "claim_rejected"
+  | "owner_replied"
+  | "admin_review_flagged";
 
 export type Notification = {
   id: string;
