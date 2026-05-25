@@ -63,7 +63,7 @@ async function exerciseVoteRoundTrip(page: Page, path: string) {
   if (startPressed) {
     // Leak from a prior failed run — clean it before we measure baseline.
     await btn.click();
-    await expect(btn).toBeEnabled();
+    await expect(btn).toBeEnabled({ timeout: 15_000 });
     await expect(btn).toHaveAttribute("aria-pressed", "false");
     await page.reload();
   }
@@ -74,7 +74,7 @@ async function exerciseVoteRoundTrip(page: Page, path: string) {
   // The server action is async via useTransition; the button stays disabled
   // until the write completes. Waiting on `toBeEnabled` is the correct sync
   // point — polling the optimistic UI races the DB write.
-  await expect(cleanBtn).toBeEnabled();
+  await expect(cleanBtn).toBeEnabled({ timeout: 15_000 });
   await expect(cleanBtn).toHaveAttribute("aria-pressed", "true");
   expect(parseFaNum(await cleanBtn.innerText())).toBe(base + 1);
 
@@ -84,7 +84,7 @@ async function exerciseVoteRoundTrip(page: Page, path: string) {
   await expect(reloaded).toHaveAttribute("aria-pressed", "true");
 
   await reloaded.click();
-  await expect(reloaded).toBeEnabled();
+  await expect(reloaded).toBeEnabled({ timeout: 15_000 });
   await expect(reloaded).toHaveAttribute("aria-pressed", "false");
   expect(parseFaNum(await reloaded.innerText())).toBe(base);
 
@@ -98,6 +98,14 @@ async function exerciseVoteRoundTrip(page: Page, path: string) {
 test.describe.configure({ mode: "serial" });
 
 test.describe("Helpful vote — multi-surface", () => {
+  test.beforeEach(({}, testInfo) => {
+    // Each round-trip touches 4 server-action paths and does 2 full reloads.
+    // Under `next dev` with parallel workers, Turbopack's lazy compile can
+    // push that past the 30s default — give it headroom rather than racing
+    // the compiler.
+    testInfo.setTimeout(90_000);
+  });
+
   test("homepage / RecentReviews", async ({ page }) => {
     await login(page);
     await exerciseVoteRoundTrip(page, "/");
