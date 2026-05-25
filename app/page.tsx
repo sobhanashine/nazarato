@@ -2,6 +2,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Blog } from "@/components/sections/Blog";
 import { Categories } from "@/components/sections/Categories";
+import { ForBusinessCTA } from "@/components/sections/ForBusinessCTA";
 import { Hero } from "@/components/sections/Hero";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { InstagramShops } from "@/components/sections/InstagramShops";
@@ -17,6 +18,7 @@ export default function HomePage() {
         <Categories />
         <RecentReviews />
         <InstagramShops />
+        <ForBusinessCTA />
         <Blog />
       </main>
       <Footer />

@@ -13,10 +13,12 @@ const navItems = [
 ];
 
 // Mobile hamburger menu — has room for every primary page, so it also
-// surfaces جستجو and نوشتن نظر (which desktop reaches via the hero / tab bar).
+// surfaces جستجو, نوشتن نظر, and the owner-acquisition page (which desktop
+// reaches via the hero / tab bar / standalone header CTA).
 const mobileNavItems = [
   { href: "/search", label: "جستجو" },
   { href: "/write-review", label: "نوشتن نظر" },
+  { href: "/for-business", label: "برای کسب‌وکارها" },
   ...navItems,
 ];
 
@@ -70,6 +72,17 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/for-business"
+              className="hidden lg:inline-flex items-center gap-1.5 rounded-full border border-mint/35 bg-mint/[0.08] px-3.5 py-2 min-h-11 text-[12.5px] font-bold text-mint transition-colors duration-200 hover:bg-mint/[0.16] hover:border-mint/55"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M3 21h18" />
+                <path d="M5 21V7l7-4 7 4v14" />
+                <path d="M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01" />
+              </svg>
+              برای کسب‌وکارها
+            </Link>
             <HeaderAuth />
             <MobileMenu items={mobileNavItems} />
           </div>
