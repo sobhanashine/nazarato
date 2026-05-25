@@ -3,7 +3,7 @@
 > Single source of truth for every page in the product: what exists, what's planned, what each page is for, and how it's structured.
 > Update this when you add/rename/remove a route.
 
-Last edited: 2026-05-22
+Last edited: 2026-05-25
 Owner: Sobhan (solo founder)
 Stack assumptions: Next.js 16 App Router, React 19, Tailwind v4, Supabase + Kavenegar OTP, RTL Persian (`lang="fa" dir="rtl"`).
 
@@ -318,7 +318,7 @@ Each entry is structured the same way so it scans fast:
   - "اطلاعات تماس" replaces "ساعات کاری" — handle, DM link, website.
   - "وضعیت تایید فروشگاه" badge logic differs (we verify based on activity/order proof rather than business registration).
 
-#### All recent reviews — `/reviews` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
+#### All recent reviews — `/reviews` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
 - **Purpose**: Site-wide review feed (the homepage shows top 6 — this shows everything).
 - **Layout**: PageBanner + filter bar (rating, category, IG-only) + infinite scroll OR paginated list of `<ReviewCard />`.
 - **Sort**: Default = جدیدترین. Other: مفیدترین، بحث‌برانگیزترین.
@@ -391,7 +391,7 @@ Each entry is structured the same way so it scans fast:
 #### Edit profile — `/profile/edit` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0
 - Fields: avatar upload (or initial color), display name, bio (140 chars).
 
-#### Saved — `/saved` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P0 (tab-bar links here)
+#### Saved — `/saved` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 (tab-bar links here)
 - **Purpose**: Bookmarked businesses & shops.
 - **Layout**: tabs "کسب‌وکارها" / "اینستاگرامی" + grid of cards (reuse business-card / ig-card).
 - **Empty state**: "هنوز چیزی ذخیره نکردی — این پیشنهادها رو ببین" + 4 popular cards.
@@ -405,7 +405,7 @@ Each entry is structured the same way so it scans fast:
 - **Purpose**: Index page with quick links into sub-settings.
 - **Sub-pages**:
   - `/settings/security` — change phone, sessions list, logout-all (deferred for next phase).
-  - `/settings/notifications` — toggles: in-website notifications (built).
+  - `/settings/notifications` — toggles: in-website notifications and browser Web Push notifications via VAPID (built).
   - `/settings/privacy` — public profile visibility (built), delete account (deferred).
 
 ### 4.5 Public profile of any user — `/users/[username]` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1
@@ -540,11 +540,11 @@ You're a solo founder. Don't try to build the sitemap top-down. Build the minimu
 9. `/admin/moderation` (the one admin page you can't avoid) — ✅ built.
 
 ### Phase 2 — v1.0 (2–4 weeks)
-1. `/categories` + `/categories/[slug]`.
-2. `/instagram-shops` + `/shop/[handle]` + `/shop/[handle]/write-review`.
-3. `/reviews` (global feed).
-4. `/saved` + bookmark API.
-5. `/settings` (security + notifications + privacy + delete account).
+1. `/categories` + `/categories/[slug]` — ✅ built.
+2. `/instagram-shops` + `/shop/[handle]` + `/shop/[handle]/write-review` — ✅ built.
+3. `/reviews` (global feed) — ✅ built.
+4. `/saved` + bookmark API — ✅ built.
+5. `/settings` (security + notifications + privacy + delete account) — 🚧 partial (notifications and privacy built, security deferred).
 6. `/users/[username]` (public profile).
 7. `/for-business` (owner marketing) + `/company/[slug]/claim`.
 8. `/business` + `/business/reviews` + `/business/profile`.
@@ -603,39 +603,39 @@ GitHub issues mirror the build order in §6. Repo: [`sobhanashine/nazarato`](htt
 
 **Phase 1 — MVP loop** · [milestone](https://github.com/sobhanashine/nazarato/milestone/1)
 
-| Route(s) / deliverable | Issue |
-|------------------------|-------|
-| `/login` · `/login/verify` | [#13](https://github.com/sobhanashine/nazarato/issues/13) |
-| `/profile` · `/profile/reviews` | [#14](https://github.com/sobhanashine/nazarato/issues/14) |
-| Shared cards — `<BusinessCard />` `<ReviewCard />` `<IgShopCard />` `<RatingStars />` | [#15](https://github.com/sobhanashine/nazarato/issues/15) |
-| `/company/[slug]` | [#16](https://github.com/sobhanashine/nazarato/issues/16) |
-| `/company/[slug]/write-review` | [#17](https://github.com/sobhanashine/nazarato/issues/17) |
-| `/search` | [#18](https://github.com/sobhanashine/nazarato/issues/18) |
-| `/terms` · `/privacy` | [#19](https://github.com/sobhanashine/nazarato/issues/19) |
-| `/admin/moderation` | [#20](https://github.com/sobhanashine/nazarato/issues/20) |
+| Status | Route(s) / deliverable | Issue |
+|--------|------------------------|-------|
+| ✅ | `/login` · `/login/verify` | [#13](https://github.com/sobhanashine/nazarato/issues/13) |
+| ✅ | `/profile` · `/profile/reviews` | [#14](https://github.com/sobhanashine/nazarato/issues/14) |
+| ✅ | Shared cards — `<BusinessCard />` `<ReviewCard />` `<IgShopCard />` `<RatingStars />` | [#15](https://github.com/sobhanashine/nazarato/issues/15) |
+| ✅ | `/company/[slug]` | [#16](https://github.com/sobhanashine/nazarato/issues/16) |
+| ✅ | `/company/[slug]/write-review` | [#17](https://github.com/sobhanashine/nazarato/issues/17) |
+| ✅ | `/search` | [#18](https://github.com/sobhanashine/nazarato/issues/18) |
+| ✅ | `/terms` · `/privacy` | [#19](https://github.com/sobhanashine/nazarato/issues/19) |
+| ✅ | `/admin/moderation` | [#20](https://github.com/sobhanashine/nazarato/issues/20) |
 
 **Phase 2 — v1.0** · [milestone](https://github.com/sobhanashine/nazarato/milestone/2)
 
-| Route(s) / deliverable | Issue |
-|------------------------|-------|
-| `/categories` · `/categories/[slug]` | [#21](https://github.com/sobhanashine/nazarato/issues/21) |
-| `/instagram-shops` · `/shop/[handle]` · `/shop/[handle]/write-review` | [#22](https://github.com/sobhanashine/nazarato/issues/22) |
-| `/reviews` | [#23](https://github.com/sobhanashine/nazarato/issues/23) |
-| `/saved` (+ bookmark API) | [#24](https://github.com/sobhanashine/nazarato/issues/24) |
-| `/settings` · `/settings/security` · `/settings/notifications` · `/settings/privacy` | [#25](https://github.com/sobhanashine/nazarato/issues/25) |
-| `/users/[username]` | [#26](https://github.com/sobhanashine/nazarato/issues/26) |
-| `/for-business` · `/company/[slug]/claim` | [#27](https://github.com/sobhanashine/nazarato/issues/27) |
-| `/business` · `/business/reviews` · `/business/profile` | [#28](https://github.com/sobhanashine/nazarato/issues/28) |
-| `/blog/category/[slug]` · `/blog/tag/[slug]` · related posts (+ `/blog` pagination) | [#29](https://github.com/sobhanashine/nazarato/issues/29) |
+| Status | Route(s) / deliverable | Issue |
+|--------|------------------------|-------|
+| ✅ | `/categories` · `/categories/[slug]` | [#21](https://github.com/sobhanashine/nazarato/issues/21) |
+| ✅ | `/instagram-shops` · `/shop/[handle]` · `/shop/[handle]/write-review` | [#22](https://github.com/sobhanashine/nazarato/issues/22) |
+| ✅ | `/reviews` | [#23](https://github.com/sobhanashine/nazarato/issues/23) |
+| ✅ | `/saved` (+ bookmark API) | [#24](https://github.com/sobhanashine/nazarato/issues/24) |
+| 🚧 | `/settings` · `/settings/security` · `/settings/notifications` · `/settings/privacy` | [#25](https://github.com/sobhanashine/nazarato/issues/25) |
+| 📋 | `/users/[username]` | [#26](https://github.com/sobhanashine/nazarato/issues/26) |
+| 📋 | `/for-business` · `/company/[slug]/claim` | [#27](https://github.com/sobhanashine/nazarato/issues/27) |
+| 📋 | `/business` · `/business/reviews` · `/business/profile` | [#28](https://github.com/sobhanashine/nazarato/issues/28) |
+| 📋 | `/blog/category/[slug]` · `/blog/tag/[slug]` · related posts (+ `/blog` pagination) | [#29](https://github.com/sobhanashine/nazarato/issues/29) |
 
 **Phase 3 — v2+** · [milestone](https://github.com/sobhanashine/nazarato/milestone/3)
 
-| Route(s) / deliverable | Issue |
-|------------------------|-------|
-| `/notifications` | [#30](https://github.com/sobhanashine/nazarato/issues/30) |
-| `/business/insights` · `/business/team` · `/business/billing` | [#31](https://github.com/sobhanashine/nazarato/issues/31) |
-| `/admin` · `/admin/reports` · `/admin/businesses` · `/admin/users` | [#32](https://github.com/sobhanashine/nazarato/issues/32) |
-| v2+ features — compare businesses, follow users, Q&A, review photos | [#33](https://github.com/sobhanashine/nazarato/issues/33) |
+| Status | Route(s) / deliverable | Issue |
+|--------|------------------------|-------|
+| 📋 | `/notifications` | [#30](https://github.com/sobhanashine/nazarato/issues/30) |
+| 📋 | `/business/insights` · `/business/team` · `/business/billing` | [#31](https://github.com/sobhanashine/nazarato/issues/31) |
+| 📋 | `/admin` · `/admin/reports` · `/admin/businesses` · `/admin/users` | [#32](https://github.com/sobhanashine/nazarato/issues/32) |
+| 📋 | v2+ features — compare businesses, follow users, Q&A, review photos | [#33](https://github.com/sobhanashine/nazarato/issues/33) |
 
 **Not tracked** — already ✅ built, no issue: `/` · `/blog` · `/blog/[slug]` · `/about` · `/contact`.
 **Untracked gaps** — `/company/[slug]/reviews` (split recommended in §4.1, folded into #16 for now); `/help` and `/cookies` (P1/conditional, no issue yet); `/contact` email/DB delivery still pending (§4.2).

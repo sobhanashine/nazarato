@@ -38,12 +38,15 @@ non-trivial task starts by reading this file and ends by updating it.
 - Font: **Vazirmatn** (Arabic subset, weights 300–900) via `next/font/google` (`app/layout.tsx:8`).
 - All UI copy is Persian by default.
 
-### PWA
+### PWA & Push Notifications
 
 - Manifest is generated at `app/manifest.ts` (Next 16 `Metadata` route).
-- Service worker lives at `public/sw.js`, registered by `components/pwa/RegisterSW.tsx`.
+- Service worker lives at `public/sw.js`, registered by `components/pwa/RegisterSW.tsx`. Includes event handlers for `push` and `notificationclick` to show native background popups.
 - Install prompt: `components/pwa/InstallPrompt.tsx`.
+- Web Push notifications are implemented using VAPID keys. User subscriptions are saved to the `push_subscriptions` table (`supabase/migrations/0006_create_push_subscriptions.sql`).
+- Dispatching pushes runs through `lib/push/server.ts`, which catches and logs push service failures to prevent blocking primary transactions (e.g., review submissions).
 - `next.config.ts:42-53` sets `Cache-Control: no-cache` and `Service-Worker-Allowed: /` for `sw.js`.
+
 
 ### Headless WordPress (blog)
 
@@ -128,13 +131,14 @@ Set globally in `next.config.ts:31-40`:
 
 - **WP_API_URL** must be set in the deployment env or `lib/wp.ts` calls will
   fail. Not yet documented in a `.env.example`.
+- **Web Push (VAPID) keys** must be generated and set in the deployment environment (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) for Web Push notifications to function. See `.env.local.example` for details.
 - **Auth — remaining wiring.** `/login` works end-to-end in dev. Still open:
   (1) OTP delivery is a static dev code (`123456`) — wire Kavenegar in
   `lib/auth/otp.ts` `sendOtp` once SMS credit is available; (2) sessions are
   HMAC-signed cookies, a deliberate placeholder — migrate to Supabase Auth
   later (keep `getSession`/`setSession`/`clearSession` stable). Deployment
-  note: run `supabase/migrations/0001_create_users_table.sql` and `0002_create_businesses_and_reviews.sql` on every new
-  Supabase environment (they are applied to the current dev project).
+  note: run all migrations under `supabase/migrations/` on every new Supabase environment.
+
 
 ---
 
@@ -144,7 +148,9 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-05-24** — Implemented Web Push Notifications via VAPID (#25). Built service worker push handlers, database-backed subscriptions (`push_subscriptions` table), and server dispatcher (`lib/push/server.ts`) that catches/absorbs push failures to prevent blocking primary actions. Added `PushToggle` client component on `/settings/notifications` to handle subscriptions and request browser permissions. Files: `public/sw.js`, `lib/push/server.ts`, `components/settings/PushToggle.tsx`, `app/(user)/settings/notifications/push-actions.ts`, `supabase/migrations/0006_create_push_subscriptions.sql`.
 - **2026-05-24** — Implemented user settings pages (#25) including the settings index (/settings), website activity notifications (/settings/notifications), and public profile privacy settings (/settings/privacy) using custom animated toggles and server actions. Files: `lib/data/users.ts`, `lib/data/users.test.ts`, `app/(user)/settings/actions.ts`, `app/(user)/settings/page.tsx`, `app/(user)/settings/notifications/page.tsx`, `app/(user)/settings/privacy/page.tsx`, `components/settings/NotificationsForm.tsx`, `components/settings/PrivacyForm.tsx`, `supabase/migrations/0004_add_notification_settings.sql`.
+
 - **2026-05-24** — Redesigned and integrated the homepage clarification section `<HowItWorks />` with a split Trustpilot-style responsive banner, explaining Nazarato's independent review mechanism and its dual-support for corporate and Instagram shops. Files: `components/sections/HowItWorks.tsx`, `app/page.tsx`.
 - **2026-05-23** — Built Bookmarks feature and `/saved` page (#24). Added `bookmarks` table to Supabase with `(user_id, business_id)` uniqueness. Implemented data layer (`lib/data/bookmarks.ts`) and self-checking `toggleBookmark` server action that handles concurrent race conditions without failing. Created `BookmarkButton` component using React 19 `useOptimistic` for instant feedback, integrated into `BusinessCard`, `IgShopCard`, `CompanyProfile`, and `ShopProfile` (where `isBookmarked` status is fetched in parallel via `Promise.all`). Created `/saved` page with tabbed navigation (`?tab=businesses|ig`) and an empty state featuring popular businesses. Wrote comprehensive tests for both data logic and UI entry points. Files: `supabase/migrations/0003_create_bookmarks.sql`, `lib/data/bookmarks.ts`, `app/(user)/saved/actions.ts`, `app/(user)/saved/page.tsx`, `components/ui/BookmarkButton.tsx`.
 - **2026-05-23** — Built Instagram shops features (#22): directory `/instagram-shops` with niche tabs, sort selector and pagination; individual profile `/shop/[handle]` featuring `<IgAvatar />` conic-gradient ring, `<IgVerifiedBadge />` wavy-star lapis icon, and direct DM messaging link; and auth-gated `/shop/[handle]/write-review` form with specialized IG proof files (`dm` or `receipt`). Added database query helpers, mapped types, and verified with Vitest unit tests. Files: `lib/data/instagram-shops.ts`, `lib/data/instagram-shops.test.ts`, `components/ui/IgAvatar.tsx`, `components/ui/IgVerifiedBadge.tsx`, `components/shop/ShopProfile.tsx`, `components/instagram-shops/InstagramShopsClient.tsx`, `app/instagram-shops/`, `app/shop/`.
