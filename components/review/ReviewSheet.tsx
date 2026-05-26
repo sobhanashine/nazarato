@@ -627,6 +627,7 @@ function WriteStep({
             realise the transcript only lands after they stop. */}
         <div className="mt-2.5 flex items-center gap-3">
           <span
+            aria-live="polite"
             className={`shrink-0 text-[11px] font-bold ${
               voiceMode === "recording"
                 ? "text-pomegr"
