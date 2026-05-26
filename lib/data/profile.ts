@@ -1,10 +1,9 @@
 /**
  * Mock "my account" data for the consumer profile area (issue #14).
  *
- * There is no `reviews` table yet — `/company/[slug]/write-review` (#17) is
- * still unbuilt — so the reviews a user "wrote" are static fixtures here,
- * enough to exercise every status badge and the delete flow. Swap these for a
- * real per-user `reviews` query once #17 lands.
+ * Legacy notes: a fixture for status-badge / delete-flow coverage that
+ * predates the live `reviews` table. New work should source from
+ * `getUserReviews()` instead.
  */
 import type { Rating } from "@/components/ui/RatingStars";
 

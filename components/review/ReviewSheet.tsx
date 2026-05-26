@@ -325,6 +325,15 @@ function LoadingState() {
 }
 
 function AuthGate() {
+  // Return the user to the current page with `?review=1` so
+  // `ReviewSheetAutoOpen` re-opens the sheet after login — works for every
+  // entry point (FAB, `/company/[slug]`, `/shop/[handle]`, etc.) without the
+  // wizard needing to know which kind of business it has.
+  const [returnPath, setReturnPath] = useState("/?review=1");
+  useEffect(() => {
+    setReturnPath(`${window.location.pathname}?review=1`);
+  }, []);
+
   return (
     <div className="flex flex-col items-center py-8 text-center">
       <span
@@ -344,7 +353,7 @@ function AuthGate() {
         ثبت کنی.
       </p>
       <Link
-        href="/login?next=/write-review"
+        href={`/login?next=${encodeURIComponent(returnPath)}`}
         className={`${BTN_PRIMARY} mt-6 w-full py-3.5 text-[15px]`}
       >
         ورود به حساب

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ShopProfile } from "@/components/shop/ShopProfile";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { ReviewSheetAutoOpen } from "@/components/review/ReviewSheetAutoOpen";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Container } from "@/components/ui/Container";
 import {
@@ -76,6 +77,7 @@ export default async function ShopPage({
         </main>
       </Container>
       <Footer />
+      <ReviewSheetAutoOpen prefill={{ slug: shop.slug, name: shop.name }} />
     </>
   );
 }

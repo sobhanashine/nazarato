@@ -1,5 +1,6 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { ReviewSheetAutoOpen } from "@/components/review/ReviewSheetAutoOpen";
 import { Blog } from "@/components/sections/Blog";
 import { Categories } from "@/components/sections/Categories";
 import { ForBusinessCTA } from "@/components/sections/ForBusinessCTA";
@@ -22,6 +23,7 @@ export default function HomePage() {
         <Blog />
       </main>
       <Footer />
+      <ReviewSheetAutoOpen />
     </>
   );
 }
