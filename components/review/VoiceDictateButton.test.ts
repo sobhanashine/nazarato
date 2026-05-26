@@ -1,53 +1,53 @@
 import { describe, expect, test } from "vitest";
 
 /**
- * Co-located test for the API-detection logic in `VoiceDictateButton`.
+ * Co-located test for the recorder-capability gate in `VoiceDictateButton`.
  *
- * The component renders nothing when neither `SpeechRecognition` nor
- * `webkitSpeechRecognition` is on `window` — that contract is what protects
- * Firefox / locked-down WebView users from a broken affordance. The unit test
- * targets the detector directly; the rendered behaviour is covered by the
- * Playwright spec (`e2e/voice-dictation.spec.ts`) which injects a real shim.
+ * The component renders nothing when `MediaRecorder` is missing OR none of
+ * the codecs it tries are supported by the browser. That gate is what
+ * protects users on insecure HTTP origins / locked-down WebViews from a
+ * non-functional mic icon. The full record→POST→Gemini round-trip is
+ * covered in `e2e/voice-dictation.spec.ts`.
  */
 
-// Re-implement the lookup the component uses, in isolation, so a regression
-// in the detector itself is caught even without a DOM render.
-function getSpeechRecognitionCtor(
-  w: { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown } | undefined,
-): unknown {
-  if (!w) return null;
-  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+const CANDIDATE_MIMES = [
+  "audio/webm;codecs=opus",
+  "audio/webm",
+  "audio/ogg;codecs=opus",
+  "audio/mp4",
+  "audio/aac",
+];
+
+function pickMime(
+  Recorder: { isTypeSupported: (m: string) => boolean } | undefined,
+): string | null {
+  if (!Recorder) return null;
+  for (const m of CANDIDATE_MIMES) {
+    if (Recorder.isTypeSupported(m)) return m;
+  }
+  return null;
 }
 
-describe("VoiceDictateButton — Web Speech API detection", () => {
-  test("returns null when neither standard nor webkit prefix is present", () => {
-    expect(getSpeechRecognitionCtor({})).toBeNull();
+describe("VoiceDictateButton — MIME pick", () => {
+  test("returns null when MediaRecorder is undefined", () => {
+    expect(pickMime(undefined)).toBeNull();
   });
 
-  test("returns the standard constructor when available", () => {
-    const Ctor = class FakeStandard {};
-    expect(getSpeechRecognitionCtor({ SpeechRecognition: Ctor })).toBe(Ctor);
+  test("returns null when no candidate MIME is supported", () => {
+    expect(pickMime({ isTypeSupported: () => false })).toBeNull();
   });
 
-  test("falls back to the webkit prefix when standard is absent", () => {
-    const Ctor = class FakeWebkit {};
+  test("returns the first supported MIME (webm/opus preferred)", () => {
+    expect(pickMime({ isTypeSupported: () => true })).toBe(
+      "audio/webm;codecs=opus",
+    );
+  });
+
+  test("falls through to mp4 when only Safari MIMEs are supported", () => {
     expect(
-      getSpeechRecognitionCtor({ webkitSpeechRecognition: Ctor }),
-    ).toBe(Ctor);
-  });
-
-  test("prefers the standard name over the webkit prefix", () => {
-    const Std = class Std {};
-    const Webkit = class Webkit {};
-    expect(
-      getSpeechRecognitionCtor({
-        SpeechRecognition: Std,
-        webkitSpeechRecognition: Webkit,
+      pickMime({
+        isTypeSupported: (m) => m === "audio/mp4" || m === "audio/aac",
       }),
-    ).toBe(Std);
-  });
-
-  test("returns null when `window` is undefined (SSR)", () => {
-    expect(getSpeechRecognitionCtor(undefined)).toBeNull();
+    ).toBe("audio/mp4");
   });
 });
