@@ -22,6 +22,8 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type Dispatch,
+  type SetStateAction,
 } from "react";
 import Link from "next/link";
 import { STAR_PALETTES, STAR_PATH, type Rating } from "@/components/ui/RatingStars";
@@ -579,7 +581,7 @@ function WriteStep({
   selected: Selected;
   rating: number;
   body: string;
-  setBody: (v: string) => void;
+  setBody: Dispatch<SetStateAction<string>>;
   formAction: (formData: FormData) => void;
   pending: boolean;
   error?: string;
@@ -635,7 +637,11 @@ function WriteStep({
           </div>
           <VoiceDictateButton
             onAppend={(t) =>
-              setBody(body.length > 0 ? `${body.trimEnd()} ${t}` : t)
+              // Functional updater — without it the closure captures `body`
+              // once per recording session, so multiple final transcripts
+              // during a `continuous=true` run would all overwrite the same
+              // snapshot instead of stacking.
+              setBody((prev) => (prev.length > 0 ? `${prev.trimEnd()} ${t}` : t))
             }
           />
         </div>

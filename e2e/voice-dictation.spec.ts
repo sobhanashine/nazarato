@@ -60,12 +60,14 @@ async function login(page: Page) {
 }
 
 /**
- * Inject a fake Web Speech API that emits one final result. Overrides BOTH
- * the standard `SpeechRecognition` and the webkit alias, because Chromium
- * ships a native `SpeechRecognition` that the component would otherwise
- * prefer (and would then try to open a real microphone — failing in CI).
+ * Inject a fake Web Speech API that emits one OR MORE final results in a
+ * single session. Overrides BOTH the standard `SpeechRecognition` and the
+ * webkit alias, because Chromium ships a native `SpeechRecognition` that
+ * the component would otherwise prefer (and would then try to open a real
+ * microphone — failing in CI).
  */
-function installShim(transcript: string): string {
+function installShim(transcripts: string[]): string {
+  const arr = JSON.stringify(transcripts);
   return `
     class FakeRec {
       constructor() {
@@ -74,14 +76,19 @@ function installShim(transcript: string): string {
         this.interimResults = false;
       }
       start() {
-        setTimeout(() => {
-          if (this.onresult) {
-            const r = [{ transcript: ${JSON.stringify(transcript)} }];
-            r.isFinal = true;
-            this.onresult({ resultIndex: 0, results: [r] });
-          }
-          if (this.onend) this.onend();
-        }, 0);
+        const transcripts = ${arr};
+        // Emit each final result on its own tick so React state has a chance
+        // to flush between them — mirrors how the real API delivers them.
+        transcripts.forEach((t, i) => {
+          setTimeout(() => {
+            if (this.onresult) {
+              const r = [{ transcript: t }];
+              r.isFinal = true;
+              this.onresult({ resultIndex: 0, results: [r] });
+            }
+            if (i === transcripts.length - 1 && this.onend) this.onend();
+          }, i * 20);
+        });
       }
       stop() { if (this.onend) this.onend(); }
     }
@@ -113,7 +120,7 @@ test.describe("Voice dictation — issue #90", () => {
   });
 
   test("clicking the mic appends recognized text to the textarea", async ({ page }) => {
-    await page.addInitScript(installShim("سلام دنیا"));
+    await page.addInitScript(installShim(["سلام دنیا"]));
     await login(page);
 
     await page.goto("/company/digikala?review=1");
@@ -133,5 +140,25 @@ test.describe("Voice dictation — issue #90", () => {
     await mic.click();
 
     await expect(textarea).toHaveValue("متن دستی سلام دنیا", { timeout: 3_000 });
+  });
+
+  test("multiple final results in one session stack instead of overwriting", async ({ page }) => {
+    // Regression for the stale-closure bug in the `onAppend` wiring: if the
+    // callback captures `body` from the click moment, the SECOND emission
+    // would overwrite the first. The functional updater in WriteStep's
+    // onAppend prevents that — this test would have caught the bug.
+    await page.addInitScript(installShim(["یکی", "دوتا", "سه‌تا"]));
+    await login(page);
+
+    await page.goto("/company/digikala?review=1");
+    const dialog = page.getByRole("dialog", { name: "ثبت نظر" });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("radio", { name: /۵ ستاره/ }).click();
+    const textarea = dialog.getByPlaceholder(/مثلاً/);
+    await expect(textarea).toBeVisible({ timeout: 3_000 });
+
+    await dialog.getByTestId("voice-dictate").click();
+
+    await expect(textarea).toHaveValue("یکی دوتا سه‌تا", { timeout: 3_000 });
   });
 });
