@@ -22,6 +22,8 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type Dispatch,
+  type SetStateAction,
 } from "react";
 import Link from "next/link";
 import { STAR_PALETTES, STAR_PATH, type Rating } from "@/components/ui/RatingStars";
@@ -29,6 +31,7 @@ import { useSessionStatus } from "@/components/layout/useSessionStatus";
 import { BTN_PRIMARY } from "@/components/ui/styles";
 import type { Business } from "@/lib/data/businesses";
 import { submitQuickReview, type QuickReviewState } from "./actions";
+import { VoiceDictateButton } from "./VoiceDictateButton";
 
 /** A business the sheet can open with already selected (skips the picker). */
 export type ReviewPrefill = { slug: string; name: string };
@@ -578,7 +581,7 @@ function WriteStep({
   selected: Selected;
   rating: number;
   body: string;
-  setBody: (v: string) => void;
+  setBody: Dispatch<SetStateAction<string>>;
   formAction: (formData: FormData) => void;
   pending: boolean;
   error?: string;
@@ -615,8 +618,15 @@ function WriteStep({
           className="w-full resize-none rounded-xl border border-glass-border bg-white/[0.03] px-4 py-3.5 text-[16px] leading-[2] text-white placeholder:text-white/25 outline-none transition-colors focus:border-mint focus:bg-mint/[0.05]"
         />
 
-        {/* Progress to the minimum length */}
+        {/* Action row: counter · progress bar · mic (trailing in RTL) */}
         <div className="mt-2.5 flex items-center gap-3">
+          <span
+            className={`shrink-0 text-[11px] font-bold ${
+              ready ? "text-mint" : "text-muted"
+            }`}
+          >
+            {ready ? "آماده‌ی ثبت" : `${fa(len)} از ${fa(BODY_MIN)}`}
+          </span>
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
             <div
               className={`h-full rounded-full transition-[width,background-color] duration-300 ${
@@ -625,13 +635,15 @@ function WriteStep({
               style={{ width: `${progress}%` }}
             />
           </div>
-          <span
-            className={`shrink-0 text-[11px] font-bold ${
-              ready ? "text-mint" : "text-muted"
-            }`}
-          >
-            {ready ? "آماده‌ی ثبت" : `${fa(len)} از ${fa(BODY_MIN)}`}
-          </span>
+          <VoiceDictateButton
+            onAppend={(t) =>
+              // Functional updater — without it the closure captures `body`
+              // once per recording session, so multiple final transcripts
+              // during a `continuous=true` run would all overwrite the same
+              // snapshot instead of stacking.
+              setBody((prev) => (prev.length > 0 ? `${prev.trimEnd()} ${t}` : t))
+            }
+          />
         </div>
 
         {error && (
