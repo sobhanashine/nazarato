@@ -20,7 +20,7 @@ export async function markNotificationRead(
 
   try {
     await markAsRead(session.id, notificationId);
-    revalidatePath("/profile/notifications");
+    revalidatePath("/notifications");
     return { ok: true };
   } catch {
     return { error: "خطا در علامت‌گذاری اعلان." };
@@ -33,7 +33,7 @@ export async function markAllNotificationsRead(): Promise<NotificationActionStat
 
   try {
     await markAllAsRead(session.id);
-    revalidatePath("/profile/notifications");
+    revalidatePath("/notifications");
     return { ok: true };
   } catch {
     return { error: "خطا در علامت‌گذاری اعلان‌ها." };
