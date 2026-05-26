@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CompanyProfile } from "@/components/company/CompanyProfile";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { ReviewSheetAutoOpen } from "@/components/review/ReviewSheetAutoOpen";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Container } from "@/components/ui/Container";
 import {
@@ -69,6 +70,9 @@ export default async function CompanyPage({
         </main>
       </Container>
       <Footer />
+      <ReviewSheetAutoOpen
+        prefill={{ slug: business.slug, name: business.name }}
+      />
     </>
   );
 }

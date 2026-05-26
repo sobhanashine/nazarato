@@ -21,11 +21,15 @@ test.describe("Instagram shops — issue #22", () => {
     await expect(page.locator("text=مانتو سارا").first()).toBeVisible();
   });
 
-  test("write-review redirects unauthenticated users to /login", async ({ page }) => {
+  test("legacy /shop/<handle>/write-review redirects to profile + auto-opens sheet", async ({ page }) => {
+    // Post-#91 the dedicated page form is gone — the route now server-redirects
+    // to the shop profile with `?review=1`, which `ReviewSheetAutoOpen` reads
+    // (and then scrubs from the URL) to open the wizard. The wizard
+    // auth-gates internally, so we just assert the dialog appears.
     const response = await page.goto("/shop/manto_sara/write-review");
-    // Either redirected to /login, or login form is visible on the resulting page
-    await expect(page).toHaveURL(/\/login/);
     expect(response?.status()).toBeLessThan(400);
+    await expect(page).toHaveURL(/\/shop\/manto_sara(\?.*)?$/);
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
   });
 
   test("unknown shop handle renders not-found UI", async ({ page }) => {

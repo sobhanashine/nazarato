@@ -1,20 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { toRelativePersianTime } from "./businesses";
 
-/** Pre-written title suggestions shown via the lightbulb icon on the title field. */
-export const TITLE_SUGGESTIONS: string[] = [
-  "محصول دقیقاً مطابق توضیحات بود",
-  "ارسال سریع و بسته‌بندی عالی",
-  "قیمت مناسب، کیفیت خوب",
-  "پشتیبانی عالی و پاسخگو",
-  "کیفیت پایین‌تر از انتظار بود",
-  "محصول با تأخیر رسید",
-  "خرید مجدد توصیه می‌کنم",
-  "از این خرید راضی نیستم",
-  "بسته‌بندی محکم و حرفه‌ای",
-  "محصول تقلبی بود",
-];
-
 export type Review = {
   id: string;
   user: { id: string; name: string; initial: string; color: string; username?: string | null };
