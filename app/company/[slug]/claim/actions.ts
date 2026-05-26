@@ -3,7 +3,7 @@
 /**
  * Claim-submission server action — the owner-claim boundary (#27).
  *
- * Mirrors `app/company/[slug]/write-review/actions.ts`: every field is
+ * Mirrors `components/review/actions.ts`: every field is
  * re-validated against untrusted `FormData`, the session is re-read server-side
  * (a hidden form field could be forged, a signed cookie cannot), and the proof
  * document goes to the private `claim-proofs` bucket so only an admin can view
