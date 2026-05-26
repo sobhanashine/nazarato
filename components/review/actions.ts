@@ -12,7 +12,7 @@ import { getSession } from "@/lib/auth/session";
 import { notifyAdminsOfNewReview } from "@/lib/data/notifications";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
-const BODY_MIN = 30;
+const BODY_MIN = 10;
 const BODY_MAX = 2000;
 
 const faNum = (n: number) => n.toLocaleString("fa-IR");

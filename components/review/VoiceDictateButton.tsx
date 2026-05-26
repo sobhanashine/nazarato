@@ -26,12 +26,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
+export type VoiceMode = "idle" | "recording" | "processing";
+
 type Props = {
   /** Receives the recognized transcript. Parent merges into its text state. */
   onAppend: (text: string) => void;
+  /** Notified on every state transition so the parent can mirror it (e.g.
+   * swap an inline counter for a "tap again to stop" hint while recording). */
+  onModeChange?: (mode: VoiceMode) => void;
 };
 
-type Mode = "idle" | "recording" | "processing";
+type Mode = VoiceMode;
 
 /**
  * Pick a MIME the browser can record AND that we accept on the server.
@@ -63,11 +68,21 @@ function supportsRecorder(): boolean {
   );
 }
 
-export function VoiceDictateButton({ onAppend }: Props) {
+export function VoiceDictateButton({ onAppend, onModeChange }: Props) {
   // `null` on the server / first client render → button hidden until the
   // post-mount detection runs. Prevents hydration mismatch.
   const [supported, setSupported] = useState<boolean | null>(null);
   const [mode, setMode] = useState<Mode>("idle");
+
+  // Mirror the latest onModeChange in a ref so callers can pass an inline
+  // arrow without forcing every effect to re-run on parent re-render.
+  const onModeChangeRef = useRef(onModeChange);
+  useEffect(() => {
+    onModeChangeRef.current = onModeChange;
+  }, [onModeChange]);
+  useEffect(() => {
+    onModeChangeRef.current?.(mode);
+  }, [mode]);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
