@@ -29,6 +29,7 @@ import { useSessionStatus } from "@/components/layout/useSessionStatus";
 import { BTN_PRIMARY } from "@/components/ui/styles";
 import type { Business } from "@/lib/data/businesses";
 import { submitQuickReview, type QuickReviewState } from "./actions";
+import { VoiceDictateButton } from "./VoiceDictateButton";
 
 /** A business the sheet can open with already selected (skips the picker). */
 export type ReviewPrefill = { slug: string; name: string };
@@ -615,8 +616,15 @@ function WriteStep({
           className="w-full resize-none rounded-xl border border-glass-border bg-white/[0.03] px-4 py-3.5 text-[16px] leading-[2] text-white placeholder:text-white/25 outline-none transition-colors focus:border-mint focus:bg-mint/[0.05]"
         />
 
-        {/* Progress to the minimum length */}
+        {/* Action row: counter · progress bar · mic (trailing in RTL) */}
         <div className="mt-2.5 flex items-center gap-3">
+          <span
+            className={`shrink-0 text-[11px] font-bold ${
+              ready ? "text-mint" : "text-muted"
+            }`}
+          >
+            {ready ? "آماده‌ی ثبت" : `${fa(len)} از ${fa(BODY_MIN)}`}
+          </span>
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
             <div
               className={`h-full rounded-full transition-[width,background-color] duration-300 ${
@@ -625,13 +633,11 @@ function WriteStep({
               style={{ width: `${progress}%` }}
             />
           </div>
-          <span
-            className={`shrink-0 text-[11px] font-bold ${
-              ready ? "text-mint" : "text-muted"
-            }`}
-          >
-            {ready ? "آماده‌ی ثبت" : `${fa(len)} از ${fa(BODY_MIN)}`}
-          </span>
+          <VoiceDictateButton
+            onAppend={(t) =>
+              setBody(body.length > 0 ? `${body.trimEnd()} ${t}` : t)
+            }
+          />
         </div>
 
         {error && (
