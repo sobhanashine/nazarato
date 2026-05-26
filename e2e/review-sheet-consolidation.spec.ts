@@ -45,6 +45,27 @@ test.describe("ReviewSheet consolidation — issue #91", () => {
     await expect(page).not.toHaveURL(/review=1/);
   });
 
+  test("mobile tab-bar FAB opens the wizard", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.getByRole("button", { name: "نوشتن نظر" }).first().click();
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
+  });
+
+  test("company-page CTA opens the wizard with the company pre-selected", async ({ page }) => {
+    await page.goto("/company/digikala");
+    // The «نوشتن نظر» CTA in CompanyProfile is a <button>, not a link —
+    // server-rendered <Link>s would have been the legacy-route trap this PR removes.
+    await page.getByRole("button", { name: "نوشتن نظر" }).first().click();
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
+  });
+
+  test("shop-page CTA opens the wizard with the shop pre-selected", async ({ page }) => {
+    await page.goto("/shop/manto_sara");
+    await page.getByRole("button", { name: "نوشتن نظر" }).first().click();
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
+  });
+
   test("legacy form page headers no longer render", async ({ page }) => {
     // The old WriteReviewForm.tsx files are deleted — neither destination
     // should ever render their page-level headers again.
