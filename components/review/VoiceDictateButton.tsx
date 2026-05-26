@@ -1,174 +1,261 @@
 "use client";
 
 /**
- * VoiceDictateButton — fa-IR dictation for the ReviewSheet body textarea (#90).
+ * VoiceDictateButton — fa-IR dictation for the ReviewSheet body textarea.
  *
- * Uses the browser-native Web Speech API (`window.SpeechRecognition` /
- * `webkitSpeechRecognition`). Free, no infra, online-only — the platform's
- * STT does the work. When the API is absent (Firefox desktop, very old
- * browsers, locked-down WebViews) the button renders nothing — no broken
- * affordance.
+ * Records mic audio via `MediaRecorder` and POSTs it to `/api/transcribe`,
+ * which forwards to Gemini 2.5 Flash. We moved off `webkitSpeechRecognition`
+ * because Chrome's fa-IR endpoint is blocked from inside Iran (surfaced as
+ * `network` errors). Gemini's `generativelanguage.googleapis.com` is
+ * reachable from the same region — see route comment for the why.
  *
- * Final results only: interim partials would fight the user's typing as
- * they edit. Each final recognition appends with a separating space so
- * manually-typed content is preserved.
+ * State machine:
+ *   idle      ─ click ─►  recording    ─ click ─►  processing  ─ result ─►  idle
+ *                                      (stop)      (upload + STT)  └ error ─► idle
+ *
+ * Visual states:
+ *  - idle:        muted mic icon
+ *  - recording:   red mic + animated ping ring
+ *  - processing:  spinning ring (no ping — recording has stopped)
+ *
+ * Fallback: when neither `MediaRecorder` nor `navigator.mediaDevices` is
+ * available (Firefox in some configs, locked-down WebViews, insecure HTTP
+ * origins), the button renders nothing — no broken affordance.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 type Props = {
-  /** Receives a freshly-recognized chunk; the parent decides how to merge. */
+  /** Receives the recognized transcript. Parent merges into its text state. */
   onAppend: (text: string) => void;
-  /** BCP-47 lang tag. Defaults to Persian (fa-IR) — the app's primary locale. */
-  lang?: string;
 };
 
-/** Minimal shape of the Web Speech API we use — TS doesn't ship these types. */
-type SpeechRecognitionAlternative = { transcript: string };
-type SpeechRecognitionResult = ArrayLike<SpeechRecognitionAlternative> & {
-  isFinal: boolean;
-};
-type SpeechRecognitionEventLike = {
-  resultIndex: number;
-  results: ArrayLike<SpeechRecognitionResult>;
-};
-type SpeechRecognitionErrorEventLike = { error: string };
-type SpeechRecognitionInstance = {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  onresult: ((e: SpeechRecognitionEventLike) => void) | null;
-  onerror: ((e: SpeechRecognitionErrorEventLike) => void) | null;
-  onend: (() => void) | null;
-  start: () => void;
-  stop: () => void;
-};
-type SpeechRecognitionCtor = new () => SpeechRecognitionInstance;
+type Mode = "idle" | "recording" | "processing";
 
-function getSpeechRecognitionCtor(): SpeechRecognitionCtor | null {
-  if (typeof window === "undefined") return null;
-  const w = window as unknown as {
-    SpeechRecognition?: SpeechRecognitionCtor;
-    webkitSpeechRecognition?: SpeechRecognitionCtor;
-  };
-  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+/**
+ * Pick a MIME the browser can record AND that we accept on the server.
+ * Order matters — first hit wins. Chrome/Firefox give us webm/opus; Safari
+ * gives us mp4/aac. Both are accepted by `/api/transcribe`.
+ */
+const CANDIDATE_MIMES = [
+  "audio/webm;codecs=opus",
+  "audio/webm",
+  "audio/ogg;codecs=opus",
+  "audio/mp4",
+  "audio/aac",
+];
+
+function pickMime(): string | null {
+  if (typeof MediaRecorder === "undefined") return null;
+  for (const m of CANDIDATE_MIMES) {
+    if (MediaRecorder.isTypeSupported(m)) return m;
+  }
+  return null;
 }
 
-export function VoiceDictateButton({ onAppend, lang = "fa-IR" }: Props) {
-  // SSR-safe: `null` on the server / first render, then real value once the
-  // effect runs. Prevents a hydration mismatch and an SSR `window` access.
+function supportsRecorder(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    typeof MediaRecorder !== "undefined" &&
+    !!navigator.mediaDevices?.getUserMedia &&
+    pickMime() !== null
+  );
+}
+
+export function VoiceDictateButton({ onAppend }: Props) {
+  // `null` on the server / first client render → button hidden until the
+  // post-mount detection runs. Prevents hydration mismatch.
   const [supported, setSupported] = useState<boolean | null>(null);
-  const [recording, setRecording] = useState(false);
-  const recRef = useRef<SpeechRecognitionInstance | null>(null);
+  const [mode, setMode] = useState<Mode>("idle");
+
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  // `transcribe` is wrapped in a ref so the `stop` handler always sees the
+  // current `onAppend` closure without re-creating the recorder on every
+  // parent re-render.
+  const transcribeRef = useRef<(blob: Blob) => Promise<void>>(async () => {});
 
   useEffect(() => {
-    setSupported(getSpeechRecognitionCtor() !== null);
+    setSupported(supportsRecorder());
   }, []);
 
-  // Defensive cleanup — covers the unmount-while-recording case.
+  // Stop and release the microphone if the wizard unmounts mid-recording.
   useEffect(() => {
     return () => {
-      recRef.current?.stop();
-      recRef.current = null;
+      stopTracks(streamRef.current);
+      streamRef.current = null;
+      try {
+        recorderRef.current?.stop();
+      } catch {
+        /* already inactive */
+      }
+      recorderRef.current = null;
     };
   }, []);
 
-  const toggle = useCallback(() => {
-    if (recording) {
-      recRef.current?.stop();
+  const transcribe = useCallback(
+    async (blob: Blob) => {
+      try {
+        const res = await fetch("/api/transcribe", {
+          method: "POST",
+          headers: { "content-type": blob.type || "audio/webm" },
+          body: blob,
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          const msg =
+            (data && typeof data === "object" && "error" in data
+              ? String((data as { error: unknown }).error)
+              : null) ?? "خطا در دیکته صوتی.";
+          toast.error(msg);
+          return;
+        }
+        const data = (await res.json()) as { text?: unknown };
+        const text = typeof data.text === "string" ? data.text.trim() : "";
+        if (!text) {
+          toast.error("صدایی شناسایی نشد — دوباره تلاش کن.");
+          return;
+        }
+        onAppend(text);
+      } catch (err) {
+        console.error("[voice] transcribe request failed", err);
+        toast.error("ارتباط با سرویس دیکته برقرار نشد.");
+      }
+    },
+    [onAppend],
+  );
+
+  // Keep the ref pointing at the freshest closure so the `onstop` handler
+  // installed when recording started can call it without going stale.
+  useEffect(() => {
+    transcribeRef.current = transcribe;
+  }, [transcribe]);
+
+  const startRecording = useCallback(async () => {
+    const mime = pickMime();
+    if (!mime) return;
+
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      // Most browsers throw `NotAllowedError` on permission denial; treat any
+      // failure as denial for the user-facing message.
+      console.error("[voice] getUserMedia failed", err);
+      toast.error("دسترسی به میکروفون داده نشد.");
       return;
     }
-    const Ctor = getSpeechRecognitionCtor();
-    if (!Ctor) return;
 
-    let rec: SpeechRecognitionInstance;
-    try {
-      rec = new Ctor();
-    } catch (err) {
-      console.error("[voice] failed to construct SpeechRecognition", err);
-      toast.error("راه‌اندازی میکروفون ممکن نشد.");
-      return;
-    }
+    const recorder = new MediaRecorder(stream, { mimeType: mime });
+    chunksRef.current = [];
+    streamRef.current = stream;
+    recorderRef.current = recorder;
 
-    rec.lang = lang;
-    rec.continuous = true;
-    rec.interimResults = false;
-
-    rec.onresult = (e) => {
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const r = e.results[i];
-        if (!r.isFinal) continue;
-        const transcript = r[0]?.transcript?.trim();
-        if (transcript) onAppend(transcript);
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
+    };
+    recorder.onstop = () => {
+      stopTracks(streamRef.current);
+      streamRef.current = null;
+      const blob = new Blob(chunksRef.current, { type: mime });
+      chunksRef.current = [];
+      recorderRef.current = null;
+      if (blob.size === 0) {
+        setMode("idle");
+        return;
       }
+      setMode("processing");
+      void transcribeRef.current(blob).finally(() => setMode("idle"));
+    };
+    recorder.onerror = (e) => {
+      console.error("[voice] MediaRecorder error", e);
+      toast.error("خطا در ضبط صدا.");
+      stopTracks(streamRef.current);
+      streamRef.current = null;
+      recorderRef.current = null;
+      setMode("idle");
     };
 
-    rec.onerror = (e) => {
-      // Don't toast for "aborted" — that's the normal stop() path.
-      if (e.error === "aborted") return;
-      if (e.error === "not-allowed" || e.error === "service-not-allowed") {
-        toast.error("دسترسی به میکروفون داده نشد.");
-      } else if (e.error === "no-speech") {
-        toast.error("صدایی شنیده نشد — دوباره تلاش کن.");
-      } else if (e.error === "network") {
-        toast.error("دیکته صوتی به اینترنت نیاز دارد.");
-      } else {
-        toast.error("خطا در دیکته صوتی.");
-      }
-    };
+    recorder.start();
+    setMode("recording");
+  }, []);
 
-    rec.onend = () => {
-      setRecording(false);
-      recRef.current = null;
-    };
-
+  const stopRecording = useCallback(() => {
     try {
-      rec.start();
-      recRef.current = rec;
-      setRecording(true);
-    } catch (err) {
-      console.error("[voice] failed to start recognition", err);
-      toast.error("راه‌اندازی میکروفون ممکن نشد.");
+      recorderRef.current?.stop();
+    } catch {
+      /* already inactive — `onstop` handles cleanup */
     }
-  }, [lang, onAppend, recording]);
+  }, []);
+
+  const onClick = useCallback(() => {
+    if (mode === "idle") void startRecording();
+    else if (mode === "recording") stopRecording();
+    // While processing, the button is disabled — no-op.
+  }, [mode, startRecording, stopRecording]);
 
   if (supported !== true) return null;
+
+  const label =
+    mode === "recording"
+      ? "توقف دیکته صوتی"
+      : mode === "processing"
+        ? "در حال پردازش دیکته"
+        : "دیکته صوتی";
 
   return (
     <button
       type="button"
-      onClick={toggle}
-      aria-label={recording ? "توقف دیکته صوتی" : "دیکته صوتی"}
-      aria-pressed={recording}
+      onClick={onClick}
+      disabled={mode === "processing"}
+      aria-label={label}
+      aria-pressed={mode === "recording"}
+      aria-busy={mode === "processing"}
       data-testid="voice-dictate"
+      data-state={mode}
       className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${
-        recording
+        mode === "recording"
           ? "bg-pomegr/20 text-pomegr"
-          : "bg-white/[0.06] text-muted hover:bg-mint/15 hover:text-mint"
+          : mode === "processing"
+            ? "bg-white/[0.06] text-mint cursor-wait"
+            : "bg-white/[0.06] text-muted hover:bg-mint/15 hover:text-mint"
       }`}
     >
-      {recording && (
+      {mode === "recording" && (
         <span
           aria-hidden
           className="absolute inset-0 rounded-full border border-pomegr animate-ping motion-reduce:hidden"
         />
       )}
-      <svg
-        viewBox="0 0 24 24"
-        className="h-4 w-4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-      >
-        <rect x="9" y="2" width="6" height="12" rx="3" />
-        <path d="M5 11a7 7 0 0 0 14 0" />
-        <path d="M12 18v3" />
-        <path d="M9 21h6" />
-      </svg>
+      {mode === "processing" ? (
+        <span
+          aria-hidden
+          className="h-4 w-4 animate-spin rounded-full border-2 border-mint/30 border-t-mint motion-reduce:animate-none"
+        />
+      ) : (
+        <svg
+          viewBox="0 0 24 24"
+          className="h-4 w-4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <rect x="9" y="2" width="6" height="12" rx="3" />
+          <path d="M5 11a7 7 0 0 0 14 0" />
+          <path d="M12 18v3" />
+          <path d="M9 21h6" />
+        </svg>
+      )}
     </button>
   );
+}
+
+function stopTracks(stream: MediaStream | null): void {
+  if (!stream) return;
+  for (const t of stream.getTracks()) t.stop();
 }
