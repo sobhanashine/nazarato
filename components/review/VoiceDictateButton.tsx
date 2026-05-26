@@ -72,6 +72,10 @@ export function VoiceDictateButton({ onAppend }: Props) {
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  // Re-entrancy guard: `startRecording` awaits `getUserMedia` (which can hang
+  // on the permission prompt). A second click during that window would start
+  // a SECOND session and leak the first stream — this ref serialises starts.
+  const startingRef = useRef(false);
   // `transcribe` is wrapped in a ref so the `stop` handler always sees the
   // current `onAppend` closure without re-creating the recorder on every
   // parent re-render.
@@ -134,8 +138,16 @@ export function VoiceDictateButton({ onAppend }: Props) {
   }, [transcribe]);
 
   const startRecording = useCallback(async () => {
+    // Guard re-entry — a second click while the permission prompt is open
+    // must not start a parallel session.
+    if (startingRef.current || recorderRef.current) return;
+    startingRef.current = true;
+
     const mime = pickMime();
-    if (!mime) return;
+    if (!mime) {
+      startingRef.current = false;
+      return;
+    }
 
     let stream: MediaStream;
     try {
@@ -145,13 +157,24 @@ export function VoiceDictateButton({ onAppend }: Props) {
       // failure as denial for the user-facing message.
       console.error("[voice] getUserMedia failed", err);
       toast.error("دسترسی به میکروفون داده نشد.");
+      startingRef.current = false;
       return;
     }
 
-    const recorder = new MediaRecorder(stream, { mimeType: mime });
+    // Construct + start inside try/finally — if either throws we must
+    // release the freshly-acquired stream or the mic indicator stays on.
+    let recorder: MediaRecorder;
+    try {
+      recorder = new MediaRecorder(stream, { mimeType: mime });
+    } catch (err) {
+      console.error("[voice] MediaRecorder constructor failed", err);
+      toast.error("راه‌اندازی ضبط ممکن نشد.");
+      stopTracks(stream);
+      startingRef.current = false;
+      return;
+    }
+
     chunksRef.current = [];
-    streamRef.current = stream;
-    recorderRef.current = recorder;
 
     recorder.ondataavailable = (e) => {
       if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
@@ -178,8 +201,20 @@ export function VoiceDictateButton({ onAppend }: Props) {
       setMode("idle");
     };
 
-    recorder.start();
+    try {
+      recorder.start();
+    } catch (err) {
+      console.error("[voice] recorder.start failed", err);
+      toast.error("راه‌اندازی ضبط ممکن نشد.");
+      stopTracks(stream);
+      startingRef.current = false;
+      return;
+    }
+
+    streamRef.current = stream;
+    recorderRef.current = recorder;
     setMode("recording");
+    startingRef.current = false;
   }, []);
 
   const stopRecording = useCallback(() => {

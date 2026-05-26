@@ -96,6 +96,19 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
+  // Trust-but-verify: reject oversized uploads based on the declared
+  // `Content-Length` BEFORE buffering. The post-read size check below is
+  // the authoritative guard (Content-Length can lie), but the pre-check
+  // saves us from buffering a malicious 1GB body into memory just to
+  // reject it.
+  const declared = Number(req.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > MAX_BYTES) {
+    return NextResponse.json(
+      { error: "فایل صوتی خیلی بزرگ است (حداکثر یک مگابایت)." },
+      { status: 413 },
+    );
+  }
+
   const buf = await req.arrayBuffer();
   if (buf.byteLength === 0) {
     return NextResponse.json(
