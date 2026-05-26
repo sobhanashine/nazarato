@@ -85,7 +85,7 @@ function IconStore() {
 const items: Item[] = [
   { href: "/profile", label: "نمای کلی", icon: <IconGrid /> },
   { href: "/profile/reviews", label: "نظرات من", icon: <IconStar /> },
-  { href: "/profile/notifications", label: "اعلان‌ها", icon: <IconBell /> },
+  { href: "/notifications", label: "اعلان‌ها", icon: <IconBell /> },
   { href: "/saved", label: "ذخیره‌شده‌ها", icon: <IconBookmark /> },
   { href: "/settings", label: "تنظیمات", icon: <IconGear /> },
 ];
@@ -143,7 +143,7 @@ export function ProfileNav({ userRole, unreadCount = 0, isOwner = false }: Profi
           >
             <span className="inline-flex">{item.icon}</span>
             {item.label}
-            {item.href === "/profile/notifications" && unreadCount > 0 && (
+            {item.href === "/notifications" && unreadCount > 0 && (
               <span
                 aria-label={`${unreadCount} اعلان خوانده‌نشده`}
                 className="inline-flex min-w-5 items-center justify-center rounded-full bg-mint px-1.5 py-0.5 text-[0.65rem] font-black text-black"
