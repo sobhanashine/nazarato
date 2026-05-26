@@ -31,7 +31,7 @@ import { useSessionStatus } from "@/components/layout/useSessionStatus";
 import { BTN_PRIMARY } from "@/components/ui/styles";
 import type { Business } from "@/lib/data/businesses";
 import { submitQuickReview, type QuickReviewState } from "./actions";
-import { VoiceDictateButton } from "./VoiceDictateButton";
+import { VoiceDictateButton, type VoiceMode } from "./VoiceDictateButton";
 
 /** A business the sheet can open with already selected (skips the picker). */
 export type ReviewPrefill = { slug: string; name: string };
@@ -47,7 +47,7 @@ type Selected = {
   meta: string;
 };
 
-const BODY_MIN = 30;
+const BODY_MIN = 10;
 const BODY_MAX = 2000;
 const EXIT_MS = 400;
 const AUTO_ADVANCE_MS = 850;
@@ -199,9 +199,11 @@ export function ReviewSheet({
         }`}
       />
 
-      {/* Panel */}
+      {/* Panel — uses svh (not dvh) so the iOS keyboard appearing on the
+          autoFocused textarea doesn't reflow max-height mid-open and make the
+          card look like it's wobbling. */}
       <div
-        className={`relative flex max-h-[93dvh] w-full flex-col overflow-hidden border border-glass-border bg-[#0b0f1a] shadow-[0_-24px_70px_rgba(0,0,0,0.65)] transition-[transform,opacity] duration-[420ms] ease-[cubic-bezier(0.32,0.72,0,1)] rounded-t-[26px] sm:max-w-[460px] sm:rounded-[26px] motion-reduce:transition-none ${
+        className={`relative flex max-h-[93svh] w-full flex-col overflow-hidden border border-glass-border bg-[#0b0f1a] shadow-[0_-24px_70px_rgba(0,0,0,0.65)] transition-[transform,opacity] duration-[420ms] ease-[cubic-bezier(0.32,0.72,0,1)] rounded-t-[26px] sm:max-w-[460px] sm:rounded-[26px] motion-reduce:transition-none ${
           visible
             ? "translate-y-0 opacity-100 sm:scale-100"
             : "translate-y-full opacity-0 sm:translate-y-0 sm:scale-95"
@@ -589,6 +591,7 @@ function WriteStep({
   const len = body.trim().length;
   const ready = len >= BODY_MIN;
   const progress = Math.min(len / BODY_MIN, 1) * 100;
+  const [voiceMode, setVoiceMode] = useState<VoiceMode>("idle");
 
   return (
     <div>
@@ -618,14 +621,30 @@ function WriteStep({
           className="w-full resize-none rounded-xl border border-glass-border bg-white/[0.03] px-4 py-3.5 text-[16px] leading-[2] text-white placeholder:text-white/25 outline-none transition-colors focus:border-mint focus:bg-mint/[0.05]"
         />
 
-        {/* Action row: counter · progress bar · mic (trailing in RTL) */}
+        {/* Action row: status label · progress bar · mic (trailing in RTL).
+            The label slot is contextual — during recording it tells the user
+            to tap the mic again to finish, since first-time voice users don't
+            realise the transcript only lands after they stop. */}
         <div className="mt-2.5 flex items-center gap-3">
           <span
+            aria-live="polite"
             className={`shrink-0 text-[11px] font-bold ${
-              ready ? "text-mint" : "text-muted"
+              voiceMode === "recording"
+                ? "text-pomegr"
+                : voiceMode === "processing"
+                  ? "text-mint"
+                  : ready
+                    ? "text-mint"
+                    : "text-muted"
             }`}
           >
-            {ready ? "آماده‌ی ثبت" : `${fa(len)} از ${fa(BODY_MIN)}`}
+            {voiceMode === "recording"
+              ? "ضبط — برای پایان دوباره بزن"
+              : voiceMode === "processing"
+                ? "در حال تبدیل صدا…"
+                : ready
+                  ? "آماده‌ی ثبت"
+                  : `${fa(len)} از ${fa(BODY_MIN)}`}
           </span>
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
             <div
@@ -636,6 +655,7 @@ function WriteStep({
             />
           </div>
           <VoiceDictateButton
+            onModeChange={setVoiceMode}
             onAppend={(t) =>
               // Functional updater — without it the closure captures `body`
               // once per recording session, so multiple final transcripts
@@ -660,10 +680,14 @@ function WriteStep({
           disabled={pending || !ready}
           className={`${BTN_PRIMARY} relative z-[1] mt-4 w-full py-3.5 text-[15px] disabled:cursor-not-allowed disabled:opacity-45`}
         >
-          <span
-            aria-hidden
-            className="absolute inset-[-8px] rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
-          />
+          {/* Halo only pulses when the form is actually submittable —
+              otherwise the infinite throb reads as the whole card "waving". */}
+          {ready && !pending && (
+            <span
+              aria-hidden
+              className="absolute inset-[-8px] rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
+            />
+          )}
           {pending ? "در حال ثبت…" : "ثبت نظر"}
         </button>
         <p className="mt-2.5 text-center text-[11.5px] leading-[1.9] text-muted">
