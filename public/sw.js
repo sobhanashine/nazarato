@@ -85,7 +85,7 @@ self.addEventListener("push", (event) => {
     dir: "rtl",
     lang: "fa",
     tag: payload.tag,
-    data: { url: payload.link || "/profile/notifications" },
+    data: { url: payload.link || "/notifications" },
   };
 
   event.waitUntil(self.registration.showNotification(title, options));

@@ -7,9 +7,10 @@ import toast from "react-hot-toast";
 import {
   markAllNotificationsRead,
   markNotificationRead,
-} from "@/app/(user)/profile/notifications/actions";
+} from "@/app/(user)/notifications/actions";
 import { GLASS } from "@/components/ui/styles";
 import type { Notification } from "@/lib/data/notifications";
+import { groupByDay } from "./groupByDay";
 
 interface NotificationsListProps {
   items: Notification[];
@@ -28,6 +29,7 @@ function formatWhen(iso: string): string {
   return d.toLocaleDateString("fa-IR");
 }
 
+
 function typeAccent(type: Notification["type"]): string {
   switch (type) {
     case "review_approved":
@@ -45,6 +47,8 @@ export function NotificationsList({ items }: NotificationsListProps) {
   const [isPending, startTransition] = useTransition();
 
   const hasUnread = items.some((n) => !n.read_at);
+  const groups = groupByDay(items);
+  const unreadCount = items.filter((n) => !n.read_at).length;
 
   function handleClick(n: Notification) {
     if (!n.read_at) {
@@ -91,58 +95,73 @@ export function NotificationsList({ items }: NotificationsListProps) {
         </div>
       )}
 
-      <ul className="flex flex-col gap-3">
-        {items.map((n) => {
-          const unread = !n.read_at;
-          const cardClass = `${GLASS} ${typeAccent(n.type)} flex items-start gap-3 p-4 transition-colors ${
-            n.link ? "hover:border-mint/45" : ""
-          }`;
-          const inner = (
-            <>
-              <span
-                className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
-                  unread ? "bg-mint" : "bg-transparent"
-                }`}
-                aria-hidden
-              />
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <div className="flex items-center justify-between gap-3">
-                  <h3
-                    className={`text-[0.92rem] ${
-                      unread ? "font-black text-strong" : "font-bold text-muted"
-                    }`}
-                  >
-                    {n.title}
-                  </h3>
-                  <span className="shrink-0 text-[0.72rem] text-muted">
-                    {formatWhen(n.created_at)}
-                  </span>
-                </div>
-                {n.body && (
-                  <p className="text-[0.82rem] leading-[1.7] text-muted">
-                    {n.body}
-                  </p>
-                )}
-              </div>
-            </>
-          );
-          return (
-            <li key={n.id}>
-              {n.link ? (
-                <Link
-                  href={n.link}
-                  onClick={() => handleClick(n)}
-                  className={cardClass}
-                >
-                  {inner}
-                </Link>
-              ) : (
-                <div className={cardClass}>{inner}</div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+      {/* `aria-live=polite` so a screen reader hears the unread-count change
+          after mark-as-read fires — confined to in-page updates per #30. */}
+      <section
+        aria-live="polite"
+        aria-label={`${unreadCount} اعلان خوانده‌نشده از ${items.length}`}
+        className="flex flex-col gap-6"
+      >
+        {groups.map((group) => (
+          <div key={group.key} className="flex flex-col gap-3">
+            <h2 className="text-[0.78rem] font-bold text-muted">
+              {group.header}
+            </h2>
+            <ul className="flex flex-col gap-3">
+              {group.items.map((n) => {
+                const unread = !n.read_at;
+                const cardClass = `${GLASS} ${typeAccent(n.type)} flex items-start gap-3 p-4 transition-colors ${
+                  n.link ? "hover:border-mint/45" : ""
+                }`;
+                const inner = (
+                  <>
+                    <span
+                      className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                        unread ? "bg-mint" : "bg-transparent"
+                      }`}
+                      aria-hidden
+                    />
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <h3
+                          className={`text-[0.92rem] ${
+                            unread ? "font-black text-strong" : "font-bold text-muted"
+                          }`}
+                        >
+                          {n.title}
+                        </h3>
+                        <span className="shrink-0 text-[0.72rem] text-muted">
+                          {formatWhen(n.created_at)}
+                        </span>
+                      </div>
+                      {n.body && (
+                        <p className="text-[0.82rem] leading-[1.7] text-muted">
+                          {n.body}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                );
+                return (
+                  <li key={n.id}>
+                    {n.link ? (
+                      <Link
+                        href={n.link}
+                        onClick={() => handleClick(n)}
+                        className={cardClass}
+                      >
+                        {inner}
+                      </Link>
+                    ) : (
+                      <div className={cardClass}>{inner}</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </section>
     </div>
   );
 }
