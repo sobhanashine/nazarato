@@ -25,14 +25,17 @@ function loadJwtSecret(): string {
 /**
  * Issue #90 — voice-to-text dictation on the ReviewSheet write step.
  *
- * Real STT can't run in CI (no microphone, no Google STT credit). We inject a
- * scripted `webkitSpeechRecognition` shim that emits a final transcript when
- * `.start()` fires. The mic button then appears, clicking it appends the
- * shim's transcript to the textarea, and a second click stops. We also check
- * the absence-fallback: with no API on `window`, the button doesn't render.
+ * The transcription path went through three iterations; this spec exercises
+ * the current one: `MediaRecorder` → POST `/api/transcribe` → Gemini.
  *
- * Cookie-minting helper mirrors `e2e/helpful-vote.spec.ts` so we skip the OTP
- * flow — the write step needs an authenticated session to render.
+ * Real STT isn't reachable in CI (no mic, no Gemini key in the test runner),
+ * so we shim `MediaRecorder`/`getUserMedia` in the browser and intercept the
+ * `/api/transcribe` POST with `page.route()` to return a canned transcript.
+ * The "absent API" test removes `MediaRecorder` from `window`; the absence
+ * fallback then hides the mic.
+ *
+ * Cookie-minting helper mirrors `e2e/helpful-vote.spec.ts` so we skip the
+ * OTP flow — the write step needs an authenticated session to render.
  */
 function signSession(payload: { id: string; phone: string; name: string }): string {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
@@ -60,57 +63,56 @@ async function login(page: Page) {
 }
 
 /**
- * Inject a fake Web Speech API that emits one OR MORE final results in a
- * single session. Overrides BOTH the standard `SpeechRecognition` and the
- * webkit alias, because Chromium ships a native `SpeechRecognition` that
- * the component would otherwise prefer (and would then try to open a real
- * microphone — failing in CI).
+ * Install a fake MediaRecorder + mediaDevices.getUserMedia. Returns minimal
+ * shapes — just enough for the component's state machine to make a Blob and
+ * fire `onstop`. Real audio data isn't needed because we stub `/api/transcribe`.
  */
-function installShim(transcripts: string[]): string {
-  const arr = JSON.stringify(transcripts);
-  return `
-    class FakeRec {
-      constructor() {
-        this.lang = "";
-        this.continuous = false;
-        this.interimResults = false;
-      }
-      start() {
-        const transcripts = ${arr};
-        // Emit each final result on its own tick so React state has a chance
-        // to flush between them — mirrors how the real API delivers them.
-        transcripts.forEach((t, i) => {
-          setTimeout(() => {
-            if (this.onresult) {
-              const r = [{ transcript: t }];
-              r.isFinal = true;
-              this.onresult({ resultIndex: 0, results: [r] });
-            }
-            if (i === transcripts.length - 1 && this.onend) this.onend();
-          }, i * 20);
-        });
-      }
-      stop() { if (this.onend) this.onend(); }
+const MEDIA_RECORDER_SHIM = `
+  if (!navigator.mediaDevices) {
+    Object.defineProperty(navigator, "mediaDevices", { value: {}, writable: true });
+  }
+  navigator.mediaDevices.getUserMedia = async () => ({
+    getTracks: () => [{ stop: () => {} }],
+  });
+  class FakeRec {
+    constructor(stream, options) { this.mimeType = (options && options.mimeType) || "audio/webm"; }
+    static isTypeSupported(type) {
+      return type === "audio/webm;codecs=opus" || type === "audio/webm";
     }
-    window.SpeechRecognition = FakeRec;
-    window.webkitSpeechRecognition = FakeRec;
-  `;
+    start() {
+      setTimeout(() => {
+        if (this.ondataavailable) this.ondataavailable({ data: new Blob(["x"], { type: this.mimeType }) });
+      }, 0);
+    }
+    stop() {
+      setTimeout(() => { if (this.onstop) this.onstop(); }, 0);
+    }
+  }
+  window.MediaRecorder = FakeRec;
+`;
+
+/** Route handler — answers /api/transcribe with a canned transcript. */
+async function stubTranscribe(page: Page, text: string) {
+  await page.route("**/api/transcribe", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ text }),
+    });
+  });
 }
 
 test.describe.configure({ mode: "serial" });
 
 test.describe("Voice dictation — issue #90", () => {
-  test("button hidden when Web Speech API is absent", async ({ page }) => {
+  test("button hidden when MediaRecorder is absent", async ({ page }) => {
     await page.addInitScript(() => {
       // @ts-expect-error — clearing browser-provided globals for the test
-      delete window.SpeechRecognition;
-      // @ts-expect-error — clearing browser-provided globals for the test
-      delete window.webkitSpeechRecognition;
+      delete window.MediaRecorder;
     });
     await login(page);
     await page.goto("/company/digikala?review=1");
     await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
-    // Even on the write step the button should not render.
     await page
       .getByRole("dialog", { name: "ثبت نظر" })
       .getByRole("radio", { name: /۵ ستاره/ })
@@ -119,46 +121,91 @@ test.describe("Voice dictation — issue #90", () => {
     await expect(page.getByTestId("voice-dictate")).toHaveCount(0);
   });
 
-  test("clicking the mic appends recognized text to the textarea", async ({ page }) => {
-    await page.addInitScript(installShim(["سلام دنیا"]));
+  test("record → transcribe → text appends to the textarea", async ({ page }) => {
+    await page.addInitScript(MEDIA_RECORDER_SHIM);
+    await stubTranscribe(page, "سلام دنیا");
     await login(page);
 
     await page.goto("/company/digikala?review=1");
     const dialog = page.getByRole("dialog", { name: "ثبت نظر" });
     await expect(dialog).toBeVisible();
 
-    // Picker is skipped (prefill). Rate 5 stars to auto-advance to write step.
     await dialog.getByRole("radio", { name: /۵ ستاره/ }).click();
     const textarea = dialog.getByPlaceholder(/مثلاً/);
     await expect(textarea).toBeVisible({ timeout: 3_000 });
 
-    // Seed text, then click mic — the recognition result must APPEND, not
-    // overwrite — the heart of acceptance criterion #4.
     await textarea.fill("متن دستی");
     const mic = dialog.getByTestId("voice-dictate");
     await expect(mic).toBeVisible();
-    await mic.click();
 
+    // Click 1: start recording.
+    await mic.click();
+    await expect(mic).toHaveAttribute("data-state", "recording");
+
+    // Click 2: stop → upload → /api/transcribe responds → text appears.
+    await mic.click();
     await expect(textarea).toHaveValue("متن دستی سلام دنیا", { timeout: 3_000 });
+    await expect(mic).toHaveAttribute("data-state", "idle");
   });
 
-  test("multiple final results in one session stack instead of overwriting", async ({ page }) => {
-    // Regression for the stale-closure bug in the `onAppend` wiring: if the
-    // callback captures `body` from the click moment, the SECOND emission
-    // would overwrite the first. The functional updater in WriteStep's
-    // onAppend prevents that — this test would have caught the bug.
-    await page.addInitScript(installShim(["یکی", "دوتا", "سه‌تا"]));
+  test("multiple sessions stack instead of overwriting", async ({ page }) => {
+    // Regression for the stale-closure bug fixed in PR #94: if `body` is
+    // captured at click-time, the SECOND record session would overwrite.
+    await page.addInitScript(MEDIA_RECORDER_SHIM);
+    let call = 0;
+    const transcripts = ["یکی", "دوتا", "سه‌تا"];
+    await page.route("**/api/transcribe", async (route) => {
+      const text = transcripts[call++] ?? "";
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ text }),
+      });
+    });
     await login(page);
 
     await page.goto("/company/digikala?review=1");
     const dialog = page.getByRole("dialog", { name: "ثبت نظر" });
-    await expect(dialog).toBeVisible();
     await dialog.getByRole("radio", { name: /۵ ستاره/ }).click();
     const textarea = dialog.getByPlaceholder(/مثلاً/);
     await expect(textarea).toBeVisible({ timeout: 3_000 });
 
-    await dialog.getByTestId("voice-dictate").click();
+    const mic = dialog.getByTestId("voice-dictate");
+    for (let i = 0; i < 3; i++) {
+      await mic.click(); // start
+      await expect(mic).toHaveAttribute("data-state", "recording");
+      await mic.click(); // stop
+      await expect(mic).toHaveAttribute("data-state", "idle", { timeout: 3_000 });
+    }
+    await expect(textarea).toHaveValue("یکی دوتا سه‌تا");
+  });
 
-    await expect(textarea).toHaveValue("یکی دوتا سه‌تا", { timeout: 3_000 });
+  test("server error surfaces a Persian toast and resets to idle", async ({ page }) => {
+    await page.addInitScript(MEDIA_RECORDER_SHIM);
+    await page.route("**/api/transcribe", async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "سرویس دیکته در حال حاضر در دسترس نیست." }),
+      });
+    });
+    await login(page);
+
+    await page.goto("/company/digikala?review=1");
+    const dialog = page.getByRole("dialog", { name: "ثبت نظر" });
+    await dialog.getByRole("radio", { name: /۵ ستاره/ }).click();
+    const textarea = dialog.getByPlaceholder(/مثلاً/);
+    await expect(textarea).toBeVisible({ timeout: 3_000 });
+
+    const mic = dialog.getByTestId("voice-dictate");
+    await mic.click();
+    await mic.click();
+
+    // Body unchanged + button reset to idle.
+    await expect(textarea).toHaveValue("");
+    await expect(mic).toHaveAttribute("data-state", "idle", { timeout: 3_000 });
+    await expect(
+      page.getByText("سرویس دیکته در حال حاضر در دسترس نیست."),
+    ).toBeVisible();
   });
 });
