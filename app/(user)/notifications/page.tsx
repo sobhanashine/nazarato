@@ -34,7 +34,11 @@ export default async function NotificationsPage() {
         </p>
       </div>
 
-      <NotificationsList items={items} />
+      {/* eslint-disable-next-line react-hooks/purity -- server component
+          under `force-dynamic`: renders once per request, no client re-runs
+          to destabilise; passing `now` is the whole point so the SSR + client
+          hydration agree on the day-header baseline. */}
+      <NotificationsList items={items} now={Date.now()} />
     </div>
   );
 }

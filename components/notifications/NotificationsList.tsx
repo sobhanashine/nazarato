@@ -14,6 +14,10 @@ import { groupByDay } from "./groupByDay";
 
 interface NotificationsListProps {
   items: Notification[];
+  /** Reference instant used for «امروز» / «دیروز» day-header math. Passed in
+   * by the server page so the first SSR render and the client hydration agree
+   * even if the request crosses midnight or server/client clocks differ. */
+  now?: number;
 }
 
 function formatWhen(iso: string): string {
@@ -42,12 +46,12 @@ function typeAccent(type: Notification["type"]): string {
   }
 }
 
-export function NotificationsList({ items }: NotificationsListProps) {
+export function NotificationsList({ items, now }: NotificationsListProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const hasUnread = items.some((n) => !n.read_at);
-  const groups = groupByDay(items);
+  const groups = groupByDay(items, now != null ? new Date(now) : undefined);
   const unreadCount = items.filter((n) => !n.read_at).length;
 
   function handleClick(n: Notification) {
@@ -95,10 +99,18 @@ export function NotificationsList({ items }: NotificationsListProps) {
         </div>
       )}
 
-      {/* `aria-live=polite` so a screen reader hears the unread-count change
-          after mark-as-read fires — confined to in-page updates per #30. */}
+      {/* Visually-hidden live region — `aria-live=polite` on a parent that
+          only has aria-label changes doesn't actually fire SR announcements,
+          so we render the unread count as TEXT here. After mark-as-read
+          revalidates, the new count overwrites this node and the SR speaks
+          the update. Confined to in-page updates per #30. */}
+      <p aria-live="polite" className="sr-only">
+        {unreadCount === 0
+          ? "همه اعلان‌ها خوانده شده‌اند."
+          : `${unreadCount} اعلان خوانده‌نشده دارید.`}
+      </p>
+
       <section
-        aria-live="polite"
         aria-label={`${unreadCount} اعلان خوانده‌نشده از ${items.length}`}
         className="flex flex-col gap-6"
       >
