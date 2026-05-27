@@ -17,31 +17,37 @@ import { test, expect } from "@playwright/test";
 // the 5s `toBeVisible` timeout. Serial mode keeps the contract clean.
 test.describe.configure({ mode: "serial" });
 
+// Dev-server cold-compile of each route the spec touches can easily exceed
+// the 5s default — these specs are about the post-redirect dialog appearing,
+// not about how fast Next compiles. Lift the wait so the first-touch route
+// isn't the failure surface.
+const DIALOG_TIMEOUT = 15_000;
+
 test.describe("ReviewSheet consolidation — issue #91", () => {
   test("legacy /write-review redirects, sheet auto-opens on homepage", async ({ page }) => {
     const response = await page.goto("/write-review");
     expect(response?.status()).toBeLessThan(400);
     await expect(page).toHaveURL(/\/$|\/\?$/);
-    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible({ timeout: DIALOG_TIMEOUT });
   });
 
   test("legacy /company/<slug>/write-review redirects, sheet auto-opens on the profile", async ({ page }) => {
     const response = await page.goto("/company/digikala/write-review");
     expect(response?.status()).toBeLessThan(400);
     await expect(page).toHaveURL(/\/company\/digikala(\?.*)?$/);
-    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible({ timeout: DIALOG_TIMEOUT });
   });
 
   test("legacy /shop/<handle>/write-review redirects, sheet auto-opens on the profile", async ({ page }) => {
     const response = await page.goto("/shop/manto_sara/write-review");
     expect(response?.status()).toBeLessThan(400);
     await expect(page).toHaveURL(/\/shop\/manto_sara(\?.*)?$/);
-    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible({ timeout: DIALOG_TIMEOUT });
   });
 
   test("homepage ?review=1 auto-opens the wizard and scrubs the param", async ({ page }) => {
     await page.goto("/?review=1");
-    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible({ timeout: DIALOG_TIMEOUT });
     await expect(page).not.toHaveURL(/review=1/);
   });
 
@@ -49,7 +55,7 @@ test.describe("ReviewSheet consolidation — issue #91", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
     await page.getByRole("button", { name: "نوشتن نظر" }).first().click();
-    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible({ timeout: DIALOG_TIMEOUT });
   });
 
   test("company-page CTA opens the wizard with the company pre-selected", async ({ page }) => {
@@ -57,13 +63,13 @@ test.describe("ReviewSheet consolidation — issue #91", () => {
     // The «نوشتن نظر» CTA in CompanyProfile is a <button>, not a link —
     // server-rendered <Link>s would have been the legacy-route trap this PR removes.
     await page.getByRole("button", { name: "نوشتن نظر" }).first().click();
-    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible({ timeout: DIALOG_TIMEOUT });
   });
 
   test("shop-page CTA opens the wizard with the shop pre-selected", async ({ page }) => {
     await page.goto("/shop/manto_sara");
     await page.getByRole("button", { name: "نوشتن نظر" }).first().click();
-    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible({ timeout: DIALOG_TIMEOUT });
   });
 
   test("legacy form page headers no longer render", async ({ page }) => {
