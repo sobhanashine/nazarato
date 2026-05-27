@@ -21,6 +21,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const MAX_BYTES = 1 * 1024 * 1024; // 1 MB → ~8 min of opus@16kbps
 const RATE_LIMIT = 10; // requests…
