@@ -15,6 +15,7 @@
  */
 
 import {
+  useActionState,
   useCallback,
   useEffect,
   useMemo,
@@ -29,7 +30,7 @@ import { STAR_PALETTES, STAR_PATH, type Rating } from "@/components/ui/RatingSta
 import { useSessionStatus } from "@/components/layout/useSessionStatus";
 import { BTN_PRIMARY } from "@/components/ui/styles";
 import type { Business } from "@/lib/data/businesses";
-import { submitQuickReview } from "./actions";
+import { submitQuickReview, type QuickReviewState } from "./actions";
 import { VoiceDictateButton, type VoiceMode } from "./VoiceDictateButton";
 
 /** A business the sheet can open with already selected (skips the picker). */
@@ -54,6 +55,8 @@ const AUTO_ADVANCE_MS = 850;
 const RATING_LABELS = ["خیلی بد", "بد", "متوسط", "خوب", "عالی"];
 
 const fa = (n: number) => n.toLocaleString("fa-IR");
+
+const initial: QuickReviewState = { ok: false };
 
 function toSelected(b: Business): Selected {
   return {
@@ -104,15 +107,7 @@ export function ReviewSheet({
   const [rating, setRating] = useState(0);
   const [body, setBody] = useState("");
 
-  // Submission state lives in plain useState — NOT useActionState. The latter
-  // ties `pending` to the form action's React transition, which Next 14+
-  // extends until the host route's RSC payload re-renders. On data-heavy
-  // pages like `/company/[slug]` and `/shop/[handle]`, that re-render takes
-  // 3–6s after the action returns — the button stays «در حال ثبت…» the
-  // entire time and users assume it crashed. Manual handling lets us flip
-  // to the success step the instant the server returns ok.
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | undefined>();
+  const [state, formAction, pending] = useActionState(submitQuickReview, initial);
   const session = useSessionStatus();
   const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -150,34 +145,16 @@ export function ReviewSheet({
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  // Successful submit → celebrate.
+  useEffect(() => {
+    if (state.ok) setStep("done");
+  }, [state.ok]);
+
   useEffect(() => {
     return () => {
       if (advanceTimer.current) clearTimeout(advanceTimer.current);
     };
   }, []);
-
-  const handleSubmit = useCallback(async () => {
-    if (!selected || submitting) return;
-    setSubmitting(true);
-    setSubmitError(undefined);
-    const fd = new FormData();
-    fd.set("slug", selected.slug);
-    fd.set("rating", String(rating || ""));
-    fd.set("body", body);
-    try {
-      const res = await submitQuickReview({ ok: false }, fd);
-      if (res.ok) {
-        setStep("done");
-      } else {
-        setSubmitError(res.error || "خطا در ثبت نظر. لطفاً دوباره تلاش کن.");
-        setSubmitting(false);
-      }
-    } catch (err) {
-      console.error("[ReviewSheet] submit failed", err);
-      setSubmitError("خطا در ثبت نظر. لطفاً دوباره تلاش کن.");
-      setSubmitting(false);
-    }
-  }, [selected, rating, body, submitting]);
 
   const flow: Step[] = useMemo(
     () => (hasPicker ? ["pick", "rate", "write"] : ["rate", "write"]),
@@ -318,11 +295,12 @@ export function ReviewSheet({
               {step === "write" && selected && (
                 <WriteStep
                   selected={selected}
+                  rating={rating}
                   body={body}
                   setBody={setBody}
-                  onSubmit={handleSubmit}
-                  pending={submitting}
-                  error={submitError}
+                  formAction={formAction}
+                  pending={pending}
+                  error={state.error}
                 />
               )}
 
@@ -595,16 +573,18 @@ function RateStep({
 
 function WriteStep({
   selected,
+  rating,
   body,
   setBody,
-  onSubmit,
+  formAction,
   pending,
   error,
 }: {
   selected: Selected;
+  rating: number;
   body: string;
   setBody: Dispatch<SetStateAction<string>>;
-  onSubmit: () => void;
+  formAction: (formData: FormData) => void;
   pending: boolean;
   error?: string;
 }) {
@@ -626,13 +606,9 @@ function WriteStep({
         هرچی دقیق‌تر بنویسی، برای بقیه مفیدتره.
       </p>
 
-      <form
-        className="mt-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit();
-        }}
-      >
+      <form action={formAction} className="mt-4">
+        <input type="hidden" name="slug" value={selected.slug} />
+        <input type="hidden" name="rating" value={rating || ""} />
 
         <textarea
           name="body"

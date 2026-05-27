@@ -10,12 +10,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
   timeout: 30_000,
-  // 15s default (vs Playwright's 5s) — Next dev compiles each route on first
-  // hit, and a cold compile can blow a 5s budget on its own. Three separate
-  // specs were carrying per-assertion `{ timeout: 15_000 }` bumps to work
-  // around this; lifting the default centralises that and stops new specs
-  // from re-discovering the same flake.
-  expect: { timeout: 15_000 },
+  expect: { timeout: 5_000 },
   use: {
     baseURL,
     trace: "retain-on-failure",
