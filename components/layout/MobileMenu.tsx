@@ -66,7 +66,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
 
   const overlay = (
     <div
-      className="group fixed inset-0 w-screen h-[100dvh] z-[9999] flex flex-col overflow-y-auto [-webkit-overflow-scrolling:touch] bg-[rgba(7,10,18,0.78)] backdrop-blur-[26px] backdrop-saturate-[180%] text-strong opacity-0 invisible pointer-events-none -translate-y-3 transition-[opacity,transform,visibility] duration-300 ease-out data-[open=true]:opacity-100 data-[open=true]:visible data-[open=true]:pointer-events-auto data-[open=true]:translate-y-0"
+      className="group fixed inset-0 w-screen h-[100dvh] z-[9999] flex flex-col overflow-hidden bg-[rgba(7,10,18,0.78)] backdrop-blur-[26px] backdrop-saturate-[180%] text-strong opacity-0 invisible pointer-events-none -translate-y-3 transition-[opacity,transform,visibility] duration-300 ease-out data-[open=true]:opacity-100 data-[open=true]:visible data-[open=true]:pointer-events-auto data-[open=true]:translate-y-0"
       data-open={open}
       role="dialog"
       aria-modal="true"
@@ -83,7 +83,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         }}
       />
 
-      <div className="flex justify-between items-center h-[72px] px-5 border-b border-glass-border relative z-[1] standalone:h-[calc(72px+env(safe-area-inset-top)+16px)] standalone:pt-[calc(env(safe-area-inset-top)+16px)]">
+      <div className="shrink-0 flex justify-between items-center min-h-[72px] px-5 pt-[env(safe-area-inset-top)] border-b border-glass-border relative z-[1]">
         <span className="inline-flex items-center gap-2.5 text-strong text-[1.15rem] font-bold">
           <span className={`${brandMark} inline-block w-[38px] h-[38px]`} aria-hidden="true">
             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -109,7 +109,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         </button>
       </div>
 
-      <nav className="flex-1 flex flex-col gap-3 py-8 px-5 relative z-[1] standalone:pt-12">
+      <nav className="flex-1 min-h-0 overflow-y-auto [-webkit-overflow-scrolling:touch] flex flex-col gap-3 py-8 px-5 relative z-[1]">
         {items.map((item, i) => {
           if (item.href === "/write-review") {
             return (
@@ -165,7 +165,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         })}
       </nav>
 
-      <div className="px-5 pt-6 pb-8 border-t border-glass-border flex flex-col gap-5 relative z-[1]">
+      <div className="shrink-0 px-5 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))] border-t border-glass-border flex flex-col gap-5 relative z-[1]">
         <Link
           href={status?.loggedIn ? "/profile" : "/login"}
           onClick={() => setOpen(false)}
