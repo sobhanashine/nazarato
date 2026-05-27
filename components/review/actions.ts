@@ -89,6 +89,9 @@ export async function submitQuickReview(
   });
 
   if (insertError) {
+    if (insertError.code === "23505") {
+      return { ok: false, error: "شما قبلاً برای این کسب‌وکار نظر ثبت کرده‌اید." };
+    }
     console.error("[quick-review] insert failed", {
       authorId: session.id,
       error: insertError.message,
