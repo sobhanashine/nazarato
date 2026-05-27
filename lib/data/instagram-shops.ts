@@ -1,5 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { getCategoryTitle, toRelativePersianTime, type BusinessDetail } from "./businesses";
+import { getCategoryTitle, toRelativePersianTime, type Business, type BusinessDetail } from "./businesses";
 import type { Rating } from "@/components/ui/RatingStars";
 
 export type Niche = "all" | "clothing" | "food" | "beauty" | "decor" | "digital";
@@ -35,6 +35,35 @@ export const instagramShops: InstagramShop[] = [
   { href: "#", slug: "my_beautiful_home", niche: "decor", name: "خانه زیبای من", handle: "@my_beautiful_home", initial: "خ", color: "#14B8A6", score: "۴.۴", reviews: "۲۸۹" },
   { href: "#", slug: "gadget_shop_ir", niche: "digital", name: "گجت‌شاپ", handle: "@gadget_shop_ir", initial: "گ", color: "#3B82F6", score: "۴.۶", reviews: "۴۱۲" },
 ];
+
+const NICHE_LABEL: Record<Exclude<Niche, "all">, string> = {
+  clothing: "پوشاک",
+  food: "غذا و شیرینی",
+  beauty: "زیبایی و آرایشی",
+  decor: "دکوراسیون",
+  digital: "دیجیتال",
+};
+
+/**
+ * Adapt an Instagram shop to the `Business` card shape so the review-sheet
+ * picker can treat shops and companies as a single searchable list. City is
+ * fixed to «اینستاگرام» so users can recognise online-only sellers in the row.
+ */
+export function instagramShopToBusiness(s: InstagramShop): Business {
+  return {
+    slug: s.slug,
+    name: s.name,
+    category: NICHE_LABEL[s.niche],
+    city: "اینستاگرام",
+    initial: s.initial,
+    color: s.color,
+    score: s.score,
+    reviews: s.reviews,
+  };
+}
+
+export const instagramShopsAsBusinesses: Business[] =
+  instagramShops.map(instagramShopToBusiness);
 
 export type InstagramShopSortKey = "rating" | "reviews" | "newest";
 
