@@ -44,38 +44,12 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
   const status = useSessionStatus();
   const { openReviewSheet } = useReviewSheet();
 
-  // Full scroll-lock while open. `body { overflow: hidden }` alone leaks on
-  // iOS (rubber-band) and on long pages even in desktop Chromium (you can
-  // still nudge `window.scrollY` because the body becomes a scroll container
-  // but `<html>` does not). Pin both, plus `position: fixed` on body with the
-  // saved scroll offset so the page doesn't visually jump back to the top.
   useEffect(() => {
     if (!open) return;
-    const html = document.documentElement;
-    const body = document.body;
-    const scrollY = window.scrollY;
-    const prev = {
-      htmlOverflow: html.style.overflow,
-      bodyOverflow: body.style.overflow,
-      bodyPosition: body.style.position,
-      bodyTop: body.style.top,
-      bodyWidth: body.style.width,
-      bodyOverscroll: body.style.overscrollBehavior,
-    };
-    html.style.overflow = "hidden";
-    body.style.overflow = "hidden";
-    body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
-    body.style.width = "100%";
-    body.style.overscrollBehavior = "none";
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      html.style.overflow = prev.htmlOverflow;
-      body.style.overflow = prev.bodyOverflow;
-      body.style.position = prev.bodyPosition;
-      body.style.top = prev.bodyTop;
-      body.style.width = prev.bodyWidth;
-      body.style.overscrollBehavior = prev.bodyOverscroll;
-      window.scrollTo(0, scrollY);
+      document.body.style.overflow = prev;
     };
   }, [open]);
 
@@ -92,7 +66,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
 
   const overlay = (
     <div
-      className="group fixed inset-0 w-screen h-[100dvh] z-[9999] flex flex-col overflow-hidden bg-[rgba(7,10,18,0.78)] backdrop-blur-[26px] backdrop-saturate-[180%] text-strong opacity-0 invisible pointer-events-none -translate-y-3 transition-[opacity,transform,visibility] duration-300 ease-out data-[open=true]:opacity-100 data-[open=true]:visible data-[open=true]:pointer-events-auto data-[open=true]:translate-y-0"
+      className="group fixed inset-0 w-screen h-[100dvh] z-[9999] flex flex-col overflow-y-auto [-webkit-overflow-scrolling:touch] bg-[rgba(7,10,18,0.78)] backdrop-blur-[26px] backdrop-saturate-[180%] text-strong opacity-0 invisible pointer-events-none -translate-y-3 transition-[opacity,transform,visibility] duration-300 ease-out data-[open=true]:opacity-100 data-[open=true]:visible data-[open=true]:pointer-events-auto data-[open=true]:translate-y-0"
       data-open={open}
       role="dialog"
       aria-modal="true"
@@ -109,7 +83,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         }}
       />
 
-      <div className="shrink-0 flex justify-between items-center min-h-[72px] px-5 pt-[env(safe-area-inset-top)] border-b border-glass-border relative z-[1]">
+      <div className="flex justify-between items-center h-[72px] px-5 border-b border-glass-border relative z-[1] standalone:h-[calc(72px+env(safe-area-inset-top)+16px)] standalone:pt-[calc(env(safe-area-inset-top)+16px)]">
         <span className="inline-flex items-center gap-2.5 text-strong text-[1.15rem] font-bold">
           <span className={`${brandMark} inline-block w-[38px] h-[38px]`} aria-hidden="true">
             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -135,7 +109,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         </button>
       </div>
 
-      <nav className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto overscroll-contain [touch-action:pan-y] flex flex-col gap-3 py-8 px-5 relative z-[1]">
+      <nav className="flex-1 flex flex-col gap-3 py-8 px-5 relative z-[1] standalone:pt-12">
         {items.map((item, i) => {
           if (item.href === "/write-review") {
             return (
@@ -191,7 +165,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         })}
       </nav>
 
-      <div className="shrink-0 px-5 pt-6 pb-[calc(2rem+env(safe-area-inset-bottom))] border-t border-glass-border flex flex-col gap-5 relative z-[1]">
+      <div className="px-5 pt-6 pb-8 border-t border-glass-border flex flex-col gap-5 relative z-[1]">
         <Link
           href={status?.loggedIn ? "/profile" : "/login"}
           onClick={() => setOpen(false)}
