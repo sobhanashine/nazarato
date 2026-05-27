@@ -29,18 +29,17 @@ const RATE_WINDOW_MS = 60_000; // …per minute, per user
 const GEMINI_MODEL = "gemini-2.5-flash";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-/** MIME types we forward verbatim to Gemini. Anything else is a 415. */
-const ACCEPTED_MIME = new Set([
-  "audio/webm",
-  "audio/ogg",
-  "audio/mp4",
-  "audio/mpeg",
-  "audio/wav",
-  "audio/wave",
-  "audio/x-wav",
-  "audio/aac",
-  "audio/flac",
-]);
+/**
+ * Accept any `audio/*` subtype rather than a fixed whitelist. The whitelist
+ * approach (issue #117) bounced real recordings from iOS Safari / some
+ * Android WebViews that hand `MediaRecorder` a blob with an off-list mime
+ * (e.g. `audio/x-m4a`, `audio/aac-adts`). Cost is already gated by auth +
+ * 1MB size cap + per-user rate limit, and Gemini itself rejects malformed
+ * audio downstream — the whitelist was over-defensive.
+ */
+function isAudioMime(mime: string): boolean {
+  return mime.startsWith("audio/") && mime.length > "audio/".length;
+}
 
 const rateBuckets = new Map<string, number[]>();
 
@@ -89,7 +88,11 @@ export async function POST(req: Request): Promise<Response> {
 
   const fullType = req.headers.get("content-type") ?? "";
   const mime = bareMime(fullType);
-  if (!ACCEPTED_MIME.has(mime)) {
+  if (!isAudioMime(mime)) {
+    console.warn("[transcribe] rejected non-audio content-type", {
+      userId: session.id,
+      received: fullType.slice(0, 120),
+    });
     return NextResponse.json(
       { error: "فرمت صوتی پشتیبانی نمی‌شود." },
       { status: 415 },
