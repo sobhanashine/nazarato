@@ -67,6 +67,15 @@ export async function toggleHelpfulVote(
 
   // Invalidate every surface that renders this review's helpful count or the
   // author's aggregate stats. App Router will refetch on next visit.
+  //
+  // Deliberately NOT including "/": every server-action call already triggers
+  // an implicit RSC re-fetch of the current route, and `revalidatePath("/")`
+  // would force that re-fetch to bypass the cache and rebuild every section
+  // on the home page (Hero + Categories + RecentReviews + …) — fast enough
+  // in prod, but in dev that re-render stays inside the action's transition
+  // and freezes the helpful-vote button until it completes. The button's
+  // optimistic state already shows the change; the home page catches up on
+  // next navigation.
   revalidatePath("/reviews");
   revalidatePath("/users/[username]", "page");
   revalidatePath("/company/[slug]", "page");
