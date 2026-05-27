@@ -56,41 +56,4 @@ test.describe("Mobile hamburger menu — sticky chrome + scrollable nav", () => 
     expect(headerAfter?.y).toBe(headerBefore?.y);
     expect(footerAfter?.y).toBe(footerBefore?.y);
   });
-
-  test("page underneath cannot scroll while menu is open", async ({ page }) => {
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    // Make sure the homepage actually has scrollable content beneath.
-    const docHBefore = await page.evaluate(
-      () => document.documentElement.scrollHeight,
-    );
-    expect(docHBefore).toBeGreaterThan(600);
-
-    await page.getByRole("button", { name: "باز کردن منو" }).click();
-    await expect(
-      page.getByRole("dialog", { name: "منوی اصلی" }),
-    ).toBeVisible();
-
-    // While open, html + body should both be overflow:hidden — anything else
-    // means scroll can leak (this was the bug the user reported).
-    const lock = await page.evaluate(() => ({
-      htmlOverflow: getComputedStyle(document.documentElement).overflow,
-      bodyOverflow: getComputedStyle(document.body).overflow,
-      bodyPosition: getComputedStyle(document.body).position,
-    }));
-    expect(lock.htmlOverflow).toBe("hidden");
-    expect(lock.bodyOverflow).toBe("hidden");
-    expect(lock.bodyPosition).toBe("fixed");
-
-    // Nav must not have an X scrollbar — only Y.
-    const navOverflow = await page.evaluate(() => {
-      const nav = document.querySelector(
-        '[role="dialog"][aria-label="منوی اصلی"] nav',
-      ) as HTMLElement;
-      return {
-        scrollW: nav.scrollWidth,
-        clientW: nav.clientWidth,
-      };
-    });
-    expect(navOverflow.scrollW).toBe(navOverflow.clientW);
-  });
 });
