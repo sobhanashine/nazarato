@@ -29,7 +29,10 @@ test.describe("Instagram shops — issue #22", () => {
     const response = await page.goto("/shop/manto_sara/write-review");
     expect(response?.status()).toBeLessThan(400);
     await expect(page).toHaveURL(/\/shop\/manto_sara(\?.*)?$/);
-    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible();
+    // Dev-server cold-compile of the shop route + the redirect handler can
+    // exceed the 5s default on first hit. The contract is "dialog opens",
+    // not "Next compiled fast" — bump the wait so flake isn't masked as a regression.
+    await expect(page.getByRole("dialog", { name: "ثبت نظر" })).toBeVisible({ timeout: 15_000 });
   });
 
   test("unknown shop handle renders not-found UI", async ({ page }) => {

@@ -44,12 +44,38 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
   const status = useSessionStatus();
   const { openReviewSheet } = useReviewSheet();
 
+  // Full scroll-lock while open. `body { overflow: hidden }` alone leaks on
+  // iOS (rubber-band) and on long pages even in desktop Chromium (you can
+  // still nudge `window.scrollY` because the body becomes a scroll container
+  // but `<html>` does not). Pin both, plus `position: fixed` on body with the
+  // saved scroll offset so the page doesn't visually jump back to the top.
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const html = document.documentElement;
+    const body = document.body;
+    const scrollY = window.scrollY;
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      bodyOverflow: body.style.overflow,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyWidth: body.style.width,
+      bodyOverscroll: body.style.overscrollBehavior,
+    };
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
+    body.style.overscrollBehavior = "none";
     return () => {
-      document.body.style.overflow = prev;
+      html.style.overflow = prev.htmlOverflow;
+      body.style.overflow = prev.bodyOverflow;
+      body.style.position = prev.bodyPosition;
+      body.style.top = prev.bodyTop;
+      body.style.width = prev.bodyWidth;
+      body.style.overscrollBehavior = prev.bodyOverscroll;
+      window.scrollTo(0, scrollY);
     };
   }, [open]);
 
@@ -109,7 +135,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         </button>
       </div>
 
-      <nav className="flex-1 min-h-0 overflow-y-auto [-webkit-overflow-scrolling:touch] flex flex-col gap-3 py-8 px-5 relative z-[1]">
+      <nav className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto overscroll-contain [touch-action:pan-y] flex flex-col gap-3 py-8 px-5 relative z-[1]">
         {items.map((item, i) => {
           if (item.href === "/write-review") {
             return (
