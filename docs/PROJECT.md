@@ -139,6 +139,8 @@ Set globally in `next.config.ts:31-40`:
   HMAC-signed cookies, a deliberate placeholder — migrate to Supabase Auth
   later (keep `getSession`/`setSession`/`clearSession` stable). Deployment
   note: run all migrations under `supabase/migrations/` on every new Supabase environment.
+- **Contact form delivery.** `app/contact/actions.ts` validates and logs but does not yet send email / write to DB. Wire to a transactional provider (or a `contact_messages` table) before launch.
+- **Pre-launch open routes.** `/profile/edit`, `/settings/security`, `/help`, `/admin` (overview), `/admin/reports`, `/admin/businesses`, `/admin/users` are still 📋. See `docs/journey-of-nazarato.md` for the prioritized launch backlog.
 
 
 ---

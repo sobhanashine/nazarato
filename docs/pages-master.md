@@ -3,7 +3,7 @@
 > Single source of truth for every page in the product: what exists, what's planned, what each page is for, and how it's structured.
 > Update this when you add/rename/remove a route.
 
-Last edited: 2026-05-25 (post-#27 claim flow)
+Last edited: 2026-05-28 (post-#28 owner dashboard, #29 blog taxonomies, #30 notifications)
 Owner: Sobhan (solo founder)
 Stack assumptions: Next.js 16 App Router, React 19, Tailwind v4, Supabase + Kavenegar OTP, RTL Persian (`lang="fa" dir="rtl"`).
 
@@ -342,10 +342,11 @@ Each entry is structured the same way so it scans fast:
 - See `app/blog/[slug]/page.tsx` + `components/blog/PostContent.tsx`. Has title, meta (author/cat/date), hero image, paragraph/subhead/quote/learn-list/image/requirements blocks, share bar, tags.
 - **Outstanding (P1)**: related posts at the bottom; comments (or "discuss on X"); reading-time estimate; ToC for long posts.
 
-#### Blog by category — `/blog/category/[slug]` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1
-- Same shell as `/blog`, prefiltered.
+#### Blog by category — `/blog/category/[slug]` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1
+- Same shell as `/blog`, prefiltered by WP category slug. Reuses `<PostCard />`, `<BlogSidebar />`, `<Pagination />`.
 
-#### Blog by tag — `/blog/tag/[slug]` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1
+#### Blog by tag — `/blog/tag/[slug]` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1
+- Mirror of `/blog/category/[slug]` filtered by tag.
 
 #### About — `/about` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 (because header links to it)
 - **Purpose**: Trust building. "Who are you? Why should I trust this site?"
@@ -398,10 +399,11 @@ Each entry is structured the same way so it scans fast:
 - **Layout**: tabs "کسب‌وکارها" / "اینستاگرامی" + grid of cards (reuse business-card / ig-card).
 - **Empty state**: "هنوز چیزی ذخیره نکردی — این پیشنهادها رو ببین" + 4 popular cards.
 
-#### Notifications — `/notifications` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1
+#### Notifications — `/notifications` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1
 - **Purpose**: New responses to your reviews, new reviews on saved businesses, system messages.
-- **Layout**: chronological list grouped by day; mark-all-read button.
-- **A11y**: items use `aria-live="polite"` only for in-page updates.
+- **Layout**: chronological list grouped by day (امروز / دیروز / full Persian date headers via `components/notifications/groupByDay.ts`); mark-all-read button.
+- **A11y**: list region is `aria-live="polite"` so unread-count change is narrated after mark-as-read.
+- **Routing**: `/profile/notifications` is a thin redirect for legacy bookmarks & push deep-links.
 
 #### Settings — `/settings` &nbsp;·&nbsp; 🚧 partial &nbsp;·&nbsp; P0
 - **Purpose**: Index page with quick links into sub-settings.
@@ -423,15 +425,16 @@ Each entry is structured the same way so it scans fast:
 #### Marketing landing — `/for-business` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1 &nbsp;·&nbsp; public
 - **Purpose**: Sell the owner-side product. Hero pitch ("نظرات واقعی، اعتماد بیشتر، فروش بهتر") + 3-step how-it-works + features grid + FAQ accordion + CTA "ادعای مالکیت کسب‌وکار" (links to `/search`) / "ثبت کسب‌وکار جدید" (links to `/contact`). Linked from the footer.
 
-#### Owner dashboard — `/business` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1 &nbsp;·&nbsp; owner
-- KPI tiles: avg rating, total reviews, new this week, unanswered count → links to each.
-- Latest 5 reviews with quick "پاسخ" button.
+#### Owner dashboard — `/business` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1 &nbsp;·&nbsp; owner
+- KPI tiles: avg rating, total reviews, new this week, unanswered count → links into the inbox.
+- Latest reviews preview with quick "پاسخ" button. Owned-businesses switcher for multi-claim owners.
+- Data layer in `lib/data/owner.ts` (`getOwnedBusinesses`, `getOwnerKpis`, `getRecentReviewsForOwner`).
 
-#### Owner reviews inbox — `/business/reviews` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1 &nbsp;·&nbsp; owner
-- Same data as `/company/[slug]/reviews` but with inline response composer + flag-for-removal button.
+#### Owner reviews inbox — `/business/reviews` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1 &nbsp;·&nbsp; owner
+- Same data as `/company/[slug]/reviews` but with inline response composer (migration `0009_add_owner_responses.sql`) + filter (`all`/`unanswered`).
 
-#### Edit business profile — `/business/profile` &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P1 &nbsp;·&nbsp; owner
-- Edit description, contact info, hours, photos.
+#### Edit business profile — `/business/profile` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1 &nbsp;·&nbsp; owner
+- Edit description, contact info, hours via `ProfileEditorForm`. Photo/cover upload still TODO (storage bucket pending).
 
 #### Insights / Team / Billing — &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P2 &nbsp;·&nbsp; owner
 - v2+. Defer until owners actually ask.
@@ -485,7 +488,7 @@ These are reusable across pages — extract once, share everywhere.
 | `<NavLink />`      | Header nav                                             | ✅ built    | `components/layout/NavLink.tsx`              |
 | `<AuthLayout />`   | `/login`, `/login/verify`, `/signup`                   | ✅ built    | `app/(auth)/layout.tsx`                       |
 | `<UserShell />`    | `/profile`, `/saved`, `/settings`, `/notifications`    | ✅ built    | `app/(user)/layout.tsx`                       |
-| `<OwnerShell />`   | `/business/*`                                          | 📋 planned  | `app/(business)/layout.tsx`                   |
+| `<OwnerShell />`   | `/business/*`                                          | ✅ built    | `app/(business)/layout.tsx`                   |
 | `<AdminShell />`   | `/admin/*`                                             | ✅ built    | `app/(admin)/layout.tsx`                      |
 
 ### 5.2 Reusable cards / blocks (extract these from the home-page sections)
@@ -551,11 +554,11 @@ You're a solo founder. Don't try to build the sitemap top-down. Build the minimu
 5. `/settings` (security + notifications + privacy + delete account) — 🚧 partial (notifications and privacy built, security deferred).
 6. `/users/[username]` (public profile) — ✅ built.
 7. `/for-business` (owner marketing) + `/company/[slug]/claim` — ✅ built.
-8. `/business` + `/business/reviews` + `/business/profile`.
-9. Blog: `/blog/category/[slug]`, `/blog/tag/[slug]`, related posts.
+8. `/business` + `/business/reviews` + `/business/profile` — ✅ built.
+9. Blog: `/blog/category/[slug]`, `/blog/tag/[slug]` — ✅ built; related posts deferred.
 
 ### Phase 3 — v2+ (when traction justifies)
-- `/notifications`, `/business/insights`, `/business/team`, `/business/billing`.
+- `/notifications` — ✅ built. `/business/insights`, `/business/team`, `/business/billing`.
 - Compare businesses, follow users, Q&A on business pages, photo uploads on reviews.
 - Full admin: `/admin/reports`, `/admin/businesses`, `/admin/users`.
 
@@ -629,14 +632,14 @@ GitHub issues mirror the build order in §6. Repo: [`sobhanashine/nazarato`](htt
 | 🚧 | `/settings` · `/settings/security` · `/settings/notifications` · `/settings/privacy` | [#25](https://github.com/sobhanashine/nazarato/issues/25) |
 | ✅ | `/users/[username]` (+ persisted helpful votes, #74) | [#26](https://github.com/sobhanashine/nazarato/issues/26) |
 | ✅ | `/for-business` · `/company/[slug]/claim` · `/admin/claims` | [#27](https://github.com/sobhanashine/nazarato/issues/27) |
-| 📋 | `/business` · `/business/reviews` · `/business/profile` | [#28](https://github.com/sobhanashine/nazarato/issues/28) |
-| 📋 | `/blog/category/[slug]` · `/blog/tag/[slug]` · related posts (+ `/blog` pagination) | [#29](https://github.com/sobhanashine/nazarato/issues/29) |
+| ✅ | `/business` · `/business/reviews` · `/business/profile` | [#28](https://github.com/sobhanashine/nazarato/issues/28) |
+| 🚧 | `/blog/category/[slug]` · `/blog/tag/[slug]` · related posts (+ `/blog` pagination) | [#29](https://github.com/sobhanashine/nazarato/issues/29) |
 
 **Phase 3 — v2+** · [milestone](https://github.com/sobhanashine/nazarato/milestone/3)
 
 | Status | Route(s) / deliverable | Issue |
 |--------|------------------------|-------|
-| 📋 | `/notifications` | [#30](https://github.com/sobhanashine/nazarato/issues/30) |
+| ✅ | `/notifications` | [#30](https://github.com/sobhanashine/nazarato/issues/30) |
 | 📋 | `/business/insights` · `/business/team` · `/business/billing` | [#31](https://github.com/sobhanashine/nazarato/issues/31) |
 | 📋 | `/admin` · `/admin/reports` · `/admin/businesses` · `/admin/users` | [#32](https://github.com/sobhanashine/nazarato/issues/32) |
 | 📋 | v2+ features — compare businesses, follow users, Q&A, review photos | [#33](https://github.com/sobhanashine/nazarato/issues/33) |
