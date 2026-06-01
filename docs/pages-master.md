@@ -436,8 +436,11 @@ Each entry is structured the same way so it scans fast:
 #### Edit business profile — `/business/profile` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1 &nbsp;·&nbsp; owner
 - Edit description, contact info, hours via `ProfileEditorForm`. Photo/cover upload still TODO (storage bucket pending).
 
-#### Insights / Team / Billing — &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P2 &nbsp;·&nbsp; owner
-- v2+. Defer until owners actually ask.
+#### Owner insights — `/business/insights` &nbsp;·&nbsp; ✅ built (#31) &nbsp;·&nbsp; P2 &nbsp;·&nbsp; owner
+- Read-only analytics derived purely from published reviews: KPI tiles (avg rating, total, response rate, verified share), a rating-distribution bar chart, and a 6-month review-volume trend. Aggregation is a pure function (`computeInsights` in `lib/data/owner-insights.ts`, unit-tested); `getOwnerInsights` in `lib/data/owner.ts` owns the single DB scan.
+
+#### Team / Billing — &nbsp;·&nbsp; 📋 planned &nbsp;·&nbsp; P2 &nbsp;·&nbsp; owner
+- v2+. Defer until owners actually ask. `/business/team` needs a team-membership schema (none yet — businesses are single-owner via `owner_id`); `/business/billing` is gated on the §7.9 pricing decision.
 
 ### 4.7 Admin — `(admin)` route group &nbsp;·&nbsp; 🚧 partial &nbsp;·&nbsp; P1 &nbsp;·&nbsp; admin
 
@@ -558,7 +561,7 @@ You're a solo founder. Don't try to build the sitemap top-down. Build the minimu
 9. Blog: `/blog/category/[slug]`, `/blog/tag/[slug]` — ✅ built; related posts deferred.
 
 ### Phase 3 — v2+ (when traction justifies)
-- `/notifications` — ✅ built. `/business/insights`, `/business/team`, `/business/billing`.
+- `/notifications` — ✅ built. `/business/insights` — ✅ built. `/business/team`, `/business/billing` — pending.
 - Compare businesses, follow users, Q&A on business pages, photo uploads on reviews.
 - Full admin: `/admin/reports`, `/admin/businesses`, `/admin/users`.
 
@@ -640,7 +643,7 @@ GitHub issues mirror the build order in §6. Repo: [`sobhanashine/nazarato`](htt
 | Status | Route(s) / deliverable | Issue |
 |--------|------------------------|-------|
 | ✅ | `/notifications` | [#30](https://github.com/sobhanashine/nazarato/issues/30) |
-| 📋 | `/business/insights` · `/business/team` · `/business/billing` | [#31](https://github.com/sobhanashine/nazarato/issues/31) |
+| 🚧 | `/business/insights` ✅ · `/business/team` 📋 · `/business/billing` 📋 | [#31](https://github.com/sobhanashine/nazarato/issues/31) |
 | 📋 | `/admin` · `/admin/reports` · `/admin/businesses` · `/admin/users` | [#32](https://github.com/sobhanashine/nazarato/issues/32) |
 | 📋 | v2+ features — compare businesses, follow users, Q&A, review photos | [#33](https://github.com/sobhanashine/nazarato/issues/33) |
 
