@@ -17,6 +17,11 @@ test.describe("Owner dashboard — issue #28", () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
+  test("/business/insights redirects unauthenticated users to /login", async ({ page }) => {
+    await page.goto("/business/insights");
+    await expect(page).toHaveURL(/\/login/);
+  });
+
   test("public /company/[slug] review cards render owner-reply badge when present", async ({
     page,
   }) => {

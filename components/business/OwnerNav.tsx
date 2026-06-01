@@ -29,6 +29,16 @@ function IconChat() {
     </svg>
   );
 }
+function IconChart() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M3 3v18h18" />
+      <rect x="7" y="12" width="3" height="5" rx="0.5" />
+      <rect x="12" y="8" width="3" height="9" rx="0.5" />
+      <rect x="17" y="5" width="3" height="12" rx="0.5" />
+    </svg>
+  );
+}
 function IconStore() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -50,6 +60,7 @@ function IconExternal() {
 const items: Item[] = [
   { href: "/business", label: "نمای کلی", icon: <IconGrid /> },
   { href: "/business/reviews", label: "صندوق نظرات", icon: <IconChat /> },
+  { href: "/business/insights", label: "آمار و تحلیل", icon: <IconChart /> },
   { href: "/business/profile", label: "ویرایش صفحه", icon: <IconStore /> },
 ];
 
