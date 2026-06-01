@@ -10,6 +10,7 @@
  */
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { toRelativePersianTime } from "./businesses";
+import { computeInsights, type InsightsRow, type OwnerInsights } from "./owner-insights";
 
 /** Card-shaped owned business — feeds the dashboard switcher + tile. */
 export type OwnedBusiness = {
@@ -108,6 +109,39 @@ export async function getOwnerKpis(businessId: string): Promise<OwnerKpis> {
     newThisWeek: newWeek.count ?? 0,
     unansweredCount: unanswered.count ?? 0,
   };
+}
+
+// ─── Insights (`/business/insights`) ──────────────────────────────────────────
+
+// The aggregation + its types live in a server-free module so they can be
+// unit-tested without pulling in `server-only`/Supabase. Re-exported here so
+// callers keep importing everything insights-related from `@/lib/data/owner`.
+export { computeInsights };
+export type { OwnerInsights, InsightsRow };
+export type { RatingBar, MonthlyPoint } from "./owner-insights";
+
+/**
+ * Fetch + aggregate insights for one business. Pulls only the five columns
+ * `computeInsights` needs across all published reviews; for early-stage
+ * businesses (hundreds of reviews) a single scan is cheaper and more accurate
+ * than a fan-out of head-count queries.
+ */
+export async function getOwnerInsights(businessId: string): Promise<OwnerInsights> {
+  const { data, error } = await supabaseAdmin()
+    .from("reviews")
+    .select("rating, created_at, verified, has_owner_response, helpful_count")
+    .eq("business_id", businessId)
+    .eq("status", "published");
+
+  if (error) {
+    console.error("[owner] getOwnerInsights failed", {
+      businessId,
+      error: error.message,
+    });
+    throw new Error("insights lookup failed");
+  }
+
+  return computeInsights((data ?? []) as InsightsRow[]);
 }
 
 /** A review row trimmed for the owner dashboard preview list. */
