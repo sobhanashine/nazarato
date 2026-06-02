@@ -6,6 +6,7 @@ import { Categories } from "@/components/sections/Categories";
 import { ForBusinessCTA } from "@/components/sections/ForBusinessCTA";
 import { Hero } from "@/components/sections/Hero";
 import { HowItWorks } from "@/components/sections/HowItWorks";
+import { HowToReview } from "@/components/sections/HowToReview";
 import { InstagramShops } from "@/components/sections/InstagramShops";
 import { RecentReviews } from "@/components/sections/RecentReviews";
 
@@ -18,6 +19,7 @@ export default function HomePage() {
         <HowItWorks />
         <Categories />
         <RecentReviews />
+        <HowToReview />
         <InstagramShops />
         <ForBusinessCTA />
         <Blog />
