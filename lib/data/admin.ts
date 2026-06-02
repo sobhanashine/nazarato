@@ -177,3 +177,46 @@ export async function listReportedReviews(): Promise<ReportedReview[]> {
     author_name: r.users?.display_name ?? "کاربر ناشناس",
   }));
 }
+
+// ─── Overview ───────────────────────────────────────────────────────────────
+
+/** Headline counts for the `/admin` dashboard tiles. */
+export type AdminOverview = {
+  pendingReviews: number;
+  reportedReviews: number;
+  pendingClaims: number;
+  newBusinesses: number;
+};
+
+/** A head-only `count: exact` query against `table` — returns no row payload. */
+function buildCountQuery(table: string) {
+  return supabaseAdmin().from(table).select("*", { count: "exact", head: true });
+}
+
+/** Gather the dashboard counts. New businesses = created in the last 7 days. */
+export async function getAdminOverview(): Promise<AdminOverview> {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const [pendingReviews, reportedReviews, pendingClaims, newBusinesses] =
+    await Promise.all([
+      buildCountQuery("reviews").eq("status", "pending"),
+      buildCountQuery("reviews").gt("report_count", 0),
+      buildCountQuery("business_claims").eq("status", "pending"),
+      buildCountQuery("businesses").gte("created_at", sevenDaysAgo),
+    ]);
+
+  for (const r of [pendingReviews, reportedReviews, pendingClaims, newBusinesses]) {
+    if (r.error) {
+      console.error("[admin] getAdminOverview count failed", {
+        error: r.error.message,
+      });
+    }
+  }
+
+  return {
+    pendingReviews: pendingReviews.count ?? 0,
+    reportedReviews: reportedReviews.count ?? 0,
+    pendingClaims: pendingClaims.count ?? 0,
+    newBusinesses: newBusinesses.count ?? 0,
+  };
+}
