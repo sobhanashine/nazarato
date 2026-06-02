@@ -70,28 +70,38 @@ const fa = (n: number) => n.toLocaleString("fa-IR");
 export function HowToReview() {
   const { openReviewSheet } = useReviewSheet();
   const [active, setActive] = useState(0);
-  const reduced = useRef(false);
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    reduced.current = mq.matches;
-    if (mq.matches) return; // don't auto-advance for reduced-motion users
-    const id = setInterval(() => {
+    // Don't auto-advance for reduced-motion users — the step buttons drive it.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    timer.current = setInterval(() => {
       setActive((a) => (a + 1) % STEPS.length);
     }, CYCLE_MS);
-    return () => clearInterval(id);
+    return () => {
+      if (timer.current) clearInterval(timer.current);
+    };
   }, []);
+
+  // A manual tap takes over: stop the loop and rest on the chosen step.
+  const selectStep = (i: number) => {
+    if (timer.current) {
+      clearInterval(timer.current);
+      timer.current = null;
+    }
+    setActive(i);
+  };
 
   const step = STEPS[active];
 
   return (
-    <section className="relative z-10 py-8 md:py-12" aria-labelledby="how-to-review-title">
+    <section className="relative z-10 py-6 md:py-12" aria-labelledby="how-to-review-title">
       <Container>
-        <div className="relative overflow-hidden rounded-[28px] border border-glass-border bg-gradient-to-l from-[#0b241c] via-[#09141b] to-glass/30 p-6 shadow-lg backdrop-blur-xl sm:p-10 md:p-12">
+        <div className="relative overflow-hidden rounded-[22px] border border-glass-border bg-gradient-to-l from-[#0b241c] via-[#09141b] to-glass/30 p-5 shadow-lg backdrop-blur-xl sm:rounded-[28px] sm:p-10 md:p-12">
           <div aria-hidden className="pointer-events-none absolute -top-12 -left-12 h-48 w-48 rounded-full bg-mint/10 blur-3xl" />
           <div aria-hidden className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-lapis/10 blur-3xl" />
 
-          <div className="relative z-10 grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-12">
+          <div className="relative z-10 grid grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-12">
             {/* Right (RTL): the guide */}
             <div className="flex flex-col items-start text-right lg:col-span-6">
               <span className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-mint/20 bg-mint/10 px-3.5 py-1.5 text-[12.5px] font-bold tracking-wide text-mint">
@@ -99,25 +109,25 @@ export function HowToReview() {
               </span>
               <h2
                 id="how-to-review-title"
-                className="mb-4 text-[1.8rem] font-black leading-[1.25] -tracking-[0.015em] text-strong sm:text-[2.2rem] md:text-[2.5rem]"
+                className="mb-3 text-[1.45rem] font-black leading-[1.3] -tracking-[0.015em] text-strong sm:mb-4 sm:text-[2.1rem] md:text-[2.5rem]"
               >
                 ثبت نظر فقط چند ثانیه طول می‌کشه
               </h2>
-              <p className="mb-7 max-w-[560px] text-[14px] leading-[1.9] text-muted sm:text-[15.5px]">
+              <p className="mb-5 max-w-[560px] text-[13.5px] leading-[1.85] text-muted sm:mb-7 sm:text-[15.5px]">
                 لازم نیست فرم طولانی پر کنی. در چهار قدم ساده تجربه‌ی خریدت رو ثبت کن
                 و به هزاران خریدار دیگه کمک کن انتخاب بهتری داشته باشن.
               </p>
 
-              <ol className="mb-8 w-full max-w-[520px] space-y-2.5">
+              <ol className="mb-6 w-full max-w-[520px] space-y-2 sm:mb-8">
                 {STEPS.map((s, i) => {
                   const isActive = i === active;
                   return (
                     <li key={s.key}>
                       <button
                         type="button"
-                        onClick={() => setActive(i)}
+                        onClick={() => selectStep(i)}
                         aria-current={isActive ? "step" : undefined}
-                        className={`flex w-full items-start gap-3.5 rounded-2xl border p-3 text-right transition-colors duration-300 ${
+                        className={`flex w-full items-start gap-3 rounded-2xl border p-2.5 text-right transition-colors duration-300 sm:gap-3.5 sm:p-3 ${
                           isActive
                             ? "border-mint/35 bg-mint/[0.07]"
                             : "border-glass-border bg-white/[0.02] hover:border-glass-border-hi"
@@ -170,7 +180,7 @@ export function HowToReview() {
 function ReviewFlowBox({ step, stepIndex }: { step: StepGuide; stepIndex: number }) {
   return (
     <div
-      className="relative flex w-full max-w-[360px] flex-col overflow-hidden rounded-[26px] border border-glass-border bg-[#0b0f1a] shadow-[0_24px_70px_rgba(0,0,0,0.5)]"
+      className="relative flex w-full max-w-[320px] flex-col overflow-hidden rounded-[22px] border border-glass-border bg-[#0b0f1a] shadow-[0_24px_70px_rgba(0,0,0,0.5)] sm:max-w-[360px] sm:rounded-[26px]"
       role="img"
       aria-label={`نمونه‌ی مرحله: ${step.label}`}
     >
@@ -194,7 +204,7 @@ function ReviewFlowBox({ step, stepIndex }: { step: StepGuide; stepIndex: number
       </div>
 
       {/* Content area — fixed height so cards don't jump as steps cross-fade */}
-      <div className="relative h-[290px] px-5 pb-6 pt-3">
+      <div className="relative h-[258px] px-4 pb-5 pt-3 sm:h-[290px] sm:px-5 sm:pb-6">
         <div
           key={step.key}
           className="animate-[review-step_0.32s_ease-out] motion-reduce:animate-none"

@@ -16,11 +16,11 @@ export default function HomePage() {
       <Header />
       <Hero />
       <main>
+        <RecentReviews />
         <HowItWorks />
         <Categories />
-        <RecentReviews />
-        <HowToReview />
         <InstagramShops />
+        <HowToReview />
         <ForBusinessCTA />
         <Blog />
       </main>
