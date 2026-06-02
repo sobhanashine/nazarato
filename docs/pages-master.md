@@ -651,7 +651,12 @@ GitHub issues mirror the build order in §6. Repo: [`sobhanashine/nazarato`](htt
 | 📋 | `/business/billing` — subscription (gated on §7.9 pricing) | [#149](https://github.com/sobhanashine/nazarato/issues/149) |
 | ✅ | `/admin` · `/admin/reports` · `/admin/businesses` · `/admin/users` | [#32](https://github.com/sobhanashine/nazarato/issues/32) |
 | 📋 | `/admin/businesses` full edit + merge (deferred from #32) | [#160](https://github.com/sobhanashine/nazarato/issues/160) |
-| 📋 | v2+ features — compare businesses, follow users, Q&A, review photos | [#33](https://github.com/sobhanashine/nazarato/issues/33) |
+| 📋 | v2+ features umbrella (split into #163–#167) | [#33](https://github.com/sobhanashine/nazarato/issues/33) |
+| 📋 | Compare businesses side-by-side | [#163](https://github.com/sobhanashine/nazarato/issues/163) |
+| 📋 | Follow other users | [#164](https://github.com/sobhanashine/nazarato/issues/164) |
+| 📋 | Q&A on business pages | [#165](https://github.com/sobhanashine/nazarato/issues/165) |
+| 📋 | Photo uploads on reviews (blocked on §7 decision) | [#166](https://github.com/sobhanashine/nazarato/issues/166) |
+| 📋 | Gamification engine — levels, leaderboards, «بهترین‌های دسته» | [#167](https://github.com/sobhanashine/nazarato/issues/167) |
 
 **Not tracked** — already ✅ built, no issue: `/` · `/blog` · `/blog/[slug]` · `/about` · `/contact`.
 **Untracked gaps** — `/company/[slug]/reviews` (split recommended in §4.1, folded into #16 for now); `/help` and `/cookies` (P1/conditional, no issue yet); `/contact` email/DB delivery still pending (§4.2).
