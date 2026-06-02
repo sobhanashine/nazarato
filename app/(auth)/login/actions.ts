@@ -175,6 +175,14 @@ export async function verifyOtp(
     return { ok: false, error: "خطا در ارتباط با سرور. کمی بعد دوباره تلاش کن." };
   }
   if (existing) {
+    // Banned accounts pass the OTP but never get a session.
+    if (existing.is_banned) {
+      await clearOtpChallenge();
+      return {
+        ok: false,
+        error: "این حساب مسدود شده است. برای پیگیری با پشتیبانی تماس بگیر.",
+      };
+    }
     await setSession({
       id: existing.id,
       phone: existing.phone,
