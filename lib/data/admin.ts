@@ -59,3 +59,60 @@ export async function listAdminUsers(
   }
   return (data ?? []) as AdminUserListItem[];
 }
+
+// ─── Businesses ───────────────────────────────────────────────────────────────
+
+export type AdminBusinessStatus = "active" | "pending" | "merged" | "hidden";
+
+/** One row in the `/admin/businesses` table. */
+export type AdminBusinessListItem = {
+  id: string;
+  name: string;
+  slug: string;
+  type: "company" | "ig_shop";
+  category_slug: string;
+  city: string | null;
+  status: AdminBusinessStatus;
+  verified: boolean;
+  claimed: boolean;
+  review_count: number;
+  rating_avg: number | null;
+  created_at: string;
+};
+
+const BUSINESS_SELECT =
+  "id, name, slug, type, category_slug, city, status, verified, claimed, review_count, rating_avg, created_at";
+
+const BUSINESS_LIMIT = 200;
+
+/**
+ * List businesses for the admin console, newest first. Optional term matches
+ * name / slug / city case-insensitively.
+ */
+export async function listAdminBusinesses(
+  query?: string,
+): Promise<AdminBusinessListItem[]> {
+  let q = supabaseAdmin()
+    .from("businesses")
+    .select(BUSINESS_SELECT)
+    .order("created_at", { ascending: false })
+    .limit(BUSINESS_LIMIT);
+
+  const term = query?.trim();
+  if (term) {
+    const safe = term.replace(/[%,()]/g, " ").trim();
+    if (safe) {
+      q = q.or(`name.ilike.%${safe}%,slug.ilike.%${safe}%,city.ilike.%${safe}%`);
+    }
+  }
+
+  const { data, error } = await q;
+  if (error) {
+    console.error("[admin] listAdminBusinesses failed", {
+      query: term,
+      error: error.message,
+    });
+    throw new Error("admin business list failed");
+  }
+  return (data ?? []) as AdminBusinessListItem[];
+}
