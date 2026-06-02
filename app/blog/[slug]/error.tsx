@@ -2,7 +2,7 @@
 
 import { ErrorView } from "@/components/ui/ErrorView";
 
-export default function ShopError({
+export default function BlogPostError({
   error,
   reset,
 }: {
@@ -13,8 +13,8 @@ export default function ShopError({
     <ErrorView
       error={error}
       reset={reset}
-      logLabel="shop/[handle]"
-      message="نتونستیم صفحه این فروشگاه اینستاگرامی رو بارگذاری کنیم. دوباره تلاش کن."
+      logLabel="blog/[slug]"
+      message="نتونستیم این مطلب رو بارگذاری کنیم. دوباره تلاش کن."
     />
   );
 }
