@@ -445,16 +445,16 @@ Each entry is structured the same way so it scans fast:
 #### Owner billing — `/business/billing` &nbsp;·&nbsp; 📋 planned (#149) &nbsp;·&nbsp; P2 &nbsp;·&nbsp; owner
 - v2+. Subscription management. Gated on the §7.9 pricing decision — only build once there's a paid tier to bill for.
 
-### 4.7 Admin — `(admin)` route group &nbsp;·&nbsp; 🚧 partial &nbsp;·&nbsp; P1 &nbsp;·&nbsp; admin
+### 4.7 Admin — `(admin)` route group &nbsp;·&nbsp; ✅ built (#32) &nbsp;·&nbsp; P1 &nbsp;·&nbsp; admin
 
-> Internal-only. Gate by Supabase RLS + `viewer.role === "admin"`.
+> Internal-only. Gated by `(admin)/layout.tsx` (`viewer.role === "admin"`) for pages and `requireAdmin()` (`lib/auth/admin.ts`) for server actions.
 
-- `/admin` — overview tiles (pending reviews, pending claims, reported items, new businesses).
+- `/admin` — ✅ built (#32) — overview dashboard: count tiles (pending reviews, reported reviews, pending claims, new businesses in the last 7 days) linking into each queue, plus a section nav. `getAdminOverview` in `lib/data/admin.ts`.
 - `/admin/moderation` — ✅ built — review queue with approve/reject (including private purchase proof viewing/deletion), optional rejection reasons, dynamic dashboard statistics, and template violation chips.
 - `/admin/claims` — ✅ built (#27) — business-owner claim queue. Approve/reject with optional reason templates, signed-URL proof viewer, proof deletion on either decision. Approval is what flips `businesses.claimed`+`owner_id` (via DB trigger).
-- `/admin/reports` — reports inbox with action buttons.
-- `/admin/businesses` — list/edit/merge/approve-claim.
-- `/admin/users` — list/ban/role-toggle.
+- `/admin/reports` — ✅ built (#32) — flagged-review inbox (`report_count > 0`, most-reported first). Dismiss reports (keep published) or remove (→ rejected). `listReportedReviews`.
+- `/admin/businesses` — ✅ built (#32) — list + search, status (active/pending/merged/hidden), verified toggle; links to `/admin/claims` for ownership approval. Full **edit + merge** deferred to #160.
+- `/admin/users` — ✅ built (#32) — list + search, ban/unban (enforced at login), consumer↔admin role toggle, with self-lockout guards.
 
 > Solo-founder note: it's tempting to skip admin pages and do everything in Supabase Studio. **Build the moderation queue at minimum** — you'll be moderating daily, and a 30-minute admin page saves hours every week.
 
@@ -649,7 +649,8 @@ GitHub issues mirror the build order in §6. Repo: [`sobhanashine/nazarato`](htt
 | ✅ | `/business/insights` | [#31](https://github.com/sobhanashine/nazarato/issues/31) |
 | 📋 | `/business/team` — member management (needs membership schema) | [#148](https://github.com/sobhanashine/nazarato/issues/148) |
 | 📋 | `/business/billing` — subscription (gated on §7.9 pricing) | [#149](https://github.com/sobhanashine/nazarato/issues/149) |
-| 📋 | `/admin` · `/admin/reports` · `/admin/businesses` · `/admin/users` | [#32](https://github.com/sobhanashine/nazarato/issues/32) |
+| ✅ | `/admin` · `/admin/reports` · `/admin/businesses` · `/admin/users` | [#32](https://github.com/sobhanashine/nazarato/issues/32) |
+| 📋 | `/admin/businesses` full edit + merge (deferred from #32) | [#160](https://github.com/sobhanashine/nazarato/issues/160) |
 | 📋 | v2+ features — compare businesses, follow users, Q&A, review photos | [#33](https://github.com/sobhanashine/nazarato/issues/33) |
 
 **Not tracked** — already ✅ built, no issue: `/` · `/blog` · `/blog/[slug]` · `/about` · `/contact`.
