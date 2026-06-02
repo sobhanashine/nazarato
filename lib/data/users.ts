@@ -16,9 +16,11 @@ export type UserRow = {
   username: string | null;
   avatar_color: string | null;
   role: string;
+  /** Banned accounts are blocked from signing in (enforced in the OTP flow). */
+  is_banned: boolean;
 };
 
-const SELECT = "id, phone, display_name, username, avatar_color, role";
+const SELECT = "id, phone, display_name, username, avatar_color, role, is_banned";
 
 /** Avatar fallback palette — mirrors the per-user `color` used across the app. */
 const AVATAR_COLORS = [
@@ -53,6 +55,7 @@ function asUserRow(value: unknown): UserRow {
     username: typeof o.username === "string" ? o.username : null,
     avatar_color: typeof o.avatar_color === "string" ? o.avatar_color : null,
     role: o.role,
+    is_banned: o.is_banned === true,
   };
 }
 
