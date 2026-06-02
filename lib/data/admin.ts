@@ -116,3 +116,64 @@ export async function listAdminBusinesses(
   }
   return (data ?? []) as AdminBusinessListItem[];
 }
+
+// ─── Reported reviews ───────────────────────────────────────────────────────
+
+/** One row in the `/admin/reports` inbox — a published review users flagged. */
+export type ReportedReview = {
+  id: string;
+  rating: number;
+  title: string | null;
+  body: string;
+  status: string;
+  report_count: number;
+  created_at: string;
+  business_name: string;
+  business_slug: string;
+  business_type: "company" | "ig_shop";
+  author_name: string;
+};
+
+interface ReportedReviewRow {
+  id: string;
+  rating: number;
+  title: string | null;
+  body: string;
+  status: string;
+  report_count: number;
+  created_at: string;
+  businesses: { name: string; slug: string; type: string } | null;
+  users: { display_name: string } | null;
+}
+
+/** Reviews with at least one report, most-reported first. */
+export async function listReportedReviews(): Promise<ReportedReview[]> {
+  const { data, error } = await supabaseAdmin()
+    .from("reviews")
+    .select(
+      "id, rating, title, body, status, report_count, created_at, businesses ( name, slug, type ), users ( display_name )",
+    )
+    .gt("report_count", 0)
+    .order("report_count", { ascending: false })
+    .limit(200);
+
+  if (error) {
+    console.error("[admin] listReportedReviews failed", { error: error.message });
+    throw new Error("admin reports list failed");
+  }
+
+  const rows = (data ?? []) as unknown as ReportedReviewRow[];
+  return rows.map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    title: r.title,
+    body: r.body,
+    status: r.status,
+    report_count: r.report_count,
+    created_at: r.created_at,
+    business_name: r.businesses?.name ?? "نامشخص",
+    business_slug: r.businesses?.slug ?? "",
+    business_type: (r.businesses?.type as "company" | "ig_shop") ?? "company",
+    author_name: r.users?.display_name ?? "کاربر ناشناس",
+  }));
+}
