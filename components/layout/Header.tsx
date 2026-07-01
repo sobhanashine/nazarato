@@ -6,6 +6,7 @@ import { Container } from "@/components/ui/Container";
 
 // Desktop top-nav — kept short to fit the pill.
 const navItems = [
+  { href: "/chat", label: "دستیار هوشمند" },
   { href: "/blog", label: "بلاگ" },
   { href: "/categories", label: "دسته‌بندی‌ها" },
   { href: "/about", label: "درباره ما" },
@@ -18,8 +19,12 @@ const navItems = [
 const mobileNavItems = [
   { href: "/search", label: "جستجو" },
   { href: "/write-review", label: "نوشتن نظر" },
+  { href: "/chat", label: "گفتگو با هوش مصنوعی" },
   { href: "/for-business", label: "برای کسب‌وکارها" },
-  ...navItems,
+  { href: "/blog", label: "بلاگ" },
+  { href: "/categories", label: "دسته‌بندی‌ها" },
+  { href: "/about", label: "درباره ما" },
+  { href: "/contact", label: "تماس با ما" },
 ];
 
 const brandMark =
