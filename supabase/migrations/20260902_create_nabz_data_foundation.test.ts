@@ -30,6 +30,7 @@ describe("Nabz data-foundation migration", () => {
     expect(migration).toContain("uq_business_sources_business_payload_hash");
     expect(migration).toContain("ck_business_sources_permission_status");
     expect(migration).toContain("ck_business_sources_type_permission");
+    expect(migration).toContain("ck_business_sources_open_license_metadata");
     expect(migration).toContain("ck_business_sources_fixture_status");
     expect(migration).toContain("uq_comparison_votes_user_pair_window");
     expect(migration).toContain("uq_comparison_votes_session_pair_window");

@@ -133,6 +133,9 @@ does not satisfy this boundary.
   datasets without an applicable licence or written permission.
 - Imported fields must keep provenance and a permission basis. Unknown permission
   means `quarantined`, not published.
+- Open datasets must also retain license name, license URL, and attribution text.
+  A separate publication approval stays false until product-level obligations
+  such as visible attribution are ready.
 - Pilot review/support history requires explicit permission from the business and
   must preserve source, time range, and deletion expectations.
 
@@ -141,7 +144,7 @@ does not satisfy this boundary.
 | Window | Codex-owned deliverable | Founder dependency | Exit evidence |
 | --- | --- | --- | --- |
 | Days 1–2 | Source-aware schema, migration, importer contract, deterministic fixtures | None | Tests prove provenance, idempotency, and deduplication |
-| Day 3 | Curated seed of about 50 Rasht café/restaurant profiles | Three pilot introductions | Every published field has provenance |
+| Day 3 | Curated 50-record Rasht café/restaurant source snapshot | Three pilot introductions | Every candidate has provenance; publication remains gated |
 | Days 4–5 | `نبض رشت`, scenario selector, Duels, and micro-review capture | One quick Persian copy review | Five interactions work on mobile without login |
 | Days 6–7 | Persian aspect/sentiment baseline, evidence spans, confidence, human correction | Secure AI credential only if real inference is enabled | Versioned evaluation set and baseline metrics |
 | Days 8–9 | Taste Graph and `کجابریم؟` recommendation sheet | One share to a small Rasht test group | Recommendations cite supporting signals |
@@ -151,7 +154,8 @@ does not satisfy this boundary.
 
 ## Success evidence, not vanity metrics
 
-- 50 Rasht profiles with field-level provenance and no copied third-party content.
+- 50 Rasht candidate profiles with field-level provenance and no copied
+  third-party content; only publication-approved rows appear in the product.
 - Three consenting pilot businesses.
 - At least one complete consumer path: five signals → taste summary → explained
   recommendation → contextual review.

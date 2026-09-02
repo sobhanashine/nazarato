@@ -47,6 +47,9 @@ create table if not exists public.business_sources (
                       'written_permission',
                       'unknown'
                     )),
+  license_name      text,
+  license_url       text,
+  attribution_text  text,
   field_payload     jsonb not null check (jsonb_typeof(field_payload) = 'object'),
   payload_hash      text not null check (payload_hash ~ '^[0-9a-f]{64}$'),
   captured_at       timestamptz not null,
@@ -72,6 +75,15 @@ create table if not exists public.business_sources (
       or (
         source_type = 'written_permission'
         and permission_basis = 'written_permission'
+      )
+    ),
+  constraint ck_business_sources_open_license_metadata
+    check (
+      permission_basis <> 'open_license'
+      or (
+        nullif(btrim(license_name), '') is not null
+        and license_url ~ '^https://'
+        and nullif(btrim(attribution_text), '') is not null
       )
     ),
   constraint ck_business_sources_fixture_status

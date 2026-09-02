@@ -84,6 +84,11 @@ Set globally in `next.config.ts:31-40`:
 - `lib/import/business-import.ts` is the strict factual-field boundary. New rows
   persist as pending, provenance persists next, and only an eligible source can
   activate the profile; deterministic development fixtures remain quarantined.
+- `data/rasht-osm-businesses.json` is the reviewed 50-record candidate supply
+  snapshot (25 cafés, 25 restaurants) sourced from OpenStreetMap under ODbL.
+  Its source URLs and attribution metadata are retained; every row is explicitly
+  unapproved for publication until visible attribution and the ODbL data boundary
+  are implemented. Refresh logic lives in `scripts/fetch-rasht-osm-businesses.mts`.
 
 ---
 
@@ -187,6 +192,16 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-02** — Built the initial Rasht supply snapshot from OpenStreetMap's
+  ODbL data: 50 uniquely sourced candidates (25 cafés, 25 restaurants), 49 with
+  normalized phone data, all with coordinates and direct element provenance.
+  Added a reproducible bounded Overpass fetcher, snapshot/data-quality tests,
+  license metadata enforcement, and an explicit publication-approval gate. All
+  candidates remain quarantined until visible attribution and the ODbL
+  publication boundary are implemented; no database or public UI changed. Files:
+  `data/`, `scripts/fetch-rasht-osm-businesses.mts`, `lib/import/`,
+  `supabase/migrations/20260902_create_nabz_data_foundation.sql`,
+  `docs/data-model.md`, `docs/nabz-rasht-mvp.md`, `docs/PROJECT.md`.
 - **2026-09-02** — Authored the reversible Nabz data-foundation migration and a
   strict, idempotent business importer. Added private-by-default RLS for source
   evidence, Duels, versioned review analysis, and Taste Graphs; allowlisted only

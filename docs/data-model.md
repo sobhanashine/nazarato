@@ -152,7 +152,7 @@ database was changed because the required environment access is not configured.
 
 | Table | Minimum columns | Key constraints | Phase |
 |---|---|---|---|
-| `business_sources` | `id`, `business_id`, `source_type`, `source_ref`, `permission_basis`, `field_payload`, `payload_hash`, `captured_at`, `status` | `UNIQUE (business_id, payload_hash)`; unknown permission stays `quarantined` | MVP-NABZ |
+| `business_sources` | `id`, `business_id`, `source_type`, `source_ref`, `permission_basis`, `license_name`, `license_url`, `attribution_text`, `field_payload`, `payload_hash`, `captured_at`, `status` | `UNIQUE (business_id, payload_hash)`; unknown permission stays `quarantined`; open data requires attribution metadata | MVP-NABZ |
 | `comparison_votes` | `id`, `user_id`, `anonymous_session_id`, `city_slug`, `scenario_slug`, `winner_business_id`, `loser_business_id`, `reason_text`, `created_at` | winner ≠ loser; one vote per normalized pair/scenario/session window | MVP-NABZ |
 | `review_analyses` | `review_id`, `normalized_text`, `aspect_scores`, `sentiment`, `evidence_spans`, `issue_cluster`, `suspicious_score`, `model_id`, `model_version`, `confidence`, `human_status`, `analyzed_at` | one active result per review/model version; original review is immutable input evidence | MVP-NABZ |
 | `taste_profiles` | `user_id`, `dimension_weights`, `evidence_count`, `model_id`, `model_version`, `updated_at` | one private profile per user/model version; never exposed to business owners | MVP-NABZ |
@@ -169,6 +169,9 @@ database was changed because the required environment access is not configured.
 - New imports are inserted as `businesses.status = 'pending'`. The importer marks
   an eligible row active only after its approved source record persists; a
   partial failure therefore stays private.
+- Known rights do not automatically mean publication readiness. The import
+  boundary also requires an explicit publication approval; `false` keeps the
+  source quarantined while attribution or review work remains.
 
 ## 6. Supporting tables
 
@@ -230,6 +233,9 @@ schema needed — it is a moderation query.
 
 ## 9. Changelog
 
+- **2026-09-02** — Extended source evidence with license name/URL/attribution
+  metadata and made publication approval an explicit importer gate. The initial
+  OSM snapshot remains quarantined despite its known ODbL permission basis.
 - **2026-09-02** — Authored the reversible Nabz data-foundation migration,
   private-by-default RLS, fail-closed importer, and deterministic quarantined
   fixtures. The migration has not been applied to a remote database.

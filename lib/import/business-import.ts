@@ -44,6 +44,9 @@ export type PreparedBusinessSourceRow = {
   source_type: BusinessSourceType;
   source_ref: string;
   permission_basis: PermissionBasis;
+  license_name: string | null;
+  license_url: string | null;
+  attribution_text: string | null;
   field_payload: Record<string, unknown>;
   payload_hash: string;
   captured_at: string;
@@ -104,6 +107,10 @@ const SOURCE_KEYS = new Set([
   "sourceType",
   "sourceRef",
   "permissionBasis",
+  "licenseName",
+  "licenseUrl",
+  "attributionText",
+  "publicationApproved",
   "capturedAt",
 ]);
 
@@ -357,6 +364,39 @@ export function prepareBusinessImport(input: unknown): PrepareBusinessImportResu
     PERMISSION_BASES,
     issues,
   );
+  const licenseName = readOptionalString(
+    sourceValue.licenseName,
+    "source.licenseName",
+    issues,
+    120,
+  );
+  const licenseUrl = readOptionalString(
+    sourceValue.licenseUrl,
+    "source.licenseUrl",
+    issues,
+    500,
+  );
+  if (licenseUrl) {
+    try {
+      const parsedLicenseUrl = new URL(licenseUrl);
+      if (parsedLicenseUrl.protocol !== "https:") throw new Error("not HTTPS");
+    } catch {
+      issues.push({ path: "source.licenseUrl", message: "Must be a valid HTTPS URL." });
+    }
+  }
+  const attributionText = readOptionalString(
+    sourceValue.attributionText,
+    "source.attributionText",
+    issues,
+    300,
+  );
+  const publicationApproved = sourceValue.publicationApproved;
+  if (typeof publicationApproved !== "boolean") {
+    issues.push({
+      path: "source.publicationApproved",
+      message: "Required boolean; false keeps the source quarantined.",
+    });
+  }
   const capturedAtValue = readRequiredString(
     sourceValue.capturedAt,
     "source.capturedAt",
@@ -378,6 +418,21 @@ export function prepareBusinessImport(input: unknown): PrepareBusinessImportResu
       message: `Permission basis ${permissionBasis} does not match source type ${sourceType}.`,
     });
   }
+  if (
+    permissionBasis === "open_license" &&
+    (!licenseName || !licenseUrl || !attributionText)
+  ) {
+    issues.push({
+      path: "source.licenseName",
+      message: "Open-license imports require license name, HTTPS URL, and attribution text.",
+    });
+  }
+  if (permissionBasis === "unknown" && publicationApproved === true) {
+    issues.push({
+      path: "source.publicationApproved",
+      message: "Unknown permission can never be approved for publication.",
+    });
+  }
 
   if (
     issues.length > 0 ||
@@ -389,12 +444,16 @@ export function prepareBusinessImport(input: unknown): PrepareBusinessImportResu
     !sourceType ||
     !sourceRef ||
     !permissionBasis ||
+    typeof publicationApproved !== "boolean" ||
     !capturedDate
   ) {
     return { ok: false, issues };
   }
 
-  const publishable = permissionBasis !== "unknown" && sourceType !== "development_fixture";
+  const publishable =
+    permissionBasis !== "unknown" &&
+    sourceType !== "development_fixture" &&
+    publicationApproved;
   const business: PreparedBusinessRow = {
     slug,
     type: businessType,
@@ -428,6 +487,9 @@ export function prepareBusinessImport(input: unknown): PrepareBusinessImportResu
     source_type: sourceType,
     source_ref: sourceRef,
     permission_basis: permissionBasis,
+    license_name: licenseName ?? null,
+    license_url: licenseUrl ?? null,
+    attribution_text: attributionText ?? null,
     field_payload: fieldPayload,
   };
 
@@ -439,6 +501,9 @@ export function prepareBusinessImport(input: unknown): PrepareBusinessImportResu
         source_type: sourceType,
         source_ref: sourceRef,
         permission_basis: permissionBasis,
+        license_name: licenseName ?? null,
+        license_url: licenseUrl ?? null,
+        attribution_text: attributionText ?? null,
         field_payload: fieldPayload,
         payload_hash: sha256(hashInput),
         captured_at: capturedDate.toISOString(),

@@ -24,6 +24,7 @@ const OWNER_INPUT = {
     sourceType: "owner_submission",
     sourceRef: "owner-intake://pilot-1",
     permissionBasis: "owner_consent",
+    publicationApproved: true,
     capturedAt: "2026-09-02T12:00:00+03:30",
   },
 };
@@ -150,6 +151,7 @@ describe("prepareBusinessImport", () => {
         sourceType: "manual_public_facts",
         sourceRef: "https://directory.example.test/business/123",
         permissionBasis: "unknown",
+        publicationApproved: false,
       },
     });
 
@@ -158,6 +160,38 @@ describe("prepareBusinessImport", () => {
     expect(result.value.publishable).toBe(false);
     expect(result.value.business.status).toBe("pending");
     expect(result.value.source.status).toBe("quarantined");
+  });
+
+  it("requires attribution metadata and explicit publication approval for open data", () => {
+    const missingAttribution = prepareBusinessImport({
+      ...OWNER_INPUT,
+      source: {
+        ...OWNER_INPUT.source,
+        sourceType: "open_dataset",
+        sourceRef: "https://www.openstreetmap.org/node/1",
+        permissionBasis: "open_license",
+        publicationApproved: true,
+      },
+    });
+    expect(missingAttribution.ok).toBe(false);
+
+    const candidate = prepareBusinessImport({
+      ...OWNER_INPUT,
+      source: {
+        ...OWNER_INPUT.source,
+        sourceType: "open_dataset",
+        sourceRef: "https://www.openstreetmap.org/node/1",
+        permissionBasis: "open_license",
+        licenseName: "ODbL-1.0",
+        licenseUrl: "https://www.openstreetmap.org/copyright",
+        attributionText: "© OpenStreetMap contributors",
+        publicationApproved: false,
+      },
+    });
+    expect(candidate.ok).toBe(true);
+    if (!candidate.ok) return;
+    expect(candidate.value.publishable).toBe(false);
+    expect(candidate.value.source.status).toBe("quarantined");
   });
 });
 
