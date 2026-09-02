@@ -89,6 +89,12 @@ Set globally in `next.config.ts:31-40`:
   Its source URLs and attribution metadata are retained; every row is explicitly
   unapproved for publication until visible attribution and the ODbL data boundary
   are implemented. Refresh logic lives in `scripts/fetch-rasht-osm-businesses.mts`.
+- Shared Drive research is converted only through
+  `scripts/prepare-rasht-drive-businesses.mts`. Real exports and prepared output
+  stay under gitignored `data/private/` because this repository is public and the
+  source permission is still unknown. The current local snapshot has 37 pending
+  café/restaurant candidates and three exact OSM name matches; ratings and review
+  counts are excluded and no match is auto-merged.
 
 ---
 
@@ -99,6 +105,9 @@ Set globally in `next.config.ts:31-40`:
 - **Never `any`.** Use `unknown`, then narrow. (From `AGENTS.md`.)
 - Validate all API / route inputs at the boundary.
 - Log errors with context: route, userId if relevant, payload shape.
+- Executable `.mts` data scripts may import local TypeScript with an explicit
+  `.ts` suffix; `allowImportingTsExtensions` is enabled because the project is
+  typechecked with `noEmit` and these scripts run through Node type stripping.
 
 ### Files & naming
 
@@ -192,6 +201,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-02** — Added a tested, fail-closed converter and matcher for the private legacy Rasht Drive research: 37 café/restaurant candidates remain gitignored and quarantined, source ratings/review counts are discarded, and three exact OSM overlaps are reported without auto-merge. Files: `.gitignore`, `tsconfig.json`, `lib/import/rasht-drive-businesses.ts`, `lib/import/rasht-drive-businesses.test.ts`, `scripts/prepare-rasht-drive-businesses.mts`, `docs/data-model.md`, `docs/nabz-rasht-mvp.md`, `docs/PROJECT.md`.
 - **2026-09-02** — Built the initial Rasht supply snapshot from OpenStreetMap's
   ODbL data: 50 uniquely sourced candidates (25 cafés, 25 restaurants), 49 with
   normalized phone data, all with coordinates and direct element provenance.

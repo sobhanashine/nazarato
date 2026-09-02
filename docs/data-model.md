@@ -173,6 +173,21 @@ database was changed because the required environment access is not configured.
   boundary also requires an explicit publication approval; `false` keeps the
   source quarantined while attribution or review work remains.
 
+### Private legacy Drive staging
+
+- The shared research spreadsheet `کسب کارهای ایران, رشت` contributed 37 local
+  café/restaurant candidates for internal matching: 18 cafés and 19 restaurants.
+- The source and prepared snapshots live only under gitignored `data/private/`
+  because the repository is public and the sheet's publication rights are not
+  confirmed. `scripts/prepare-rasht-drive-businesses.mts` validates and converts
+  an operator-provided export without connecting the product runtime to Drive.
+- Every converted row uses `manual_public_facts` + `unknown` permission and
+  remains pending/quarantined. Source ratings and review counts are discarded;
+  only allowlisted name, address, phone, website, and Instagram facts survive.
+- Name matching against the 50-record OSM snapshot found three exact normalized
+  candidates. Matching produces evidence for manual review and never merges or
+  publishes a row automatically.
+
 ## 6. Supporting tables
 
 | Table | Columns | Key constraint | Phase |

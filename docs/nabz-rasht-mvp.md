@@ -152,6 +152,13 @@ does not satisfy this boundary.
 | Days 11–12 | Owner insight, one improvement action, and before/after metric | Pilot owner gives a 15-minute reaction | Owner chooses one real action from cited evidence |
 | Days 13–14 | QA, security/privacy pass, deployment proof, and MVP evidence pack | Go/no-go confirmation | Critical flows and release identity verified |
 
+Current private supply status (2026-09-02): the tracked OSM snapshot contains 50
+quarantined candidates, and a separate gitignored Drive snapshot contains 37
+quarantined café/restaurant candidates. Three normalized names overlap exactly;
+they remain manual match evidence, not merged or published profiles. The Drive
+source contributes factual profile fields only and does not provide review text
+for the Persian analysis evaluation set.
+
 ## Success evidence, not vanity metrics
 
 - 50 Rasht candidate profiles with field-level provenance and no copied

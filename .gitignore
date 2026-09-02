@@ -55,3 +55,5 @@ next-env.d.ts
 # antigravity cli — local workspace metadata
 .antigravitycli/
 
+# private research exports — never publish shared Drive data through Git
+/data/private/
