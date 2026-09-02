@@ -128,8 +128,9 @@ Set globally in `next.config.ts:31-40`:
   acceptance criteria, final status, and the completion-email reference belong
   on that card; internal tool calls do not create additional cards.
 - The completion-notification contract is defined in `AGENTS.md`: one
-  duplicate-guarded plain-text email for each terminal task outcome, using the
-  authenticated Gmail profile rather than a recipient hardcoded in the repo.
+  duplicate-guarded Persian-first RTL HTML email for each terminal task outcome,
+  rendered from `docs/task-completion-email-template.html` and sent through the
+  authenticated Gmail profile rather than to a recipient hardcoded in the repo.
 
 ### Priorities (in order)
 
@@ -168,6 +169,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-02** — Replaced the rejected log-style completion email with a reusable Persian-first RTL HTML report that leads with outcome and required user action, shows MVP progress and deliverables, and keeps compact technical evidence last. Files: `AGENTS.md`, `docs/PROJECT.md`, `docs/task-completion-email-template.html`.
 - **2026-09-02** — Added durable task operations for the two-week MVP: a private Trello board with explicit Ready/In Progress/Needs You/Review/Done/Risks states, one card per material deliverable, and an exactly-once Gmail completion notification contract with Sent-mail duplicate protection. Recorded the existing Next.js dependency-audit risk for pre-deployment remediation. Files: `AGENTS.md`, `docs/PROJECT.md`.
 - **2026-05-26** — Built `/notifications` activity feed (#30). Moved the page from `/profile/notifications` to top-level `/notifications` per the issue contract; the old route is now a thin redirect so push-notification deep links and bookmarks don't 404. `public/sw.js` fallback URL updated. The feed is now grouped by calendar day with «امروز» / «دیروز» / Persian-localized full-date headers, courtesy of a new pure helper `components/notifications/groupByDay.ts` (8-test unit suite covers same-day collapse, day-boundary splits, and the relative-header path). The list region carries `aria-live="polite"` so screen readers narrate the unread-count change after mark-as-read fires. Mark-all-read action moved alongside the page to `app/(user)/notifications/actions.ts`. Files: `app/(user)/notifications/{page,actions}.ts(x)`, `app/(user)/profile/notifications/page.tsx`, `components/notifications/{NotificationsList.tsx,groupByDay.ts,groupByDay.test.ts}`, `components/profile/ProfileNav.tsx`, `public/sw.js`, `e2e/notifications.spec.ts`.
 - **2026-05-26** — Polished the review wizard after live QA: (1) the sheet was visibly wobbling on iOS when the keyboard appeared because `max-h-[93dvh]` reflowed mid-animation — switched to `svh` (small viewport height, stable across browser-chrome changes). (2) Gated the infinite `fab-pulse` halo on the submit button to only run when the form is actually submittable (`ready && !pending`) — the constant throb under the CTA was reading as the card vibrating. (3) Added a contextual hint in the action row: while recording, the counter slot reads «ضبط — برای پایان دوباره بزن» (pomegr); while processing, «در حال تبدیل صدا…» (mint). Plumbed via a new `onModeChange` callback on `VoiceDictateButton`. (4) Lowered the body minimum from 30 → 10 chars (both server validator + client progress bar) — 30 was too long a runway for the actual review tone people write. Files: `components/review/ReviewSheet.tsx`, `components/review/VoiceDictateButton.tsx`, `components/review/actions.ts`.

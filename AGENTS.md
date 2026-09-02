@@ -62,15 +62,20 @@ Sobhan is the only developer, designer, and PM on this project.
   dependency, `Review` for a completed deliverable awaiting user acceptance,
   and `Risks` for a tracked project risk rather than active work.
 - At each task's terminal outcome (`COMPLETED`, `BLOCKED`, `FAILED`, or
-  `NO_ACTION`), send exactly one plain-text completion email to the owner of
-  the authenticated Gmail connection. Do not hardcode a personal address in
-  the repository; resolve it from the connected Gmail profile.
+  `NO_ACTION`), send exactly one Persian-first RTL HTML completion email to the
+  owner of the authenticated Gmail connection. Do not hardcode a personal
+  address in the repository; resolve it from the connected Gmail profile.
 - Before sending, search Sent mail for the exact task subject and do not send
   a duplicate. If delivery returns an uncertain result or times out, do not
   retry automatically.
-- Use subject `Nazarato task — <STATUS> — <task title>`. Include the outcome,
-  changed files, checks, branch/commit/PR when applicable, Trello card URL,
-  remaining risks, and only the decisions or access still needed from the user.
+- Render the email from `docs/task-completion-email-template.html`. The first
+  screen must answer, in this order: what happened, whether the user must act,
+  and where the project stands. Keep deliverables, risks, and technical evidence
+  in separate scannable sections; never paste raw command output or long logs.
+- Use the subject mapping documented in the template. The email must include a
+  one-sentence outcome, explicit user action (including «فعلاً کاری لازم نیست»),
+  project progress, delivered items, the next task, material risks, compact
+  checks, branch/commit/PR when applicable, and the Trello card URL.
 - Progress commentary, research updates, and internal subtasks do not trigger
   email. If Trello or Gmail is unavailable, finish safe local work, report the
   integration failure, and leave the task in the appropriate non-`Done` state.
