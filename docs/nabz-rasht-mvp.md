@@ -11,7 +11,7 @@ Initial market: Rasht cafés and restaurants
 
 Nazarato is not another nationwide directory and does not compete on listing
 count. The consumer product makes local discovery entertaining; those
-interactions create permissioned, source-aware preference and experience data;
+interactions create first-party, context-rich preference and experience data;
 the technical product converts that data into explainable recommendations and
 actionable customer-voice intelligence for businesses.
 
@@ -20,7 +20,7 @@ The product has three connected surfaces:
 ```mermaid
 flowchart TD
   Pulse["نبض رشت<br/>Duels · micro-reviews · local trends"]
-  Signals["Permissioned experience signals<br/>choice · context · reason · review"]
+  Signals["First-party experience signals<br/>choice · context · reason · review"]
   AI["Persian intelligence<br/>aspects · sentiment · Taste Graph · anomaly signals"]
   Consumer["Consumer payoff<br/>کجابریم؟ · taste profile · explainable matches"]
   Owner["Owner payoff<br/>priority issues · comparison · change measurement"]

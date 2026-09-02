@@ -78,6 +78,12 @@ Set globally in `next.config.ts:31-40`:
   local interaction loop that creates first-party, versioned intelligence data.
 - Bilbooard and other directories are competitors/references, not default data
   sources. Unknown reuse permission means quarantine, not publication.
+- The additive, reversible Nabz data foundation is authored in
+  `supabase/migrations/20260902_create_nabz_data_foundation.sql` with its down
+  migration under `supabase/rollbacks/`. It has not been applied remotely.
+- `lib/import/business-import.ts` is the strict factual-field boundary. New rows
+  persist as pending, provenance persists next, and only an eligible source can
+  activate the profile; deterministic development fixtures remain quarantined.
 
 ---
 
@@ -181,6 +187,16 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-02** — Authored the reversible Nabz data-foundation migration and a
+  strict, idempotent business importer. Added private-by-default RLS for source
+  evidence, Duels, versioned review analysis, and Taste Graphs; allowlisted only
+  factual profile fields; quarantined unknown permissions and synthetic fixtures;
+  and made new imports fail closed as pending until provenance persists. The
+  migration was not applied remotely. Files: `lib/import/`,
+  `supabase/migrations/20260902_create_nabz_data_foundation.sql`,
+  `supabase/migrations/20260902_create_nabz_data_foundation.test.ts`,
+  `supabase/rollbacks/20260902_create_nabz_data_foundation.down.sql`,
+  `docs/data-model.md`, `docs/nabz-rasht-mvp.md`, `docs/PROJECT.md`.
 - **2026-09-02** — Locked the 14-day Nabz Rasht MVP around contextual Duels,
   micro-reviews, a private Taste Graph, evidence-grounded recommendations, and
   owner customer-voice intelligence. Reordered the active route plan and defined
