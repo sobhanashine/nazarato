@@ -5,9 +5,10 @@
 > (pages) and [`PROJECT.md`](./PROJECT.md) (architecture).
 > Update this when you add/rename/remove a column or table.
 
-Last edited: 2026-05-22
+Last edited: 2026-09-02
 Owner: Sobhan (solo founder)
-Target DB: Supabase (Postgres). Auth (phone + OTP) lives in `auth.users`.
+Target DB: Supabase (Postgres). Auth is app-managed phone OTP + signed sessions;
+the application `users` table is standalone.
 
 ---
 
@@ -20,9 +21,9 @@ Target DB: Supabase (Postgres). Auth (phone + OTP) lives in `auth.users`.
   mutable tables also have `updated_at`.
 - **Enums** — modeled as `text` + `CHECK` constraint (easier to evolve than PG
   `enum` types). Allowed values are listed per column below.
-- **Phasing** — `[MVP]` columns are built now; `[P3]` columns are added to the
-  schema now (cheap) but populated only when the gamification engine ships.
-  See `pages-master.md` §6 "Gamification & trust loop".
+- **Phasing** — `[MVP]` is already built, `[MVP-NABZ]` is locked for the active
+  14-day Rasht sprint but not migrated yet, and `[P3]` remains deferred. See
+  `nabz-rasht-mvp.md` and `pages-master.md` §6.
 - **Counters** — columns like `*_count`, `rating_sum`, `helpful_count`,
   `response_rate` are *denormalized*. Keep them in sync with **Postgres
   triggers**, not app code — triggers can't be bypassed.
@@ -138,7 +139,30 @@ MVP columns are live — see `supabase/migrations/0001_create_users_table.sql`.
 
 ---
 
-## 5. Supporting tables
+## 5. Nabz Rasht tables — planned, not migrated
+
+These tables are the locked data contract for the next implementation task. The
+actual migration must follow the `db-migrations` skill and may refine names or
+indexes without weakening provenance, privacy, or model-version requirements.
+
+| Table | Minimum columns | Key constraints | Phase |
+|---|---|---|---|
+| `business_sources` | `id`, `business_id`, `source_type`, `source_ref`, `permission_basis`, `field_payload`, `payload_hash`, `captured_at`, `status` | `UNIQUE (business_id, payload_hash)`; unknown permission stays `quarantined` | MVP-NABZ |
+| `comparison_votes` | `id`, `user_id`, `anonymous_session_id`, `city_slug`, `scenario_slug`, `winner_business_id`, `loser_business_id`, `reason_text`, `created_at` | winner ≠ loser; one vote per normalized pair/scenario/session window | MVP-NABZ |
+| `review_analyses` | `review_id`, `normalized_text`, `aspect_scores`, `sentiment`, `evidence_spans`, `issue_cluster`, `suspicious_score`, `model_id`, `model_version`, `confidence`, `human_status`, `analyzed_at` | one active result per review/model version; original review is immutable input evidence | MVP-NABZ |
+| `taste_profiles` | `user_id`, `dimension_weights`, `evidence_count`, `model_id`, `model_version`, `updated_at` | one private profile per user/model version; never exposed to business owners | MVP-NABZ |
+
+- Anonymous Duel sessions use a rotating opaque identifier and are not reviews.
+  Login is required to persist a Taste Graph across devices or submit a review.
+- Do not store raw IP addresses in these tables. Abuse controls may use a
+  short-lived server-side HMAC/rate-limit key that is not exposed in product data.
+- AI output never overwrites `reviews.body`; it is versioned, confidence-bearing,
+  and traceable to evidence spans so a human correction can be evaluated.
+- `business_sources.field_payload` records only reusable factual fields and their
+  provenance. It is not a place to retain copied third-party descriptions,
+  images, ratings, or reviews.
+
+## 6. Supporting tables
 
 | Table | Columns | Key constraint | Phase |
 |---|---|---|---|
@@ -152,7 +176,7 @@ owner replies get edit history and their own timestamps.
 
 ---
 
-## 6. Triggers, indexes, RLS
+## 7. Triggers, indexes, RLS
 
 ### Denormalized counters — keep in sync with triggers
 
@@ -185,7 +209,7 @@ schema needed — it is a moderation query.
 
 ---
 
-## 7. Open questions
+## 8. Open questions
 
 - `categories` table shape — currently `lib/data/categories.tsx`. Promote to a
   table with `slug` PK before wiring `businesses.category_slug` as a real FK.
@@ -196,7 +220,10 @@ schema needed — it is a moderation query.
 
 ---
 
-## 8. Changelog
+## 9. Changelog
+
+- **2026-09-02** — Locked the planned Nabz Rasht provenance, Duel, review-analysis,
+  and private Taste Graph tables. No migration has been created yet.
 
 - **2026-05-22** — Initial draft. Three core tables (`users`, `businesses`,
   `reviews`) + supporting tables. Gamification columns added as `[P3]`.

@@ -67,6 +67,18 @@ Set globally in `next.config.ts:31-40`:
 - Mobile nav is split into a top `MobileMenu` and a persistent bottom `MobileTabBar` (`components/layout/`).
 - Layout mounts `MobileTabBar` globally (`app/layout.tsx:55`).
 
+### Product shape — active MVP
+
+- The active product specification is
+  [`docs/nabz-rasht-mvp.md`](./nabz-rasht-mvp.md): Rasht cafés/restaurants first,
+  with `نبض رشت`, contextual Duels, micro-reviews, a private Taste Graph,
+  evidence-grounded `کجابریم؟` recommendations, and owner customer-voice insight.
+- Existing review, business profile, Claim, moderation, and owner routes are
+  reused. The consumer entry changes from a generic national directory to a
+  local interaction loop that creates first-party, versioned intelligence data.
+- Bilbooard and other directories are competitors/references, not default data
+  sources. Unknown reuse permission means quarantine, not publication.
+
 ---
 
 ## 2. Conventions & Decisions
@@ -169,6 +181,13 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-02** — Locked the 14-day Nabz Rasht MVP around contextual Duels,
+  micro-reviews, a private Taste Graph, evidence-grounded recommendations, and
+  owner customer-voice intelligence. Reordered the active route plan and defined
+  the planned provenance, comparison, analysis, and taste-profile data contract;
+  no production migration or UI code shipped in this task. Files:
+  `docs/nabz-rasht-mvp.md`, `docs/pages-master.md`, `docs/data-model.md`,
+  `docs/PROJECT.md`.
 - **2026-09-02** — Replaced the rejected log-style completion email with a reusable Persian-first RTL HTML report that leads with outcome and required user action, shows MVP progress and deliverables, and keeps compact technical evidence last. Files: `AGENTS.md`, `docs/PROJECT.md`, `docs/task-completion-email-template.html`.
 - **2026-09-02** — Added durable task operations for the two-week MVP: a private Trello board with explicit Ready/In Progress/Needs You/Review/Done/Risks states, one card per material deliverable, and an exactly-once Gmail completion notification contract with Sent-mail duplicate protection. Recorded the existing Next.js dependency-audit risk for pre-deployment remediation. Files: `AGENTS.md`, `docs/PROJECT.md`.
 - **2026-05-26** — Built `/notifications` activity feed (#30). Moved the page from `/profile/notifications` to top-level `/notifications` per the issue contract; the old route is now a thin redirect so push-notification deep links and bookmarks don't 404. `public/sw.js` fallback URL updated. The feed is now grouped by calendar day with «امروز» / «دیروز» / Persian-localized full-date headers, courtesy of a new pure helper `components/notifications/groupByDay.ts` (8-test unit suite covers same-day collapse, day-boundary splits, and the relative-header path). The list region carries `aria-live="polite"` so screen readers narrate the unread-count change after mark-as-read fires. Mark-all-read action moved alongside the page to `app/(user)/notifications/actions.ts`. Files: `app/(user)/notifications/{page,actions}.ts(x)`, `app/(user)/profile/notifications/page.tsx`, `components/notifications/{NotificationsList.tsx,groupByDay.ts,groupByDay.test.ts}`, `components/profile/ProfileNav.tsx`, `public/sw.js`, `e2e/notifications.spec.ts`.

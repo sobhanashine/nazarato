@@ -3,7 +3,7 @@
 > Single source of truth for every page in the product: what exists, what's planned, what each page is for, and how it's structured.
 > Update this when you add/rename/remove a route.
 
-Last edited: 2026-05-28 (post-#28 owner dashboard, #29 blog taxonomies, #30 notifications)
+Last edited: 2026-09-02 (Nabz Rasht MVP direction locked)
 Owner: Sobhan (solo founder)
 Stack assumptions: Next.js 16 App Router, React 19, Tailwind v4, Supabase + Kavenegar OTP, RTL Persian (`lang="fa" dir="rtl"`).
 
@@ -11,12 +11,17 @@ Stack assumptions: Next.js 16 App Router, React 19, Tailwind v4, Supabase + Kave
 
 ## 1. Product context (1-minute brief)
 
-- **What it is** — A Persian-language review platform for Iranian businesses, including regular companies (دیجی‌کالا, اسنپ‌فود…) and Instagram shops (`@manto_sara`, `@arezoo_cake`…).
+- **What it is** — A Rasht-first local discovery and customer-voice product. The
+  consumer surface (`نبض رشت`) turns contextual choices and reviews into useful,
+  entertaining recommendations; the business surface turns the same evidence into
+  prioritized Persian customer insights. See [`nabz-rasht-mvp.md`](./nabz-rasht-mvp.md).
 - **Who it's for** — Three audiences sharing the same site:
   - **Consumers (default visitor)** — discover businesses, read reviews, write reviews. No login required for browsing. Auth required to write/save/report.
   - **Business owners** — claim a profile, respond to reviews, manage page content.
   - **Admins** — moderate reviews, approve claims, manage taxonomy. (Internal.)
-- **North-star action** — A consumer writes a real, useful review about an Iranian business.
+- **North-star action** — A consumer contributes five contextual preference or
+  experience signals and receives an evidence-grounded recommendation; a full
+  review remains the highest-value signal, not the only entry action.
 - **Login model** — Phone-based OTP via Kavenegar (no email/password assumed).
 - **Review identity** — No anonymous reviews. Every review ties to a phone-verified account (identified). Public display uses a chosen display name (pseudonymous) — never the legal name, so honest negative reviews aren't suppressed.
 - **Verified reviews** — Two tiers. **نقد تأییدشده** = reviewer submits proof of purchase (فاکتور / SMS confirmation / کد رهگیری, or DM screenshot / فیش for IG shops); admin checks it privately, then the proof image is **deleted** (only the verified boolean is kept — less storage, less liability). **نقد عادی** = no proof. Verified reviews rank higher, weigh more in the business score, and are the only tier eligible for reviewer badges. Verification is never mandatory — it is the aspirational tier, not a gate.
@@ -28,7 +33,8 @@ Stack assumptions: Next.js 16 App Router, React 19, Tailwind v4, Supabase + Kave
 ## 2. Information architecture (sitemap)
 
 ```
-┌─ / ─────────────────────────────── Home (hero + categories + reviews + IG shops + blog)
+┌─ / ─────────────────────────────── `نبض رشت` (scenarios + Duels + micro-reviews + local pulse; planned redesign)
+├─ /taste ────────────────────────── Private Taste Graph and explained preferences (MVP plan)
 ├─ /search ───────────────────────── Search results (q, filters)
 │
 ├─ /categories ───────────────────── All categories index
@@ -535,7 +541,29 @@ Picked from ui-ux-pro-max highest-priority rules; tick before merging:
 
 ## 6. Recommended build order
 
-You're a solo founder. Don't try to build the sitemap top-down. Build the minimum loop that lets one real user complete the north-star action ("find a business → read a review → write a review"), then expand.
+You're a solo founder. Don't try to build the sitemap top-down. Build the minimum
+loop that lets one real user contribute five contextual signals, receive an
+explained recommendation, and then leave a useful review; expand only after that
+loop works with real Rasht users.
+
+### Active 14-day MVP — Nabz Rasht (supersedes the older phase order below)
+
+The previously built review, profile, Claim, moderation, and owner surfaces are
+reused. The active delivery order is now:
+
+1. Source-aware Rasht business schema and importer.
+2. About 50 curated café/restaurant profiles with provenance.
+3. Home redesign as `نبض رشت`: scenario selector, Duels, and micro-reviews.
+4. Versioned Persian aspect/sentiment analysis with evidence and correction.
+5. Taste Graph plus the `کجابریم؟` explained recommendation flow.
+6. Production-ready Claim/OTP for pilot owners.
+7. Owner action insight and before/after measurement.
+8. Pilot QA, security/privacy review, deployment proof, and technical evidence.
+
+The complete acceptance criteria, data boundary, founder dependencies, and daily
+schedule live in [`nabz-rasht-mvp.md`](./nabz-rasht-mvp.md). The older phases below
+remain as implementation history and route inventory; they are no longer the next
+sprint plan.
 
 ### Phase 0 — already done ✅
 - Home, Blog list, Blog post, all chrome (Header/Footer/MobileTabBar/Breadcrumb/PageBanner).
@@ -570,6 +598,11 @@ You're a solo founder. Don't try to build the sitemap top-down. Build the minimu
 
 ### Gamification & trust loop (phased)
 
+`Duels` and the Taste Graph are part of the active MVP because they create the
+core contextual preference signal and an immediate consumer payoff. They are not
+points, badges, or a public leaderboard. The older badge/leaderboard plan below
+remains deferred until real use justifies it.
+
 The badge/leaderboard system is an *amplifier* — it is built only once the review loop is already turning. Schema first, engine later: adding fields now is nearly free, a migration later is painful.
 
 - **Phase 1** — Add the data fields now (`review.verified`, `review.helpfulCount`, `user.reputationScore`, `business.responseRate`). Ship the **verified badge on reviews** + **"مفید بود" helpful votes**. The verified badge is the only game mechanic at MVP.
@@ -595,6 +628,9 @@ These will shape the doc once you decide. Flagged here so they don't get lost.
 
 ### Recently resolved
 
+- **Rasht AI MVP direction** — ✅ `نبض رشت` + contextual Duels + micro-reviews +
+  Taste Graph + `کجابریم؟` + owner customer-voice intelligence. Settled
+  2026-09-02 → see `nabz-rasht-mvp.md`.
 - **Anonymous reviews** — ❌ no anonymous reviews; identified + pseudonymous. Settled 2026-05-22 → moved to §1 "Review identity".
 - **What "verified" means** — proof-of-purchase, private admin check, two-tier model. Settled 2026-05-22 → moved to §1 "Verified reviews".
 - **Gamification timing** — phased (schema in Phase 1, engine in Phase 3). Settled 2026-05-22 → moved to §6 "Gamification & trust loop".
