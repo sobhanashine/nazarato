@@ -118,6 +118,19 @@ Set globally in `next.config.ts:31-40`:
 - Bug fixes get a failing regression test FIRST (see `testing-discipline` skill).
 - New features ≥ one line → spec first (see `spec-first` skill).
 
+### Task operations
+
+- The private Trello execution board is
+  [`Nazarato — 14-Day MVP`](https://trello.com/b/eHnJFMki), ordered as
+  `Ready → In Progress → Needs You → Review → Done`, with `Risks` kept as a
+  separate project-risk register.
+- One Trello card represents one material user-requested deliverable. Evidence,
+  acceptance criteria, final status, and the completion-email reference belong
+  on that card; internal tool calls do not create additional cards.
+- The completion-notification contract is defined in `AGENTS.md`: one
+  duplicate-guarded plain-text email for each terminal task outcome, using the
+  authenticated Gmail profile rather than a recipient hardcoded in the repo.
+
 ### Priorities (in order)
 
 1. Bugs blocking real users
@@ -129,6 +142,10 @@ Set globally in `next.config.ts:31-40`:
 
 ## 3. Open items / known gaps
 
+- **Dependency security update.** `npm audit --omit=dev` on 2026-09-02 reports
+  four high-severity production findings through Next.js 16.2.6 and its
+  transitive dependencies. The audit recommends Next.js 16.3.4. Upgrade and
+  rerun the full check suite before a public deployment.
 - **WP_API_URL** must be set in the deployment env or `lib/wp.ts` calls will
   fail. Not yet documented in a `.env.example`.
 - **Web Push (VAPID) keys** must be generated and set in the deployment environment (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) for Web Push notifications to function. See `.env.local.example` for details.
@@ -151,6 +168,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-02** — Added durable task operations for the two-week MVP: a private Trello board with explicit Ready/In Progress/Needs You/Review/Done/Risks states, one card per material deliverable, and an exactly-once Gmail completion notification contract with Sent-mail duplicate protection. Recorded the existing Next.js dependency-audit risk for pre-deployment remediation. Files: `AGENTS.md`, `docs/PROJECT.md`.
 - **2026-05-26** — Built `/notifications` activity feed (#30). Moved the page from `/profile/notifications` to top-level `/notifications` per the issue contract; the old route is now a thin redirect so push-notification deep links and bookmarks don't 404. `public/sw.js` fallback URL updated. The feed is now grouped by calendar day with «امروز» / «دیروز» / Persian-localized full-date headers, courtesy of a new pure helper `components/notifications/groupByDay.ts` (8-test unit suite covers same-day collapse, day-boundary splits, and the relative-header path). The list region carries `aria-live="polite"` so screen readers narrate the unread-count change after mark-as-read fires. Mark-all-read action moved alongside the page to `app/(user)/notifications/actions.ts`. Files: `app/(user)/notifications/{page,actions}.ts(x)`, `app/(user)/profile/notifications/page.tsx`, `components/notifications/{NotificationsList.tsx,groupByDay.ts,groupByDay.test.ts}`, `components/profile/ProfileNav.tsx`, `public/sw.js`, `e2e/notifications.spec.ts`.
 - **2026-05-26** — Polished the review wizard after live QA: (1) the sheet was visibly wobbling on iOS when the keyboard appeared because `max-h-[93dvh]` reflowed mid-animation — switched to `svh` (small viewport height, stable across browser-chrome changes). (2) Gated the infinite `fab-pulse` halo on the submit button to only run when the form is actually submittable (`ready && !pending`) — the constant throb under the CTA was reading as the card vibrating. (3) Added a contextual hint in the action row: while recording, the counter slot reads «ضبط — برای پایان دوباره بزن» (pomegr); while processing, «در حال تبدیل صدا…» (mint). Plumbed via a new `onModeChange` callback on `VoiceDictateButton`. (4) Lowered the body minimum from 30 → 10 chars (both server validator + client progress bar) — 30 was too long a runway for the actual review tone people write. Files: `components/review/ReviewSheet.tsx`, `components/review/VoiceDictateButton.tsx`, `components/review/actions.ts`.
 - **2026-05-26** — Swapped voice-dictation backend from Web Speech API to Gemini 2.5 Flash (follow-up to #90). Chrome's `webkitSpeechRecognition` for `fa-IR` proxies audio to a Google STT endpoint that is unreachable from Iran (surfaced as the `network` error → "no internet" toast even when online). The button now records via `MediaRecorder` and POSTs the blob to a new `app/api/transcribe/route.ts` that forwards inline audio to Gemini and returns the transcript. Route is auth-gated, size-capped (≤1MB), and per-user rate-limited (10/min, in-memory). UX gains a third state ("processing") with a spinner; no streaming partials but accuracy on fa-IR is substantially better than Chrome's. New env var `GEMINI_API_KEY` (logged in `.env.local.example` + §3). E2E rewritten to shim `MediaRecorder` + intercept `/api/transcribe` via `page.route()`; 4 specs cover absent-API, happy path, multi-session stacking, and 503 error toast. Files: `app/api/transcribe/route.ts`, `components/review/VoiceDictateButton.tsx`, `components/review/VoiceDictateButton.test.ts`, `e2e/voice-dictation.spec.ts`, `.env.local.example`.

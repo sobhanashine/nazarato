@@ -52,3 +52,25 @@ Sobhan is the only developer, designer, and PM on this project.
 - Before shipping UI changes: verify in a browser, not just type-check
 - When corrected on the same thing twice: propose updating this file or writing a skill
 
+## Task tracking and completion notifications
+
+- Track each material user-requested task on the private Trello board
+  `Nazarato — 14-Day MVP`: https://trello.com/b/eHnJFMki. Internal research,
+  commands, and tool calls are steps inside a task, not separate cards.
+- A card may move to `Done` only after its acceptance criteria and relevant
+  verification pass. Use `Needs You` only for a real user decision or access
+  dependency, `Review` for a completed deliverable awaiting user acceptance,
+  and `Risks` for a tracked project risk rather than active work.
+- At each task's terminal outcome (`COMPLETED`, `BLOCKED`, `FAILED`, or
+  `NO_ACTION`), send exactly one plain-text completion email to the owner of
+  the authenticated Gmail connection. Do not hardcode a personal address in
+  the repository; resolve it from the connected Gmail profile.
+- Before sending, search Sent mail for the exact task subject and do not send
+  a duplicate. If delivery returns an uncertain result or times out, do not
+  retry automatically.
+- Use subject `Nazarato task — <STATUS> — <task title>`. Include the outcome,
+  changed files, checks, branch/commit/PR when applicable, Trello card URL,
+  remaining risks, and only the decisions or access still needed from the user.
+- Progress commentary, research updates, and internal subtasks do not trigger
+  email. If Trello or Gmail is unavailable, finish safe local work, report the
+  integration failure, and leave the task in the appropriate non-`Done` state.
