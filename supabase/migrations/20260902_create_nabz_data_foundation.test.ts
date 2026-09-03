@@ -16,6 +16,7 @@ describe("Nabz data-foundation migration", () => {
       "business_sources",
       "comparison_votes",
       "review_analyses",
+      "review_analysis_corrections",
       "taste_profiles",
     ]) {
       expect(migration).toContain(`create table if not exists public.${table}`);
@@ -23,7 +24,7 @@ describe("Nabz data-foundation migration", () => {
         `alter table public.${table} enable row level security`,
       );
     }
-    expect(migration).not.toMatch(/create policy[\s\S]+on public\.(business_sources|comparison_votes|review_analyses|taste_profiles)/i);
+    expect(migration).not.toMatch(/create policy[\s\S]+on public\.(business_sources|comparison_votes|review_analyses|review_analysis_corrections|taste_profiles)/i);
   });
 
   it("enforces quarantine, deduplication, and private model-version invariants", () => {
@@ -35,12 +36,16 @@ describe("Nabz data-foundation migration", () => {
     expect(migration).toContain("uq_comparison_votes_user_pair_window");
     expect(migration).toContain("uq_comparison_votes_session_pair_window");
     expect(migration).toContain("uq_review_analyses_active_review");
+    expect(migration).toContain("idx_review_analysis_corrections_evaluation");
+    expect(migration).toContain("model_output       jsonb not null");
+    expect(migration).toContain("human_label        jsonb not null");
     expect(migration).toContain("uq_taste_profiles_active_user");
   });
 
   it("has an explicit rollback for every added table and business column", () => {
     for (const table of [
       "taste_profiles",
+      "review_analysis_corrections",
       "review_analyses",
       "comparison_votes",
       "business_sources",

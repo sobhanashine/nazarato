@@ -67,6 +67,8 @@ worked.
   user or short-lived anonymous session, and timestamp.
 - `review_analyses`: versioned Persian normalization, aspect/sentiment output,
   evidence spans, confidence, issue cluster, and suspicious-pattern score.
+- `review_analysis_corrections`: retained model output and human replacement
+  labels for versioned evaluation; private under RLS.
 - `taste_profiles`: user-level dimension weights and evidence count; private to
   that user and never exposed to businesses.
 - Existing `businesses` and `reviews` remain the canonical entities. The first
@@ -177,6 +179,16 @@ businesses to be active and to have an approved `business_sources` row. Duplicat
 pair/scenario/day votes return an idempotent success response. The endpoint is not
 wired to the fictional UI; applying the migration and binding two or more truly
 publication-approved businesses remain the next integration gates.
+
+Current intelligence status (2026-09-03): the deterministic
+`nazarato-fa-rules/0.1.0` baseline normalizes Persian text, emits six aspect
+families plus sentiment, cites exact normalized-text spans, clusters negative
+issues, and flags suspicious patterns for human review without deletion. On a
+50-item explicitly synthetic development set—including 20 deliberately difficult
+out-of-lexicon comments—it records 66.0% sentiment accuracy, 92.73% aspect
+micro-F1, 78.0% issue-cluster accuracy, and 100% valid evidence spans. These are
+not pilot metrics. The method, dataset hash, limitations, and real-data gate are
+recorded in `docs/persian-intelligence-baseline.md`.
 
 ## Success evidence, not vanity metrics
 

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "evaluate:intelligence": "node --experimental-strip-types scripts/evaluate-persian-baseline.mts",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

@@ -3,6 +3,7 @@
 -- environment with real Nabz rows before running this file.
 
 drop table if exists public.taste_profiles cascade;
+drop table if exists public.review_analysis_corrections cascade;
 drop table if exists public.review_analyses cascade;
 drop table if exists public.comparison_votes cascade;
 drop table if exists public.business_sources cascade;

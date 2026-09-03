@@ -25,7 +25,7 @@ non-trivial task starts by reading this file and ends by updating it.
 | ---------------- | ---------------------------------------------------------------------------- |
 | `app/`           | App Router routes: `/`, `/search`, `/about`, `/contact`, `/categories`, `/terms`, `/privacy`, `/company/[slug]`, `/blog`, `/blog/[slug]`, the `(auth)` group (`/login`, `/login/verify`), and the `(user)` group (`/profile`, `/profile/reviews`). |
 | `components/`    | Grouped by role: `layout/`, `sections/`, `ui/`, `blog/`, `categories/`, `icons/`, `pwa/`. |
-| `lib/`           | Data layer + integrations. `lib/wp.ts` (WordPress client), `lib/supabase/` (service-role DB client), `lib/auth/` (signed-cookie sessions + phone-OTP).              |
+| `lib/`           | Data layer, integrations, and versioned product intelligence. `lib/intelligence/` contains the deterministic Persian baseline; `lib/wp.ts`, `lib/supabase/`, and `lib/auth/` own external content, DB, and session boundaries. |
 | `lib/data/`      | Static/sample data: `blog-posts`, `blog-taxonomies`, `categories`, `reviews`, `instagram-shops`. |
 | `design-system/` | Design tokens / system reference (`nazarato/`).                              |
 | `docs/`          | Long-form docs (this file, plus `headless-wordpress-blog.md`, `pages-master.md`). |
@@ -35,7 +35,7 @@ non-trivial task starts by reading this file and ends by updating it.
 ### Locale & layout direction
 
 - App is **RTL Farsi**: `<html lang="fa" dir="rtl">` (`app/layout.tsx:52`).
-- Font: **Vazirmatn** (Arabic subset, weights 300–900) via `next/font/google` (`app/layout.tsx:8`).
+- Font: **Vazirmatn Variable** is self-hosted through `@fontsource-variable/vazirmatn`; builds do not depend on Google Fonts (`app/layout.tsx`).
 - All UI copy is Persian by default.
 
 ### PWA & Push Notifications
@@ -95,6 +95,10 @@ Set globally in `next.config.ts:31-40`:
   source permission is still unknown. The current local snapshot has 37 pending
   café/restaurant candidates and three exact OSM name matches; ratings and review
   counts are excluded and no match is auto-merged.
+- `lib/intelligence/` implements the no-provider Persian customer-voice baseline
+  `nazarato-fa-rules/0.1.0`. Its synthetic development evaluation is reproducible
+  through `npm run evaluate:intelligence`; the honest pilot metric remains gated
+  on consented, independently labelled real feedback.
 
 ---
 
@@ -207,6 +211,17 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-03** — Added the first versioned Persian customer-voice baseline:
+  deterministic normalization, six aspect families, sentiment, exact evidence
+  spans, confidence, issue clustering, non-destructive suspicious-pattern flags,
+  and retained human-correction events. Recorded an intentionally challenging
+  50-item synthetic development evaluation (66.0% sentiment accuracy, 92.73%
+  aspect micro-F1, 78.0% issue-cluster accuracy, 100% valid spans) while keeping
+  the real pilot metric explicitly open. Extended the unapplied, private Nabz
+  schema for correction history. Files: `lib/intelligence/`,
+  `data/evaluation/persian-customer-voice.synthetic.json`,
+  `scripts/evaluate-persian-baseline.mts`, `package.json`,
+  `supabase/{migrations,rollbacks}/`, `docs/{persian-intelligence-baseline,data-model,nabz-rasht-mvp,PROJECT}.md`.
 - **2026-09-03** — Added the secure server boundary for real Nabz comparison
   votes without connecting fictional demo records: `POST /api/nabz/votes`
   enforces exact-origin JSON, a 4 KiB body cap, allowlisted Rasht scenarios,

@@ -190,6 +190,34 @@ create index if not exists idx_review_analyses_issue_cluster
   on public.review_analyses (issue_cluster, analyzed_at desc)
   where is_active and issue_cluster is not null;
 
+-- Human labels are separate append-only application events. They retain the
+-- model output that was reviewed, so later evaluation cannot silently compare a
+-- correction against a newer model result. The original review text is not
+-- duplicated here.
+create table if not exists public.review_analysis_corrections (
+  id                 uuid primary key default gen_random_uuid(),
+  review_id          uuid not null,
+  model_id           text not null,
+  model_version      text not null,
+  reviewer_id        uuid references public.users(id) on delete set null,
+  model_output       jsonb not null check (jsonb_typeof(model_output) = 'object'),
+  human_label        jsonb not null check (jsonb_typeof(human_label) = 'object'),
+  note               text not null default '' check (char_length(note) <= 1000),
+  corrected_at       timestamptz not null default now(),
+  foreign key (review_id, model_id, model_version)
+    references public.review_analyses(review_id, model_id, model_version)
+    on delete cascade
+);
+
+create index if not exists idx_review_analysis_corrections_evaluation
+  on public.review_analysis_corrections (
+    model_id,
+    model_version,
+    corrected_at desc
+  );
+create index if not exists idx_review_analysis_corrections_review
+  on public.review_analysis_corrections (review_id, corrected_at desc);
+
 -- 5. Private per-user preference weights. Only server-side access is permitted.
 create table if not exists public.taste_profiles (
   user_id            uuid not null references public.users(id) on delete cascade,
@@ -214,7 +242,8 @@ create index if not exists idx_taste_profiles_model
 alter table public.business_sources enable row level security;
 alter table public.comparison_votes enable row level security;
 alter table public.review_analyses enable row level security;
+alter table public.review_analysis_corrections enable row level security;
 alter table public.taste_profiles enable row level security;
 
--- Deliberately no anon/authenticated policies for these four tables.
+-- Deliberately no anon/authenticated policies for these five tables.
 -- The service-role-backed server layer is the only read/write path.

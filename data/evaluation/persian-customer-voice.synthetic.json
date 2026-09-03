@@ -1,0 +1,360 @@
+{
+  "metadata": {
+    "kind": "synthetic-development",
+    "language": "fa",
+    "createdAt": "2026-09-03",
+    "description": "Fifty hand-written fictional Persian restaurant and cafe comments, including twenty deliberately difficult out-of-lexicon examples, for deterministic development evaluation. This is not user, scraped, pilot, or production data."
+  },
+  "reviews": [
+    {
+      "id": "syn-fa-001",
+      "text": "طعم غذا عالی بود.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["taste"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-002",
+      "text": "قهوه خوشمزه و فضا دنج بود.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["taste", "atmosphere"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-003",
+      "text": "محیط آرام و همه جا تمیز بود.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["atmosphere", "cleanliness"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-004",
+      "text": "قیمت اقتصادی بود و ارزش داشت.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["value"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-005",
+      "text": "سفارش سریع رسید و برخورد پرسنل خیلی خوب بود.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["wait_time", "service"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-006",
+      "text": "بد نبود و راضی بودم.",
+      "expectedSentiment": "positive",
+      "expectedAspects": [],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-007",
+      "text": "امروز عصر آنجا بودیم.",
+      "expectedSentiment": "neutral",
+      "expectedAspects": [],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-008",
+      "text": "سه میز در سالن بود.",
+      "expectedSentiment": "neutral",
+      "expectedAspects": [],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-009",
+      "text": "غذا شور و سرد بود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["taste"],
+      "expectedIssueCluster": "taste_quality"
+    },
+    {
+      "id": "syn-fa-010",
+      "text": "طعم غذا بی‌مزه بود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["taste"],
+      "expectedIssueCluster": "taste_quality"
+    },
+    {
+      "id": "syn-fa-011",
+      "text": "ظرف‌ها کثیف بود و بهداشت ضعیف بود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["cleanliness"],
+      "expectedIssueCluster": "cleanliness_hygiene"
+    },
+    {
+      "id": "syn-fa-012",
+      "text": "قیمت خیلی گرون بود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["value"],
+      "expectedIssueCluster": "price_value"
+    },
+    {
+      "id": "syn-fa-013",
+      "text": "برای سفارش خیلی معطل شدیم.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["wait_time"],
+      "expectedIssueCluster": "wait_time"
+    },
+    {
+      "id": "syn-fa-014",
+      "text": "سفارش خیلی دیر رسید.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["wait_time"],
+      "expectedIssueCluster": "wait_time"
+    },
+    {
+      "id": "syn-fa-015",
+      "text": "برخورد خوب نبود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["service"],
+      "expectedIssueCluster": "service_experience"
+    },
+    {
+      "id": "syn-fa-016",
+      "text": "پرسنل بی‌ادب بودند.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["service"],
+      "expectedIssueCluster": "service_experience"
+    },
+    {
+      "id": "syn-fa-017",
+      "text": "فضا شلوغ بود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["atmosphere"],
+      "expectedIssueCluster": "atmosphere_comfort"
+    },
+    {
+      "id": "syn-fa-018",
+      "text": "همه چیز افتضاح بود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": [],
+      "expectedIssueCluster": "general_dissatisfaction"
+    },
+    {
+      "id": "syn-fa-019",
+      "text": "طعم غذا عالی بود ولی خیلی دیر آوردند و قیمت هم گرون بود.",
+      "expectedSentiment": "mixed",
+      "expectedAspects": ["taste", "wait_time", "value"],
+      "expectedIssueCluster": "wait_time"
+    },
+    {
+      "id": "syn-fa-020",
+      "text": "قهوه خوشمزه بود ولی میزها کثیف بودند.",
+      "expectedSentiment": "mixed",
+      "expectedAspects": ["taste", "cleanliness"],
+      "expectedIssueCluster": "cleanliness_hygiene"
+    },
+    {
+      "id": "syn-fa-021",
+      "text": "فضا دنج بود اما قیمت گران بود.",
+      "expectedSentiment": "mixed",
+      "expectedAspects": ["atmosphere", "value"],
+      "expectedIssueCluster": "price_value"
+    },
+    {
+      "id": "syn-fa-022",
+      "text": "سرویس سریع بود ولی برخورد بد بود.",
+      "expectedSentiment": "mixed",
+      "expectedAspects": ["wait_time", "service"],
+      "expectedIssueCluster": "service_experience"
+    },
+    {
+      "id": "syn-fa-023",
+      "text": "غذا خوب نبود ولی محیط آرام بود.",
+      "expectedSentiment": "mixed",
+      "expectedAspects": ["taste", "atmosphere"],
+      "expectedIssueCluster": "taste_quality"
+    },
+    {
+      "id": "syn-fa-024",
+      "text": "قیمت مناسب نبود اما قهوه عالی بود.",
+      "expectedSentiment": "mixed",
+      "expectedAspects": ["value", "taste"],
+      "expectedIssueCluster": "price_value"
+    },
+    {
+      "id": "syn-fa-025",
+      "text": "كيفيت غذا عالی بود و قيمت اقتصادی بود.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["taste", "value"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-026",
+      "text": "طعم خوب بود ولی سرویس کند بود.",
+      "expectedSentiment": "mixed",
+      "expectedAspects": ["taste", "service", "wait_time"],
+      "expectedIssueCluster": "wait_time"
+    },
+    {
+      "id": "syn-fa-027",
+      "text": "راضی نبودم، خیلی دیر رسید.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["wait_time"],
+      "expectedIssueCluster": "wait_time"
+    },
+    {
+      "id": "syn-fa-028",
+      "text": "غذا بی‌کیفیت و قیمت گران بود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["taste", "value"],
+      "expectedIssueCluster": "taste_quality"
+    },
+    {
+      "id": "syn-fa-029",
+      "text": "نظافت خوب بود.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["cleanliness"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-030",
+      "text": "موسیقی خوب بود و محیط آرام بود.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["atmosphere"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-031",
+      "text": "غذا حرف نداشت.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["taste"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-032",
+      "text": "اصلا به پولش نمی‌ارزید.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["value"],
+      "expectedIssueCluster": "price_value"
+    },
+    {
+      "id": "syn-fa-033",
+      "text": "یک ساعت منتظر موندیم.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["wait_time"],
+      "expectedIssueCluster": "wait_time"
+    },
+    {
+      "id": "syn-fa-034",
+      "text": "پرسنل انگار حوصله نداشتن.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["service"],
+      "expectedIssueCluster": "service_experience"
+    },
+    {
+      "id": "syn-fa-035",
+      "text": "سرویس معمولی بود.",
+      "expectedSentiment": "neutral",
+      "expectedAspects": ["service"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-036",
+      "text": "فوق‌العاده خوش‌طعم بود.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["taste"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-037",
+      "text": "دیگه پامو اونجا نمی‌ذارم.",
+      "expectedSentiment": "negative",
+      "expectedAspects": [],
+      "expectedIssueCluster": "general_dissatisfaction"
+    },
+    {
+      "id": "syn-fa-038",
+      "text": "هم قیمتش منطقی بود هم حجمش.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["value"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-039",
+      "text": "سی دقیقه طول کشید تا سفارش بیاد.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["wait_time"],
+      "expectedIssueCluster": "wait_time"
+    },
+    {
+      "id": "syn-fa-040",
+      "text": "همه چی قابل قبول بود.",
+      "expectedSentiment": "positive",
+      "expectedAspects": [],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-041",
+      "text": "بد نیست ولی دوباره نمیام.",
+      "expectedSentiment": "negative",
+      "expectedAspects": [],
+      "expectedIssueCluster": "general_dissatisfaction"
+    },
+    {
+      "id": "syn-fa-042",
+      "text": "مزه بد نبود اما قیمتش واقعا بالا بود.",
+      "expectedSentiment": "mixed",
+      "expectedAspects": ["taste", "value"],
+      "expectedIssueCluster": "price_value"
+    },
+    {
+      "id": "syn-fa-043",
+      "text": "فضا زیادی پر سر و صدا بود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["atmosphere"],
+      "expectedIssueCluster": "atmosphere_comfort"
+    },
+    {
+      "id": "syn-fa-044",
+      "text": "سرویس برق‌آسا بود.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["wait_time"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-045",
+      "text": "میزها چسبناک بود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["cleanliness"],
+      "expectedIssueCluster": "cleanliness_hygiene"
+    },
+    {
+      "id": "syn-fa-046",
+      "text": "بوی بدی می‌داد.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["cleanliness"],
+      "expectedIssueCluster": "cleanliness_hygiene"
+    },
+    {
+      "id": "syn-fa-047",
+      "text": "قهوه آبکی بود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["taste"],
+      "expectedIssueCluster": "taste_quality"
+    },
+    {
+      "id": "syn-fa-048",
+      "text": "خرجش نسبت به کیفیت زیاد بود.",
+      "expectedSentiment": "negative",
+      "expectedAspects": ["value"],
+      "expectedIssueCluster": "price_value"
+    },
+    {
+      "id": "syn-fa-049",
+      "text": "فضا اوکی بود.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["atmosphere"],
+      "expectedIssueCluster": null
+    },
+    {
+      "id": "syn-fa-050",
+      "text": "پرسنل محترم بودند.",
+      "expectedSentiment": "positive",
+      "expectedAspects": ["service"],
+      "expectedIssueCluster": null
+    }
+  ]
+}

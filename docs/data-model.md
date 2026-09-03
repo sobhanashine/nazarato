@@ -155,6 +155,7 @@ database was changed because the required environment access is not configured.
 | `business_sources` | `id`, `business_id`, `source_type`, `source_ref`, `permission_basis`, `license_name`, `license_url`, `attribution_text`, `field_payload`, `payload_hash`, `captured_at`, `status` | `UNIQUE (business_id, payload_hash)`; unknown permission stays `quarantined`; open data requires attribution metadata | MVP-NABZ |
 | `comparison_votes` | `id`, `user_id`, `anonymous_session_id`, `city_slug`, `scenario_slug`, `winner_business_id`, `loser_business_id`, `reason_text`, `created_at` | winner ≠ loser; one vote per normalized pair/scenario/session window | MVP-NABZ |
 | `review_analyses` | `review_id`, `normalized_text`, `aspect_scores`, `sentiment`, `evidence_spans`, `issue_cluster`, `suspicious_score`, `model_id`, `model_version`, `confidence`, `human_status`, `analyzed_at` | one active result per review/model version; original review is immutable input evidence | MVP-NABZ |
+| `review_analysis_corrections` | `review_id`, `model_id`, `model_version`, `reviewer_id`, `model_output`, `human_label`, `note`, `corrected_at` | each event references the exact analysis version it corrected; private under RLS | MVP-NABZ |
 | `taste_profiles` | `user_id`, `dimension_weights`, `evidence_count`, `model_id`, `model_version`, `updated_at` | one private profile per user/model version; never exposed to business owners | MVP-NABZ |
 
 - Anonymous Duel sessions use a rotating opaque identifier and are not reviews.
@@ -163,6 +164,9 @@ database was changed because the required environment access is not configured.
   short-lived server-side HMAC/rate-limit key that is not exposed in product data.
 - AI output never overwrites `reviews.body`; it is versioned, confidence-bearing,
   and traceable to evidence spans so a human correction can be evaluated.
+- Human labels are separate correction events that retain both the reviewed model
+  output and the replacement label. This prevents a later model version from
+  silently changing the evaluation target.
 - `business_sources.field_payload` records only reusable factual fields and their
   provenance. It is not a place to retain copied third-party descriptions,
   images, ratings, or reviews.
