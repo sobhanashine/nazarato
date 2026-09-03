@@ -316,8 +316,8 @@ Each entry is structured the same way so it scans fast:
 
 #### Claim business — `/company/[slug]/claim` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P1 &nbsp;·&nbsp; auth
 - **Purpose**: Business owner asserts ownership of an unclaimed listing.
-- **Flow**: identity (phone OTP already done) → choose proof type (work email on the business domain / document upload / other + notes) → submit → admin queue (`/admin/claims`) → on approve, `tr_business_claim_approved` trigger flips `businesses.claimed=true` and sets `owner_id`; on reject, the metro reason is shown back on the form.
-- **Storage**: proof files go to private bucket `claim-proofs` (5 MB cap, JPG/PNG/WebP/PDF). The DB `proof_url` is nulled and the file is deleted on either decision — same private-proof pattern as review verification.
+- **Flow**: identity (phone OTP already done) → choose proof type (work email on the business domain / document upload / manual appeal + notes) → `pending + manual_review` → admin queue (`/admin/claims`) → explicit evidence review → atomic `verified + approved` → `tr_business_claim_approved` flips `businesses.claimed=true` and sets `owner_id`. Domain email is manually inspected in this pilot; the UI does not promise automated email verification.
+- **Storage**: proof files go to private bucket `claim-proofs` (5 MB cap, server-checked JPEG/PNG/WebP/PDF signature). Admin requests a five-minute signed URL by Claim ID, not a browser-supplied storage path. The file is deleted on either decision; a failed deletion retains the private path and writes an audit event for cleanup.
 - **Refusals**: already-claimed slug → redirect to `/company/[slug]`; a pending claim by the same user → form is replaced with an "in review" card. Unique partial index `(business_id, user_id) where status='pending'` enforces it at the DB level.
 
 #### Instagram-shop profile — `/shop/[handle]` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0 &nbsp;·&nbsp; public
@@ -379,7 +379,8 @@ Each entry is structured the same way so it scans fast:
 #### Verify OTP — `/login/verify` &nbsp;·&nbsp; ✅ built &nbsp;·&nbsp; P0
 - **Layout**: 6-digit code input (auto-tab, paste-supported, `inputMode="numeric"` for keyboard — UX rule `input-type-keyboard`). Resend countdown timer. "تغییر شماره" link back to `/login`.
 - **State**: idle / verifying / wrong code / expired / locked-out. Auto-submit on 6th digit.
-- **Submit**: POST `/api/auth/otp/verify` → set HTTP-only JWT cookie → redirect to `?next` or `/`.
+- **Submit**: Server Action verifies a challenge-bound HMAC digest → set HTTP-only signed cookie → redirect to `?next` or `/`. Production delivery uses Kavenegar verify/lookup and fails closed without credentials; development alone exposes a fixed six-digit code.
+- **Security**: five-minute explicit expiry, five attempts retained in the signed challenge, replay rejection, 60-second resend cooldown, and a bounded three-send/15-minute pilot limiter. Move the send limiter to shared storage before multi-instance scale.
 - **Edge**: prefer `useFormStatus` / form actions over manual fetch; works without JS.
 
 #### Sign-up — `/signup` &nbsp;·&nbsp; (likely merged with `/login` since OTP makes them the same)

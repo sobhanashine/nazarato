@@ -15,16 +15,15 @@ import { getSession } from "@/lib/auth/session";
 import { getUserById } from "@/lib/data/users";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { sendPushToUsers } from "@/lib/push/server";
+import {
+  CLAIM_NOTES_MAX,
+  CLAIM_PROOF_TYPES,
+  inspectClaimProof,
+  validateClaimContactPhone,
+  validateClaimEmail,
+} from "./claim-validation";
 
-const NOTES_MAX = 1000;
-const PROOF_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
-const PROOF_MIME = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "application/pdf",
-];
-const PROOF_TYPES = ["domain_email", "document", "other"] as const;
+const MAX_OPEN_CLAIMS_PER_USER = 5;
 
 export type ClaimField =
   | "proofType"
@@ -44,15 +43,6 @@ function asString(v: FormDataEntryValue | null): string {
   return typeof v === "string" ? v.trim() : "";
 }
 
-/**
- * Email validation — intentionally loose (RFC-compliant regex would be huge).
- * We just want "looks like an email with a domain"; the real proof is whether
- * the address actually belongs to the business, which an admin verifies later.
- */
-function looksLikeEmail(s: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
-}
-
 export async function submitClaim(
   _prev: SubmitClaimState,
   formData: FormData,
@@ -63,7 +53,7 @@ export async function submitClaim(
   }
 
   const slug = asString(formData.get("slug"));
-  if (!slug) {
+  if (!/^[a-z0-9][a-z0-9_-]{0,119}$/i.test(slug)) {
     return { ok: false, error: "کسب‌وکار مشخص نیست." };
   }
 
@@ -90,16 +80,19 @@ export async function submitClaim(
   const fieldErrors: Partial<Record<ClaimField, string>> = {};
 
   const proofType = asString(formData.get("proofType"));
-  if (!(PROOF_TYPES as readonly string[]).includes(proofType)) {
+  if (!(CLAIM_PROOF_TYPES as readonly string[]).includes(proofType)) {
     fieldErrors.proofType = "نوع مدرک را انتخاب کن.";
   }
 
-  const proofEmail = asString(formData.get("proofEmail"));
+  let proofEmail: string | null = null;
   if (proofType === "domain_email") {
-    if (!proofEmail) {
+    const rawEmail = asString(formData.get("proofEmail"));
+    if (!rawEmail) {
       fieldErrors.proofEmail = "ایمیل کاری روی دامنه‌ی کسب‌وکار را وارد کن.";
-    } else if (!looksLikeEmail(proofEmail)) {
-      fieldErrors.proofEmail = "ایمیل وارد شده معتبر نیست.";
+    } else {
+      const result = validateClaimEmail(rawEmail);
+      if (result.ok) proofEmail = result.email;
+      else fieldErrors.proofEmail = result.error;
     }
   }
 
@@ -108,23 +101,22 @@ export async function submitClaim(
   if (proofType === "document" || proofType === "other") {
     if (!hasProof) {
       fieldErrors.proof = "بارگذاری مدرک الزامی است.";
-    } else if (proofFile.size > PROOF_MAX_BYTES) {
-      fieldErrors.proof = "حجم فایل باید کمتر از ۵ مگابایت باشد.";
-    } else if (!PROOF_MIME.includes(proofFile.type)) {
-      fieldErrors.proof = "فقط تصویر (JPG/PNG/WebP) یا PDF پذیرفته می‌شود.";
     }
   }
 
-  const contactPhone = asString(formData.get("contactPhone"));
-  if (!contactPhone) {
+  const rawContactPhone = asString(formData.get("contactPhone"));
+  let contactPhone: string | null = null;
+  if (!rawContactPhone) {
     fieldErrors.contactPhone = "شماره تماس را وارد کن.";
-  } else if (contactPhone.length < 8) {
-    fieldErrors.contactPhone = "شماره تماس معتبر نیست.";
+  } else {
+    const result = validateClaimContactPhone(rawContactPhone);
+    if (result.ok) contactPhone = result.phone;
+    else fieldErrors.contactPhone = result.error;
   }
 
   const notes = asString(formData.get("notes"));
-  if (notes.length > NOTES_MAX) {
-    fieldErrors.notes = `توضیحات حداکثر ${NOTES_MAX.toLocaleString("fa-IR")} کاراکتر است.`;
+  if (notes.length > CLAIM_NOTES_MAX) {
+    fieldErrors.notes = `توضیحات حداکثر ${CLAIM_NOTES_MAX.toLocaleString("fa-IR")} کاراکتر است.`;
   }
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -147,19 +139,40 @@ export async function submitClaim(
     };
   }
 
+  const { count: openClaimCount, error: openClaimError } = await supabase
+    .from("business_claims")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", session.id)
+    .eq("status", "pending");
+  if (openClaimError) {
+    console.error("[claim] pending-claim count failed", {
+      userId: session.id,
+      error: openClaimError.message,
+    });
+    return { ok: false, error: "امکان بررسی سقف درخواست‌ها وجود ندارد." };
+  }
+  if ((openClaimCount ?? 0) >= MAX_OPEN_CLAIMS_PER_USER) {
+    return {
+      ok: false,
+      error: "حداکثر ۵ درخواست باز مجاز است؛ ابتدا منتظر نتیجه‌ی درخواست‌های قبلی بمان.",
+    };
+  }
+
   // 4 — Upload proof to the private bucket if provided.
   let proofUrl: string | null = null;
   if (hasProof && (proofType === "document" || proofType === "other")) {
     const file = proofFile as File;
-    const ext = file.name.split(".").pop() || "bin";
-    const filePath = `${session.id}/${crypto.randomUUID()}.${ext}`;
 
     try {
-      const buffer = Buffer.from(await file.arrayBuffer());
+      const inspected = await inspectClaimProof(file);
+      if (!inspected.ok) {
+        return { ok: false, fieldErrors: { proof: inspected.error } };
+      }
+      const filePath = `${session.id}/${crypto.randomUUID()}.${inspected.extension}`;
       const { error: uploadError } = await supabase.storage
         .from("claim-proofs")
-        .upload(filePath, buffer, {
-          contentType: file.type,
+        .upload(filePath, inspected.buffer, {
+          contentType: inspected.contentType,
           cacheControl: "3600",
           upsert: false,
         });
@@ -179,16 +192,19 @@ export async function submitClaim(
   }
 
   // 5 — Insert the pending claim row.
-  const { error: insertError } = await supabase.from("business_claims").insert({
-    business_id: businessRow.id,
-    user_id: session.id,
-    proof_type: proofType,
-    proof_email: proofType === "domain_email" ? proofEmail : null,
-    proof_url: proofUrl,
-    contact_phone: contactPhone,
-    notes: notes || null,
-    status: "pending",
-  });
+  const { error: insertError } = await supabase
+    .from("business_claims")
+    .insert({
+      business_id: businessRow.id,
+      user_id: session.id,
+      proof_type: proofType,
+      proof_email: proofType === "domain_email" ? proofEmail : null,
+      proof_url: proofUrl,
+      contact_phone: contactPhone,
+      notes: notes || null,
+      status: "pending",
+      verification_status: "manual_review",
+    });
 
   if (insertError) {
     if (proofUrl) {

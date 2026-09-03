@@ -46,7 +46,7 @@ components/blog/PostContent.tsx  ← renders WP HTML via .wp-content
 | `components/blog/PostContent.tsx` | Renders blocks; new `html` case uses `dangerouslySetInnerHTML`. |
 | `app/globals.css` | `.wp-content` typography (headings, lists, blockquote, images, code). |
 | `next.config.ts` | `images.remotePatterns` derived from `WP_API_URL`. |
-| `.env.local.example` | Documents `WP_API_URL` and `WP_REVALIDATE_SECONDS`. |
+| `.env.example` | Documents `WP_API_URL` and `WP_REVALIDATE_SECONDS`. |
 
 ---
 

@@ -69,7 +69,6 @@ export async function getUserByPhone(phone: string): Promise<UserRow | null> {
 
   if (error) {
     console.error("[users] getUserByPhone failed", {
-      phone,
       error: error.message,
     });
     throw new Error("user lookup failed");
@@ -165,7 +164,6 @@ export async function createUser(input: {
 
   if (error) {
     console.error("[users] createUser failed", {
-      phone: input.phone,
       error: error.message,
     });
     throw new Error("user creation failed");
@@ -263,5 +261,4 @@ export async function getUserByUsername(username: string): Promise<ProfileUser |
   
   return asProfileUser(data);
 }
-
 

@@ -25,7 +25,7 @@ non-trivial task starts by reading this file and ends by updating it.
 | ---------------- | ---------------------------------------------------------------------------- |
 | `app/`           | App Router routes: `/`, `/search`, `/about`, `/contact`, `/categories`, `/terms`, `/privacy`, `/company/[slug]`, `/blog`, `/blog/[slug]`, the `(auth)` group (`/login`, `/login/verify`), and the `(user)` group (`/profile`, `/profile/reviews`). |
 | `components/`    | Grouped by role: `layout/`, `sections/`, `ui/`, `blog/`, `categories/`, `icons/`, `pwa/`. |
-| `lib/`           | Data layer, integrations, and versioned product intelligence. `lib/intelligence/` contains the deterministic Persian baseline; `lib/wp.ts`, `lib/supabase/`, and `lib/auth/` own external content, DB, and session boundaries. |
+| `lib/`           | Data layer, integrations, security audit, and versioned product intelligence. `lib/intelligence/` contains the deterministic Persian baseline; `lib/wp.ts`, `lib/supabase/`, `lib/auth/`, and `lib/security/` own external content, DB, auth, and audit boundaries. |
 | `lib/data/`      | Static/sample data: `blog-posts`, `blog-taxonomies`, `categories`, `reviews`, `instagram-shops`. |
 | `design-system/` | Design tokens / system reference (`nazarato/`).                              |
 | `docs/`          | Long-form docs (this file, plus `headless-wordpress-blog.md`, `pages-master.md`). |
@@ -99,6 +99,12 @@ Set globally in `next.config.ts:31-40`:
   `nazarato-fa-rules/0.1.0`. Its synthetic development evaluation is reproducible
   through `npm run evaluate:intelligence`; the honest pilot metric remains gated
   on consented, independently labelled real feedback.
+- Claim/OTP hardening is authored in
+  `supabase/migrations/20260903_harden_claim_otp_security.sql` and documented in
+  `docs/claim-verification-pilot.md`: production codes are random and HMAC-bound,
+  Kavenegar delivery fails closed, claim proof bytes are signature-checked, and
+  approval requires verified ownership with a private audit trail. The migration
+  is not remotely applied and the real-owner pilot is still open.
 
 ---
 
@@ -185,20 +191,22 @@ Set globally in `next.config.ts:31-40`:
   Without `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, `next build`
   stops on those legacy pages. Configure a real development project before the
   persistence and deployment gates; do not commit the values.
-- **Dependency security update.** `npm audit --omit=dev` on 2026-09-02 reports
-  four high-severity production findings through Next.js 16.2.6 and its
-  transitive dependencies. The audit recommends Next.js 16.3.4. Upgrade and
-  rerun the full check suite before a public deployment.
+- **Dependency security update.** `npm audit --omit=dev` on 2026-09-03 reports
+  four high-severity production package findings in `nanoid`, Next.js 16.2.6,
+  and Next's `postcss`/`sharp` dependencies. The full fix recommends Next.js
+  16.3.4. Upgrade and rerun the full check suite before a public deployment.
 - **WP_API_URL** must be set in the deployment env or `lib/wp.ts` calls will
   fail. Not yet documented in a `.env.example`.
-- **Web Push (VAPID) keys** must be generated and set in the deployment environment (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) for Web Push notifications to function. See `.env.local.example` for details.
+- **Web Push (VAPID) keys** must be generated and set in the deployment environment (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) for Web Push notifications to function. See `.env.example` for details.
 - **`GEMINI_API_KEY`** must be set in the deployment env for `app/api/transcribe/route.ts` (voice dictation on the `ReviewSheet` write step). Free tier covers MVP volumes. When unset, the route returns 503 and the mic surfaces a Persian toast; the button itself still renders.
-- **Auth — remaining wiring.** `/login` works end-to-end in dev. Still open:
-  (1) OTP delivery is a static dev code (`123456`) — wire Kavenegar in
-  `lib/auth/otp.ts` `sendOtp` once SMS credit is available; (2) sessions are
-  HMAC-signed cookies, a deliberate placeholder — migrate to Supabase Auth
-  later (keep `getSession`/`setSession`/`clearSession` stable). Deployment
-  note: run all migrations under `supabase/migrations/` on every new Supabase environment.
+- **Auth / Claim — live pilot gate.** `/login` uses a visible fixed code only in
+  development; production generates a random code and has a Kavenegar
+  verify/lookup provider, but live receipt still needs SMS credit, an approved
+  template, and credentials. Apply the unapplied claim-security migration to a
+  backed-up Supabase project and complete one real Rasht owner flow before calling
+  Card 08 done. The send limiter is single-process for this pilot and must move to
+  Redis/Postgres before multi-instance scale. Sessions remain HMAC-signed cookies,
+  a deliberate placeholder for later Supabase Auth.
 - **Contact form delivery.** `app/contact/actions.ts` validates and logs but does not yet send email / write to DB. Wire to a transactional provider (or a `contact_messages` table) before launch.
 - **Pre-launch open routes.** `/profile/edit`, `/settings/security`, `/help`, `/admin` (overview), `/admin/reports`, `/admin/businesses`, `/admin/users` are still 📋. See `docs/journey-of-nazarato.md` for the prioritized launch backlog.
 
@@ -211,6 +219,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-03** — Hardened the pilot owner path: OTP codes are challenge-bound, expiring and replay-resistant with a fail-closed Kavenegar provider; claim inputs, file signatures, decision races, proof access/cleanup and verified-approval invariants are guarded; private audit and rollback migrations plus the manual-review playbook are included. The remote migration, SMS credentials and real-owner acceptance remain open. Files: `.env.example`, `lib/auth/`, `lib/security/`, `app/(auth)/login/`, `app/company/[slug]/claim/`, `app/(admin)/admin/claims/`, `supabase/{migrations,rollbacks}/`, `docs/claim-verification-pilot.md`.
 - **2026-09-03** — Upgraded the fictional Nabz result into an evidence-bearing
   Taste Graph and configurable `کجابریم؟` concierge. Scenario-aware Duel weights
   now cite the exact choices that shaped each preference; occasion, budget,

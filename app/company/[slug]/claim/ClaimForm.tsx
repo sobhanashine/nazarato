@@ -14,7 +14,7 @@ const PROOF_OPTIONS = [
   {
     value: "domain_email",
     label: "ایمیل کاری روی دامنه‌ی کسب‌وکار",
-    hint: "مثال: yourname@yourcompany.ir — همان دامنه‌ی سایت رسمی.",
+    hint: "مثال: yourname@yourcompany.ir — تیم نظراتو دامنه و ارتباط شما را بررسی می‌کند.",
   },
   {
     value: "document",
@@ -23,8 +23,8 @@ const PROOF_OPTIONS = [
   },
   {
     value: "other",
-    label: "روش دیگر",
-    hint: "اگر هیچ‌کدام مناسب نیست، توضیحت را در فیلد یادداشت بنویس و مدرک پیوست کن.",
+    label: "بررسی دستی یا اعتراض",
+    hint: "اگر روش‌های بالا مناسب نیست، توضیح و مدرک جایگزین بفرست تا پرونده دستی بررسی شود.",
   },
 ] as const;
 
@@ -82,6 +82,15 @@ export function ClaimForm({
 
   return (
     <div className={`${GLASS} p-6 sm:p-8`}>
+      <div className="mb-6 rounded-xl border border-mint/25 bg-mint/[0.06] p-4">
+        <p className="text-[0.84rem] font-black text-mint">
+          مالکیت فقط بعد از بررسی مدرک فعال می‌شود
+        </p>
+        <p className="mt-1 text-[0.78rem] leading-[1.9] text-muted">
+          در نسخه‌ی پایلوت، همه‌ی روش‌ها توسط بازبین نظراتو کنترل می‌شوند. ثبت
+          فرم به‌تنهایی دسترسی مدیریت ایجاد نمی‌کند.
+        </p>
+      </div>
       {previousRejection && (
         <div className="mb-5 rounded-xl border border-pomegr/40 bg-pomegr/[0.06] p-4">
           <p className="text-[0.82rem] font-bold text-pomegr">
@@ -158,8 +167,8 @@ export function ClaimForm({
               <p className={ERR_TEXT}>{fe.proofEmail}</p>
             ) : (
               <p className={HINT}>
-                به این ایمیل یک پیام تأیید می‌فرستیم تا آدرس واقعی بودنش را
-                بررسی کنیم.
+                دامنه‌ی ایمیل و ارتباط آن با صفحه‌ی رسمی کسب‌وکار در بازبینی
+                دستی کنترل می‌شود؛ فعلاً ایمیل خودکار ارسال نمی‌شود.
               </p>
             )}
           </div>
@@ -266,7 +275,7 @@ export function ClaimForm({
             disabled={pending}
             className={`${BTN_PRIMARY} w-full justify-center px-6 py-3 text-[0.92rem] sm:w-auto sm:py-2.5 disabled:opacity-60`}
           >
-            {pending ? "در حال ارسال..." : "ثبت درخواست"}
+            {pending ? "در حال ارسال..." : "ارسال برای بررسی مالکیت"}
           </button>
           <p className="text-[12px] leading-[1.9] text-muted">
             با ثبت درخواست، تأیید می‌کنی که مدرک ارائه‌شده واقعی است و در صورت

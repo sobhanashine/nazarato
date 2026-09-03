@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
-import { DEV_OTP, formatPhone } from "@/lib/auth/otp";
+import { formatPhone, getDevelopmentOtpCode } from "@/lib/auth/otp";
 import { getOtpChallenge, getSession } from "@/lib/auth/session";
 import { VerifyForm } from "./VerifyForm";
 
@@ -55,7 +55,9 @@ export default async function VerifyPage({
     <VerifyForm
       phone={formatPhone(challenge.phone)}
       next={rawNext}
-      devCode={process.env.NODE_ENV !== "production" ? DEV_OTP : null}
+      devCode={
+        process.env.NODE_ENV !== "production" ? getDevelopmentOtpCode() : null
+      }
     />
   );
 }

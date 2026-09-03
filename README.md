@@ -28,11 +28,13 @@ The UI is **RTL Persian** (`<html lang="fa" dir="rtl">`), Vazirmatn font, Persia
 
 ```bash
 npm install
-cp .env.local.example .env.local   # then fill in the values
+cp .env.example .env.local         # then fill in the values
 npm run dev                        # http://localhost:3000
 ```
 
-In dev, the OTP code is the static value **`123456`** (logged by `lib/auth/otp.ts`) — Kavenegar SMS is only wired up when credentials are present.
+In development, the visible OTP defaults to **`123456`**. Production generates
+a random code, requires 32+ character signing/hash secrets, and fails closed
+unless the Kavenegar API key and approved template are configured.
 
 ### Scripts
 
@@ -49,7 +51,7 @@ In dev, the OTP code is the static value **`123456`** (logged by `lib/auth/otp.t
 
 ## Environment variables
 
-Copy `.env.local.example` → `.env.local` and fill in. Summary:
+Copy `.env.example` → `.env.local` and fill in. Summary:
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
@@ -57,7 +59,9 @@ Copy `.env.local.example` → `.env.local` and fill in. Summary:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | Supabase anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | yes | Server-only privileged key — **never** expose to the browser |
 | `JWT_SECRET` | yes | 32+ char secret for signing session cookies |
-| `KAVENEGAR_API_KEY` / `KAVENEGAR_TEMPLATE` | for SMS | OTP delivery (dev uses static code `123456`) |
+| `OTP_HASH_SECRET` | production | Independent 32+ char HMAC secret for OTP digests and phone fingerprints (falls back to `JWT_SECRET`) |
+| `KAVENEGAR_API_KEY` / `KAVENEGAR_TEMPLATE` | production | Kavenegar verify/lookup OTP delivery; both are mandatory in production |
+| `OTP_DEV_CODE` | development only | Optional six-digit local code (default `123456`; ignored in production) |
 | `NEXT_PUBLIC_APP_URL` | yes | Absolute base URL |
 | `WP_API_URL` | for blog | Root URL of the headless WordPress site |
 | `WP_REVALIDATE_SECONDS` | no | Blog fetch cache TTL (default 60) |

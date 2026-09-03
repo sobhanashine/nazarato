@@ -5,7 +5,7 @@
 > (pages) and [`PROJECT.md`](./PROJECT.md) (architecture).
 > Update this when you add/rename/remove a column or table.
 
-Last edited: 2026-09-02
+Last edited: 2026-09-03
 Owner: Sobhan (solo founder)
 Target DB: Supabase (Postgres). Auth is app-managed phone OTP + signed sessions;
 the application `users` table is standalone.
@@ -199,6 +199,8 @@ database was changed because the required environment access is not configured.
 | `review_votes` | `id`, `review_id`, `user_id`, `created_at` | `UNIQUE (review_id, user_id)` | MVP |
 | `business_responses` | `id`, `review_id`, `business_id`, `author_id`, `body`, `created_at`, `updated_at` | `UNIQUE (review_id)` — one owner reply per review | MVP→P2 |
 | `review_reports` | `id`, `review_id`, `reporter_id`, `reason`, `status`, `created_at` | — feeds `/admin/reports` | MVP |
+| `business_claims` | business/user IDs, proof/contact, decision fields, `verification_status`, `verified_at`, `verified_by` | one pending row per business/user; `approved` requires `verified` + timestamp | MVP-NABZ |
+| `security_audit_events` | event, actor, subject type/id, metadata, timestamp | private append-only server audit; no client RLS policy | MVP-NABZ |
 | `badges`, `user_badges` | — | not modeled until the P3 engine is built | P3 |
 
 `business_responses` is a separate table (not inline columns on `reviews`) so
@@ -216,6 +218,7 @@ owner replies get edit history and their own timestamps.
 | `review_votes` insert/delete | `reviews.helpful_count`; `users.helpful_votes_received` |
 | `business_responses` insert/delete | `reviews.has_owner_response`; `businesses.response_count`, `response_rate` |
 | `review_reports` insert | `reviews.report_count` |
+| `business_claims` insert/status change | append `security_audit_events`; approval separately sets `businesses.owner_id` + `claimed` |
 
 ### Indexes (MVP)
 
@@ -228,6 +231,7 @@ owner replies get edit history and their own timestamps.
 ### Row-Level Security
 
 - `reviews.proof_url` and the whole `review_reports` table — **admin-only read**.
+- `security_audit_events` — no anon/authenticated policy; service-role only.
 - `users` rows with `public_profile = false` — readable only by owner + admin.
 - `reviews` with `status != 'published'` — readable only by author + admin.
 
@@ -252,6 +256,9 @@ schema needed — it is a moderation query.
 
 ## 9. Changelog
 
+- **2026-09-03** — Added Claim verification state, the database invariant that
+  blocks unverified approval, and a private trigger-backed security audit table.
+  Migration and rollback are authored but not remotely applied.
 - **2026-09-02** — Extended source evidence with license name/URL/attribution
   metadata and made publication approval an explicit importer gate. The initial
   OSM snapshot remains quarantined despite its known ODbL permission basis.

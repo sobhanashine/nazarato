@@ -12,11 +12,11 @@
  */
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
+import type { OtpChallenge } from "./otp";
 
 const SESSION_COOKIE = "nzr_session";
 const OTP_COOKIE = "nzr_otp";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
-const OTP_MAX_AGE = 60 * 5; // 5 minutes — also enforces the "expired" state
 
 /** The logged-in user, as carried in the session cookie. */
 export type SessionUser = {
@@ -25,18 +25,11 @@ export type SessionUser = {
   name: string;
 };
 
-/** OTP challenge carried between `/login` and `/login/verify`. */
-export type OtpChallenge = {
-  phone: string;
-  /** `true` once the 6-digit code is confirmed; gates profile completion. */
-  verified: boolean;
-};
-
 // ── Signing ────────────────────────────────────────────────────────────────
 
 function secret(): string {
   const s = process.env.JWT_SECRET;
-  if (s && s.length >= 16) return s;
+  if (s && s.length >= 32) return s;
   if (process.env.NODE_ENV === "production") {
     throw new Error("JWT_SECRET must be set (32+ chars) in production");
   }
@@ -85,7 +78,21 @@ function isSessionUser(v: unknown): v is SessionUser {
 function isOtpChallenge(v: unknown): v is OtpChallenge {
   if (typeof v !== "object" || v === null) return false;
   const o = v as Record<string, unknown>;
-  return typeof o.phone === "string" && typeof o.verified === "boolean";
+  return (
+    typeof o.id === "string" &&
+    typeof o.phone === "string" &&
+    typeof o.codeDigest === "string" &&
+    typeof o.issuedAt === "number" &&
+    typeof o.expiresAt === "number" &&
+    typeof o.resendAvailableAt === "number" &&
+    typeof o.attempts === "number" &&
+    Number.isInteger(o.attempts) &&
+    o.attempts >= 0 &&
+    typeof o.deliveryCount === "number" &&
+    Number.isInteger(o.deliveryCount) &&
+    o.deliveryCount >= 1 &&
+    (o.verifiedAt === null || typeof o.verifiedAt === "number")
+  );
 }
 
 // ── Cookie helpers ─────────────────────────────────────────────────────────
@@ -121,14 +128,19 @@ export async function clearSession(): Promise<void> {
 /** Store the pending OTP challenge (5-minute lifetime). */
 export async function setOtpChallenge(challenge: OtpChallenge): Promise<void> {
   const store = await cookies();
-  store.set(OTP_COOKIE, sign(challenge), { ...baseCookie, maxAge: OTP_MAX_AGE });
+  const maxAge = Math.max(
+    1,
+    Math.ceil((challenge.expiresAt - Date.now()) / 1_000),
+  );
+  store.set(OTP_COOKIE, sign(challenge), { ...baseCookie, maxAge });
 }
 
 /** Read the pending OTP challenge, or `null` if missing / expired / tampered. */
 export async function getOtpChallenge(): Promise<OtpChallenge | null> {
   const store = await cookies();
   const v = unsign(store.get(OTP_COOKIE)?.value);
-  return isOtpChallenge(v) ? v : null;
+  if (!isOtpChallenge(v) || v.expiresAt <= Date.now()) return null;
+  return v;
 }
 
 /** Discard the OTP challenge (after a successful login or a fresh restart). */

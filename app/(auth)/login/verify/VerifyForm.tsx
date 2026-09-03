@@ -208,7 +208,7 @@ function CodeStep({
 
       {devCode && (
         <p className="mt-3 rounded-lg border border-saffron/30 bg-saffron/[0.07] px-3 py-2 text-[12.5px] text-saffron">
-          حالت توسعه — کد ثابت است:{" "}
+          حالت توسعه — کد ورود:{" "}
           <span dir="ltr" className="font-bold">
             {toFa(devCode)}
           </span>

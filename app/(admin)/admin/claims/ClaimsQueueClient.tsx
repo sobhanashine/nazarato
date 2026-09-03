@@ -89,7 +89,7 @@ export function ClaimsQueueClient({
     if (!claim.proof_url || loadingProofId) return;
     setLoadingProofId(claim.id);
     try {
-      const res = await getSignedClaimProofUrl(claim.proof_url);
+      const res = await getSignedClaimProofUrl(claim.id);
       if (res.ok && res.url) {
         setViewingProof({ url: res.url });
       } else {
@@ -192,6 +192,9 @@ export function ClaimsQueueClient({
                       <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-500/30 px-2.5 py-1 text-[0.72rem] font-bold text-blue-400">
                         {PROOF_LABELS[claim.proof_type] || claim.proof_type}
                       </span>
+                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-[0.72rem] font-bold text-amber-300">
+                        نیازمند بررسی دستی مالکیت
+                      </span>
                     </div>
 
                     {claim.proof_email && (
@@ -274,7 +277,7 @@ export function ClaimsQueueClient({
                         disabled={isPending}
                         className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-mint hover:bg-mint-hi text-[#06231b] font-black px-5 py-3 min-h-11 text-xs cursor-pointer disabled:opacity-50"
                       >
-                        تأیید
+                        تأیید مدرک و مالکیت
                       </button>
                       <button
                         type="button"
@@ -303,6 +306,7 @@ export function ClaimsQueueClient({
               <button
                 type="button"
                 onClick={() => setViewingProof(null)}
+                aria-label="بستن نمایش مدرک"
                 className="w-11 h-11 rounded-full flex items-center justify-center bg-glass-border/30 hover:bg-glass-border/60 text-strong hover:text-red-400 cursor-pointer"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -316,13 +320,13 @@ export function ClaimsQueueClient({
                 <iframe
                   src={viewingProof.url}
                   className="w-full h-full min-h-[55vh] rounded-md border-0"
-                  title="Claim Proof"
+                  title="مدرک ادعای مالکیت"
                 />
               ) : (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={viewingProof.url}
-                  alt="Claim proof"
+                  alt="مدرک ادعای مالکیت"
                   className="max-w-full max-h-[65vh] object-contain rounded-lg"
                 />
               )}

@@ -8,6 +8,7 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 
 export type ClaimProofType = "domain_email" | "document" | "other";
 export type ClaimStatus = "pending" | "approved" | "rejected";
+export type ClaimVerificationStatus = "manual_review" | "verified" | "failed";
 
 export type BusinessClaim = {
   id: string;
@@ -19,6 +20,9 @@ export type BusinessClaim = {
   contact_phone: string;
   notes: string | null;
   status: ClaimStatus;
+  verification_status: ClaimVerificationStatus;
+  verified_at: string | null;
+  verified_by: string | null;
   rejection_reason: string | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
@@ -92,6 +96,9 @@ export async function listPendingClaims(): Promise<PendingClaim[]> {
     contact_phone: row.contact_phone,
     notes: row.notes,
     status: row.status,
+    verification_status: row.verification_status,
+    verified_at: row.verified_at,
+    verified_by: row.verified_by,
     rejection_reason: row.rejection_reason,
     reviewed_by: row.reviewed_by,
     reviewed_at: row.reviewed_at,
