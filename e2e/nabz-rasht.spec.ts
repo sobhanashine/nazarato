@@ -16,8 +16,45 @@ test.describe("Nabz Rasht demo loop", () => {
     }
 
     await expect(page.getByRole("heading", { name: "سلیقه‌ات لو رفت!" })).toBeVisible();
+    await expect(page.getByLabel("موقعیت کجابریم")).toBeVisible();
+    await page.getByLabel("بودجه کجابریم").selectOption("متوسط");
+    await page.getByLabel("محله کجابریم").selectOption("گلسار");
+    await page.getByText("فضای دنج", { exact: true }).last().click();
+    await page.getByRole("button", { name: "پیشنهادها را دوباره بچین" }).click();
     await expect(page.getByTestId("nabz-recommendations").locator("li")).toHaveCount(3);
+    await expect(
+      page.getByTestId("nabz-recommendations").locator('a[href^="#taste-evidence-"]').first(),
+    ).toBeVisible();
     await expect(page.getByText(/هیچ کسب‌وکار واقعی رتبه‌بندی نشده/)).toBeVisible();
+  });
+
+  test("restores a short-lived anonymous session without storing its free text", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /قرار دونفره/ }).click();
+    await page.getByLabel(/اگر دلیل کوتاهی داری بنویس/).fill("یک دلیل خصوصی آزمایشی");
+    await page.getByTestId("duel-option").first().click();
+
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          window.localStorage.getItem("nazarato:nabz-taste:v1"),
+        ),
+      )
+      .not.toContain("یک دلیل خصوصی آزمایشی");
+
+    const storedBeforeReload = await page.evaluate(() =>
+      window.localStorage.getItem("nazarato:nabz-taste:v1"),
+    );
+
+    await page.reload();
+
+    await expect(page.getByText("جلسه ناشناس قبلی روی همین دستگاه بازیابی شد.")).toBeVisible();
+    await expect(page.getByText(/انتخاب ۲ از ۵/)).toBeVisible();
+    expect(
+      await page.evaluate(() =>
+        window.localStorage.getItem("nazarato:nabz-taste:v1"),
+      ),
+    ).toBe(storedBeforeReload);
   });
 
   test("stays within a narrow mobile viewport", async ({ page }) => {

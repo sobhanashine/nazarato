@@ -1,11 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Container } from "@/components/ui/Container";
+import { ConciergePanel } from "./ConciergePanel";
+import { TasteEvidencePanel } from "./TasteEvidencePanel";
 import {
+  ANONYMOUS_TASTE_STORAGE_KEY,
+  restoreAnonymousTasteSession,
+  serializeAnonymousTasteSession,
+} from "./anonymous-taste-session";
+import {
+  buildTasteEvidence,
   createEmptyNabzSession,
   findDemoPlace,
-  getNabzRecommendations,
   recordDuelChoice,
   summarizeTaste,
   type NabzSession,
@@ -17,7 +24,6 @@ import {
   type NabzPlace,
   type NabzScenario,
   type NabzScenarioId,
-  type TasteDimension,
 } from "./nabz-demo-data";
 
 const scenarioStyles: Record<
@@ -44,15 +50,6 @@ const scenarioStyles: Record<
     glow: "from-mint/20 via-mint/[0.04] to-transparent",
     icon: "bg-mint/15 text-mint border-mint/25",
   },
-};
-
-const dimensionColors: Record<TasteDimension, string> = {
-  cozy: "bg-pomegr",
-  quiet: "bg-lapis",
-  value: "bg-saffron",
-  local: "bg-mint",
-  social: "bg-[#ff8a5b]",
-  service: "bg-[#75d7ff]",
 };
 
 const formatFaNumber = (value: number) => value.toLocaleString("fa-IR");
@@ -236,14 +233,7 @@ function DuelStage({
 
 function ResultStage({ scenario, session, onRestart }: { scenario: NabzScenario; session: NabzSession; onRestart: () => void }) {
   const summary = summarizeTaste(session.scores);
-  const eligiblePlaceIds = new Set(
-    scenario.duels.flatMap((duel) => duel.options),
-  );
-  const eligiblePlaces = NABZ_DEMO_PLACES.filter((place) =>
-    eligiblePlaceIds.has(place.id),
-  );
-  const recommendations = getNabzRecommendations(eligiblePlaces, session.scores, 3);
-  const maxScore = Math.max(...summary.ordered.map((item) => item.score), 1);
+  const evidence = buildTasteEvidence(session, scenario);
 
   return (
     <div className="animate-[nabz-rise_420ms_ease-out_both] motion-reduce:animate-none">
@@ -260,52 +250,8 @@ function ResultStage({ scenario, session, onRestart }: { scenario: NabzScenario;
         </span>
       </div>
 
-      <div className="mb-7 rounded-[22px] border border-glass-border bg-black/15 p-4" aria-label="نمودار سلیقه نمایشی">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <strong className="text-sm font-extrabold text-strong">اثر انگشت سلیقه تو</strong>
-          <span className="text-[11px] text-muted">بر اساس ۵ انتخاب</span>
-        </div>
-        <div className="space-y-3">
-          {summary.ordered.slice(0, 4).map((item) => (
-            <div key={item.dimension} className="grid grid-cols-[92px_1fr_22px] items-center gap-3 text-xs">
-              <span className="text-[#cbd2dc]">{item.label}</span>
-              <span className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
-                <span
-                  className={`block h-full rounded-full ${dimensionColors[item.dimension]}`}
-                  style={{ width: `${Math.round((item.score / maxScore) * 100)}%` }}
-                />
-              </span>
-              <span className="text-left font-bold text-muted">{formatFaNumber(item.score)}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <div className="mb-4 flex items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-bold tracking-[0.12em] text-saffron">کجابریم؟</p>
-            <h3 className="mt-1 text-lg font-black text-strong">سه انتخاب نزدیک به سلیقه تو</h3>
-          </div>
-          <span className="rounded-full border border-saffron/20 bg-saffron/[0.07] px-2.5 py-1 text-[10px] font-bold text-saffron">نتیجه دمو</span>
-        </div>
-        <ol className="space-y-2.5" data-testid="nabz-recommendations">
-          {recommendations.map((recommendation, index) => (
-            <li key={recommendation.place.id} className="grid grid-cols-[42px_1fr_auto] items-center gap-3 rounded-2xl border border-glass-border bg-white/[0.035] p-3.5">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/[0.06] text-sm font-black text-mint">
-                {formatFaNumber(index + 1)}
-              </span>
-              <span className="min-w-0">
-                <strong className="block truncate text-sm font-extrabold text-strong">{recommendation.place.name}</strong>
-                <span className="mt-1 block truncate text-[11px] text-muted">
-                  مناسب برای {recommendation.reasons.join(" و ")}
-                </span>
-              </span>
-              <span className="text-[11px] font-medium text-muted">{recommendation.place.neighborhood}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
+      <TasteEvidencePanel evidence={evidence} />
+      <ConciergePanel session={session} places={NABZ_DEMO_PLACES} />
 
       <div className="mt-6 flex flex-col gap-3 border-t border-white/[0.07] pt-5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs leading-6 text-muted">
@@ -329,11 +275,50 @@ export function NabzRasht() {
   const [reason, setReason] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const restoredSessionRef = useRef(false);
 
   const scenario = useMemo(
     () => NABZ_SCENARIOS.find((candidate) => candidate.id === scenarioId) ?? null,
     [scenarioId],
   );
+
+  useEffect(() => {
+    try {
+      const serialized = window.localStorage.getItem(ANONYMOUS_TASTE_STORAGE_KEY);
+      if (!serialized) {
+        return;
+      }
+      const restored = restoreAnonymousTasteSession(serialized);
+      if (!restored) {
+        window.localStorage.removeItem(ANONYMOUS_TASTE_STORAGE_KEY);
+        return;
+      }
+      restoredSessionRef.current = true;
+      setScenarioId(restored.scenarioId);
+      setSession(restored);
+      setFeedback("جلسه ناشناس قبلی روی همین دستگاه بازیابی شد.");
+    } catch {
+      // Local storage is best-effort and can be unavailable in private mode.
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!session || session.choices.length === 0) {
+      return;
+    }
+    if (restoredSessionRef.current) {
+      restoredSessionRef.current = false;
+      return;
+    }
+    try {
+      window.localStorage.setItem(
+        ANONYMOUS_TASTE_STORAGE_KEY,
+        serializeAnonymousTasteSession(session),
+      );
+    } catch {
+      // The active in-memory flow still works when storage is unavailable.
+    }
+  }, [session]);
 
   const startScenario = (nextScenarioId: NabzScenarioId) => {
     setScenarioId(nextScenarioId);
@@ -344,6 +329,11 @@ export function NabzRasht() {
   };
 
   const reset = () => {
+    try {
+      window.localStorage.removeItem(ANONYMOUS_TASTE_STORAGE_KEY);
+    } catch {
+      // Best-effort cleanup only.
+    }
     setScenarioId(null);
     setSession(null);
     setReason("");

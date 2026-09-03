@@ -5,6 +5,7 @@ import {
   type NabzDuel,
   type NabzPlace,
   type NabzPlaceId,
+  type NabzScenario,
   type NabzScenarioId,
   type TasteDimension,
 } from "./nabz-demo-data";
@@ -33,11 +34,28 @@ export interface TasteSummaryItem {
   score: number;
 }
 
-export interface NabzRecommendation {
-  place: NabzPlace;
-  score: number;
-  reasons: readonly string[];
+export interface TasteEvidenceSource {
+  duelId: string;
+  prompt: string;
+  placeId: NabzPlaceId;
+  placeName: string;
+  contribution: number;
+  reason?: string;
 }
+
+export interface TasteEvidenceItem extends TasteSummaryItem {
+  sources: readonly TasteEvidenceSource[];
+}
+
+const SCENARIO_SIGNAL_BONUSES: Record<
+  NabzScenarioId,
+  Partial<Record<TasteDimension, number>>
+> = {
+  date: { cozy: 2, quiet: 1 },
+  laptop: { quiet: 2, service: 1, value: 1 },
+  budget: { value: 2, service: 1 },
+  "local-food": { local: 2, cozy: 1 },
+};
 
 function emptyScores(): TasteScores {
   return {
@@ -54,6 +72,18 @@ function strongestDimension(signals: TasteScores): TasteDimension {
   return TASTE_DIMENSIONS.reduce((strongest, dimension) =>
     signals[dimension] > signals[strongest] ? dimension : strongest,
   );
+}
+
+export function getScenarioWeightedSignals(
+  place: NabzPlace,
+  scenarioId: NabzScenarioId,
+): TasteScores {
+  return TASTE_DIMENSIONS.reduce<TasteScores>((weighted, dimension) => {
+    const base = place.signals[dimension];
+    weighted[dimension] =
+      base === 0 ? 0 : base + (SCENARIO_SIGNAL_BONUSES[scenarioId][dimension] ?? 0);
+    return weighted;
+  }, emptyScores());
 }
 
 export function createEmptyNabzSession(scenarioId: NabzScenarioId): NabzSession {
@@ -79,12 +109,16 @@ export function recordDuelChoice(
     return { ok: false, error: "کسب‌وکار انتخاب‌شده پیدا نشد." };
   }
 
-  const addedSignal = strongestDimension(selectedPlace.signals);
+  const weightedSignals = getScenarioWeightedSignals(
+    selectedPlace,
+    session.scenarioId,
+  );
+  const addedSignal = strongestDimension(weightedSignals);
   const normalizedReason = reason?.trim().slice(0, 120);
   const nextScores = TASTE_DIMENSIONS.reduce<TasteScores>(
     (scores, dimension) => ({
       ...scores,
-      [dimension]: scores[dimension] + selectedPlace.signals[dimension],
+      [dimension]: scores[dimension] + weightedSignals[dimension],
     }),
     { ...session.scores },
   );
@@ -108,6 +142,50 @@ export function recordDuelChoice(
   };
 }
 
+export function buildTasteEvidence(
+  session: NabzSession,
+  scenario: NabzScenario,
+): readonly TasteEvidenceItem[] {
+  const sourcesByDimension = new Map<TasteDimension, TasteEvidenceSource[]>();
+
+  for (const choice of session.choices) {
+    const duel = scenario.duels.find((candidate) => candidate.id === choice.duelId);
+    const place = NABZ_DEMO_PLACES.find(
+      (candidate) => candidate.id === choice.selectedPlaceId,
+    );
+    if (!duel || !place) {
+      continue;
+    }
+
+    const contributions = getScenarioWeightedSignals(place, session.scenarioId);
+    for (const dimension of TASTE_DIMENSIONS) {
+      if (contributions[dimension] <= 0) {
+        continue;
+      }
+
+      const sources = sourcesByDimension.get(dimension) ?? [];
+      sources.push({
+        duelId: choice.duelId,
+        prompt: duel.prompt,
+        placeId: place.id,
+        placeName: place.name,
+        contribution: contributions[dimension],
+        ...(choice.reason ? { reason: choice.reason } : {}),
+      });
+      sourcesByDimension.set(dimension, sources);
+    }
+  }
+
+  return summarizeTaste(session.scores).ordered
+    .filter((item) => item.score > 0)
+    .map((item) => ({
+      ...item,
+      sources: (sourcesByDimension.get(item.dimension) ?? [])
+        .sort((left, right) => right.contribution - left.contribution)
+        .slice(0, 3),
+    }));
+}
+
 export function summarizeTaste(scores: TasteScores): {
   primary: TasteSummaryItem;
   secondary: TasteSummaryItem;
@@ -124,37 +202,6 @@ export function summarizeTaste(scores: TasteScores): {
     secondary: ordered[1],
     ordered,
   };
-}
-
-export function getNabzRecommendations(
-  places: readonly NabzPlace[],
-  scores: TasteScores,
-  limit: number,
-): readonly NabzRecommendation[] {
-  if (limit <= 0 || Object.values(scores).every((score) => score === 0)) {
-    return [];
-  }
-
-  return places
-    .map((place) => {
-      const score = TASTE_DIMENSIONS.reduce(
-        (total, dimension) => total + scores[dimension] * place.signals[dimension],
-        0,
-      );
-      const reasons = TASTE_DIMENSIONS.filter(
-        (dimension) => scores[dimension] > 0 && place.signals[dimension] >= 2,
-      )
-        .sort(
-          (a, b) =>
-            scores[b] * place.signals[b] - scores[a] * place.signals[a],
-        )
-        .slice(0, 2)
-        .map((dimension) => TASTE_DIMENSION_LABELS[dimension]);
-
-      return { place, score, reasons };
-    })
-    .sort((a, b) => b.score - a.score || a.place.name.localeCompare(b.place.name, "fa"))
-    .slice(0, limit);
 }
 
 export function findDemoPlace(placeId: NabzPlaceId): NabzPlace {

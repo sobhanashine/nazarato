@@ -211,6 +211,15 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-03** — Upgraded the fictional Nabz result into an evidence-bearing
+  Taste Graph and configurable `کجابریم؟` concierge. Scenario-aware Duel weights
+  now cite the exact choices that shaped each preference; occasion, budget,
+  group, neighborhood, and priorities deterministically rerank three explained
+  examples; weak evidence is withheld. Anonymous restore lasts seven days on one
+  device, validates and rebuilds all scores from trusted fixtures, and never
+  stores optional free-text reasons. Cross-device account persistence remains an
+  explicit Supabase integration gate. Files: `components/nabz/`,
+  `e2e/nabz-rasht.spec.ts`, `docs/{nabz-rasht-mvp,PROJECT}.md`.
 - **2026-09-03** — Added the first versioned Persian customer-voice baseline:
   deterministic normalization, six aspect families, sentiment, exact evidence
   spans, confidence, issue clustering, non-destructive suspicious-pattern flags,
