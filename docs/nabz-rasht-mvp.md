@@ -165,9 +165,18 @@ an optional 120-character contextual reason, immediate signal feedback, a Taste
 Graph summary, and three explained recommendations. All eight displayed places
 are explicitly fictional and labelled as demo data; the quarantined Drive and OSM
 records are not loaded into the component. The interaction is intentionally
-in-memory in this slice. Persisting anonymous votes to `comparison_votes`, binding
-publication-approved businesses, and full contextual review submission remain
-the next implementation gates.
+in-memory in this slice and is deliberately not connected to the production vote
+endpoint because fictional IDs must never enter the evidence store.
+
+`POST /api/nabz/votes` now defines the production persistence boundary for the
+next slice. It accepts only same-origin JSON no larger than 4 KiB, validates the
+Rasht scenario and two distinct UUID business IDs, caps optional reasons at 120
+characters, rate-limits both the signed/anonymous identity and network, and stores
+only a SHA-256 hash of the anonymous cookie token. Before insert it requires both
+businesses to be active and to have an approved `business_sources` row. Duplicate
+pair/scenario/day votes return an idempotent success response. The endpoint is not
+wired to the fictional UI; applying the migration and binding two or more truly
+publication-approved businesses remain the next integration gates.
 
 ## Success evidence, not vanity metrics
 

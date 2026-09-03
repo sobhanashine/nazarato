@@ -29,4 +29,27 @@ test.describe("Nabz Rasht demo loop", () => {
     expect(scrollWidth).toBeLessThanOrEqual(390);
     await expect(page.getByTestId("duel-option")).toHaveCount(2);
   });
+
+  test("keeps fictional demo IDs out of the persistence endpoint", async ({ page }) => {
+    await page.goto("/");
+
+    const response = await page.evaluate(async () => {
+      const result = await fetch("/api/nabz/votes", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          citySlug: "rasht",
+          scenarioSlug: "date",
+          winnerBusinessId: "baran",
+          loserBusinessId: "roshan",
+        }),
+      });
+      return { status: result.status, body: await result.json() as unknown };
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual(
+      expect.objectContaining({ ok: false, error: "اطلاعات رأی معتبر نیست." }),
+    );
+  });
 });

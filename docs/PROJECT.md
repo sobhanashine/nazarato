@@ -207,6 +207,16 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-03** — Added the secure server boundary for real Nabz comparison
+  votes without connecting fictional demo records: `POST /api/nabz/votes`
+  enforces exact-origin JSON, a 4 KiB body cap, allowlisted Rasht scenarios,
+  distinct UUIDs, 120-character reasons, bounded identity/network rate limits,
+  hashed anonymous-session tokens, active-business plus approved-source
+  eligibility, and idempotent duplicate handling. The existing migration remains
+  unapplied and the endpoint is ready for publication-approved pilot IDs only.
+  Files: `app/api/nabz/votes/route.ts`, `lib/nabz/{vote-contract,supabase-vote-repository}.ts`,
+  `lib/nabz/vote-contract.test.ts`, `e2e/nabz-rasht.spec.ts`,
+  `components/nabz/nabz-demo-data.ts`, `docs/nabz-rasht-mvp.md`, `docs/PROJECT.md`.
 - **2026-09-03** — Replaced the generic homepage hero with the first interactive
   Nabz Rasht consumer slice: four situations, five anonymous Duels, optional
   micro-reasons, immediate preference signals, a Taste Graph summary, and three

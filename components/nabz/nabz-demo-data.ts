@@ -1,3 +1,5 @@
+import type { ComparisonScenario } from "@/lib/nabz/vote-contract";
+
 export const TASTE_DIMENSIONS = [
   "cozy",
   "quiet",
@@ -19,7 +21,7 @@ export type NabzPlaceId =
   | "toranj"
   | "istgah";
 
-export type NabzScenarioId = "date" | "laptop" | "budget" | "local-food";
+export type NabzScenarioId = ComparisonScenario;
 
 export interface NabzPlace {
   id: NabzPlaceId;
