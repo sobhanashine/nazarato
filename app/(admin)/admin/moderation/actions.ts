@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth/session";
 import { notifyReviewDecision } from "@/lib/data/notifications";
+import { persistReviewAnalysisBestEffort } from "@/lib/data/review-analysis-persistence";
 import { getUserById } from "@/lib/data/users";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
@@ -32,7 +33,7 @@ export async function approveReview(reviewId: string) {
   // 1. Fetch review to check if it has a proof_url
   const { data: review, error: fetchError } = await supabase
     .from("reviews")
-    .select("proof_url, business_id, proof_status, author_id")
+    .select("proof_url, business_id, proof_status, author_id, body")
     .eq("id", reviewId)
     .single();
 
@@ -65,6 +66,10 @@ export async function approveReview(reviewId: string) {
     });
     return { ok: false, error: "خطا در بروزرسانی نظر." };
   }
+
+  // Publishing remains available if the optional intelligence migration is
+  // absent, while environments that have it receive a durable model snapshot.
+  await persistReviewAnalysisBestEffort(reviewId, String(review.body));
 
   // 3. Delete proof file from storage
   if (isProofSubmitted && review.proof_url) {

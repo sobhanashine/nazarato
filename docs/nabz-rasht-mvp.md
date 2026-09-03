@@ -202,6 +202,19 @@ free-text reasons and recomputes scores from trusted fixtures on restore. Login
 is presented as the cross-device boundary, but real account persistence remains
 unwired until the Supabase migration and pilot data are available.
 
+Current owner-decision status (2026-09-04): `/business/insights` now ranks only
+patterns supported by at least three independent reviews at 0.55 average
+confidence, attaches review citations, and withholds sparse/weak candidates. An
+owner can append a correction without deleting the model output and can turn a
+supported issue into one active improvement cycle with a 90-day baseline,
+reduction target, follow-up date, model/version snapshot, and storage for the
+later observed result. Published reviews receive a best-effort durable analysis;
+without the private analysis migration the page labels live calculations as
+preview rather than official pilot evidence. The new reversible action migration
+is authored locally and has not been applied remotely. No Taste Graph or private
+user-preference field is queried for this owner surface. Real owner selection and
+the later before/after observation remain pilot gates.
+
 ## Success evidence, not vanity metrics
 
 - 50 Rasht candidate profiles with field-level provenance and no copied

@@ -157,6 +157,7 @@ database was changed because the required environment access is not configured.
 | `review_analyses` | `review_id`, `normalized_text`, `aspect_scores`, `sentiment`, `evidence_spans`, `issue_cluster`, `suspicious_score`, `model_id`, `model_version`, `confidence`, `human_status`, `analyzed_at` | one active result per review/model version; original review is immutable input evidence | MVP-NABZ |
 | `review_analysis_corrections` | `review_id`, `model_id`, `model_version`, `reviewer_id`, `model_output`, `human_label`, `note`, `corrected_at` | each event references the exact analysis version it corrected; private under RLS | MVP-NABZ |
 | `taste_profiles` | `user_id`, `dimension_weights`, `evidence_count`, `model_id`, `model_version`, `updated_at` | one private profile per user/model version; never exposed to business owners | MVP-NABZ |
+| `business_improvement_actions` | business/owner IDs, target aspect/cluster, 90-day baseline, reduction target, follow-up window/result, model/version, status | one planned/active action per business; follow-up measurement is all-or-none; private under RLS | MVP-NABZ |
 
 - Anonymous Duel sessions use a rotating opaque identifier and are not reviews.
   Login is required to persist a Taste Graph across devices or submit a review.
@@ -167,6 +168,14 @@ database was changed because the required environment access is not configured.
 - Human labels are separate correction events that retain both the reviewed model
   output and the replacement label. This prevents a later model version from
   silently changing the evaluation target.
+- Owner conclusions require at least three distinct review records and an average
+  confidence of 0.55. Sparse or weaker patterns are withheld, not promoted into
+  an action. The owner workspace reads review evidence only and never queries or
+  exposes `taste_profiles`.
+- An improvement action snapshots the exact model/version, baseline window,
+  review denominator, negative-mention numerator/rate, reduction target, and
+  follow-up date. Nullable follow-up fields retain the later observed rate so the
+  same metric can be compared before/after without rewriting the baseline.
 - `business_sources.field_payload` records only reusable factual fields and their
   provenance. It is not a place to retain copied third-party descriptions,
   images, ratings, or reviews.
