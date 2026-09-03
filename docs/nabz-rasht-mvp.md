@@ -159,6 +159,16 @@ they remain manual match evidence, not merged or published profiles. The Drive
 source contributes factual profile fields only and does not provide review text
 for the Persian analysis evaluation set.
 
+Current consumer-loop status (2026-09-03): `/` now leads with an interactive
+`نبض رشت` demo containing four scenarios, five deterministic Duels per scenario,
+an optional 120-character contextual reason, immediate signal feedback, a Taste
+Graph summary, and three explained recommendations. All eight displayed places
+are explicitly fictional and labelled as demo data; the quarantined Drive and OSM
+records are not loaded into the component. The interaction is intentionally
+in-memory in this slice. Persisting anonymous votes to `comparison_votes`, binding
+publication-approved businesses, and full contextual review submission remain
+the next implementation gates.
+
 ## Success evidence, not vanity metrics
 
 - 50 Rasht candidate profiles with field-level provenance and no copied

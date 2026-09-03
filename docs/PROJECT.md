@@ -175,6 +175,12 @@ Set globally in `next.config.ts:31-40`:
 
 ## 3. Open items / known gaps
 
+- **Local production build needs Supabase configuration.** The Nabz homepage
+  compiles and its optional recent-review rail falls back safely, but existing
+  statically generated `/company/[slug]` pages call Supabase during prerender.
+  Without `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, `next build`
+  stops on those legacy pages. Configure a real development project before the
+  persistence and deployment gates; do not commit the values.
 - **Dependency security update.** `npm audit --omit=dev` on 2026-09-02 reports
   four high-severity production findings through Next.js 16.2.6 and its
   transitive dependencies. The audit recommends Next.js 16.3.4. Upgrade and
@@ -201,6 +207,18 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-03** — Replaced the generic homepage hero with the first interactive
+  Nabz Rasht consumer slice: four situations, five anonymous Duels, optional
+  micro-reasons, immediate preference signals, a Taste Graph summary, and three
+  explained recommendations. Eight explicitly fictional Rasht examples keep all
+  quarantined source data out of the UI. Added pure engine tests, desktop/mobile
+  Playwright coverage, a safe homepage review fallback, system-Chrome test support,
+  and self-hosted Vazirmatn so compilation no longer depends on Google Fonts.
+  Files: `app/{layout,page,globals.css}`, `components/nabz/`,
+  `components/sections/RecentReviews.tsx`,
+  `components/sections/{recent-reviews-data,recent-reviews-data.test}.ts`, `e2e/nabz-rasht.spec.ts`,
+  `playwright.config.ts`, `package.json`, `package-lock.json`,
+  `docs/nabz-rasht-mvp.md`, `docs/PROJECT.md`.
 - **2026-09-02** — Added a tested, fail-closed converter and matcher for the private legacy Rasht Drive research: 37 café/restaurant candidates remain gitignored and quarantined, source ratings/review counts are discarded, and three exact OSM overlaps are reported without auto-merge. Files: `.gitignore`, `tsconfig.json`, `lib/import/rasht-drive-businesses.ts`, `lib/import/rasht-drive-businesses.test.ts`, `scripts/prepare-rasht-drive-businesses.mts`, `docs/data-model.md`, `docs/nabz-rasht-mvp.md`, `docs/PROJECT.md`.
 - **2026-09-02** — Built the initial Rasht supply snapshot from OpenStreetMap's
   ODbL data: 50 uniquely sourced candidates (25 cafés, 25 restaurants), 49 with

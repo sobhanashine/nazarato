@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Vazirmatn } from "next/font/google";
 import { SmflowWidget } from "@/components/integrations/SmflowWidget";
 import { Backdrop } from "@/components/layout/Backdrop";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
@@ -8,13 +7,8 @@ import { RegisterSW } from "@/components/pwa/RegisterSW";
 import { ToastProvider } from "@/components/providers/ToastProvider";
 import { ReviewSheetProvider } from "@/components/review/ReviewSheetProvider";
 import { featuredBusinesses } from "@/lib/data/businesses";
+import "@fontsource-variable/vazirmatn";
 import "./globals.css";
-
-const vazirmatn = Vazirmatn({
-  variable: "--font-vazirmatn",
-  subsets: ["arabic"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -62,7 +56,7 @@ export default function RootLayout({
       lang="fa"
       dir="rtl"
       data-scroll-behavior="smooth"
-      className={`${vazirmatn.variable} scroll-smooth scheme-dark`}
+      className="scroll-smooth scheme-dark"
     >
       <body className="relative min-h-screen overflow-x-hidden bg-[#06080f] text-strong antialiased [text-rendering:optimizeLegibility] selection:bg-mint/35 selection:text-white pb-[calc(76px+env(safe-area-inset-bottom))] md:pb-0">
         <Backdrop />

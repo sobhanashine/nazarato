@@ -5,18 +5,19 @@ import { ReviewCard } from "@/components/ui/ReviewCard";
 import { HIDE_SCROLL } from "@/components/ui/styles";
 import { getReviewsFromDb, recentReviews } from "@/lib/data/reviews";
 import { getSession } from "@/lib/auth/session";
+import { loadHomepageReviews } from "./recent-reviews-data";
 
 export async function RecentReviews() {
-  // Fall back to the static mock list only when the DB has nothing yet, so the
-  // helpful-vote toggle on the home page hits real review IDs and persists.
-  const viewer = await getSession();
-  const { reviews } = await getReviewsFromDb({
-    sort: "newest",
-    page: 1,
-    limit: 6,
-    viewerId: viewer?.id,
+  const list = await loadHomepageReviews({
+    getViewer: getSession,
+    getReviews: (viewerId) => getReviewsFromDb({
+      sort: "newest",
+      page: 1,
+      limit: 6,
+      viewerId,
+    }),
+    fallback: recentReviews,
   });
-  const list = reviews.length > 0 ? reviews : recentReviews;
 
   return (
     <section className="py-10">

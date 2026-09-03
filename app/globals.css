@@ -31,8 +31,8 @@
   --color-glass-border:     var(--glass-border);
   --color-glass-border-hi:  var(--glass-border-hi);
   --radius-glass:           var(--radius);
-  /* Drives Preflight's document font — Vazirmatn applies globally, no class needed */
-  --font-sans:              var(--font-vazirmatn), sans-serif;
+  /* Self-hosted through @fontsource-variable/vazirmatn; no runtime Google request. */
+  --font-sans:              "Vazirmatn Variable", sans-serif;
 }
 
 /* ── Tokens — Persian Aurora ── */
@@ -120,6 +120,11 @@
 @keyframes fab-pulse {
   0%, 100% { opacity: 0.55; transform: scale(1); }
   50%      { opacity: 0.9;  transform: scale(1.12); }
+}
+
+@keyframes nabz-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Review sheet — the bottom-sheet review wizard ── */

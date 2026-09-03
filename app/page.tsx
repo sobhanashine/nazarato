@@ -4,17 +4,17 @@ import { ReviewSheetAutoOpen } from "@/components/review/ReviewSheetAutoOpen";
 import { Blog } from "@/components/sections/Blog";
 import { Categories } from "@/components/sections/Categories";
 import { ForBusinessCTA } from "@/components/sections/ForBusinessCTA";
-import { Hero } from "@/components/sections/Hero";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { HowToReview } from "@/components/sections/HowToReview";
 import { InstagramShops } from "@/components/sections/InstagramShops";
 import { RecentReviews } from "@/components/sections/RecentReviews";
+import { NabzRasht } from "@/components/nabz/NabzRasht";
 
 export default function HomePage() {
   return (
     <>
       <Header />
-      <Hero />
+      <NabzRasht />
       <main>
         <RecentReviews />
         <HowItWorks />
