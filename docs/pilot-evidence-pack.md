@@ -182,13 +182,14 @@ reuse permission is unknown.
 | --- | --- | --- |
 | TypeScript | Pass | Strict type check succeeds |
 | ESLint | Pass | Current source passes lint |
-| Vitest | **149/149 pass across 30 files** | Local unit and migration-contract suite is green |
+| Vitest | **154/154 pass across 31 files** | Local unit, health-report, and migration-contract suite is green |
 | Targeted critical browser slice | **8/8 pass** | Nabz consumer path and unauthenticated owner-route guards pass after the framework upgrade |
 | Full Playwright suite | **Not green:** 41 passed, 12 failed, 5 skipped, 13 did not run before the run was stopped | Observed failures require missing Supabase configuration or a populated fixture database; this remains a real pilot-environment blocker |
 | Production build | **Not green** | Compilation and type generation pass; static generation stops on `/shop/manto_sara` because Supabase URL and service-role credentials are absent |
 | Production dependency audit | **0 findings** in the last successful 2026-09-04 `npm audit --omit=dev` run | Next.js and production transitives were upgraded to patched versions; a later repeat hit a registry timeout rather than returning contradictory results |
 | Full dependency audit | **5 development-only findings** | One low and four high issues remain in Babel/Vite/tooling transitives; track before a hardened CI release |
-| Public release identity | **Not verified** | No deployment URL and no independently verified live commit identity exist |
+| Release-health contract | **Local pass** | A live local request returns HTTP 503 with `releaseSha: "unknown"`, `database: "unconfigured"`, and `demoMode: true`, proving the incomplete environment cannot report ready |
+| Public release identity | **Instrumented, not verified** | `/api/health` fails closed unless the Git SHA, database, and non-demo data mode are all real; no deployment URL has been checked yet |
 
 The application is on Next.js `16.3.4`. Local Node `22.11.0` also triggers a
 development-tool engine warning from `eslint-visitor-keys`; CI should use Node
@@ -234,7 +235,8 @@ substitute for session counts, failed attempts, source permissions, or model err
 - Continue local engineering and documentation.
 - Prepare a non-production Supabase environment and a reversible migration run.
 - Add publication-safe attribution and activate only reviewed profiles.
-- Add a release-identity/health endpoint and deploy a pilot build.
+- Switch the health report from its code-locked fictional-demo state only when
+  the real pilot data path is wired, then deploy a pilot build.
 - Run the complete test matrix against seeded real-environment fixtures.
 
 ### Do not proceed yet
@@ -269,6 +271,7 @@ No founder input is required for the remaining safe local preparation.
 | Schema, provenance, and privacy model | `docs/data-model.md` |
 | Reversible database changes | `supabase/migrations/20260902_create_nabz_data_foundation.sql`, `supabase/migrations/20260903_harden_claim_otp_security.sql`, `supabase/migrations/20260903_create_owner_improvement_actions.sql` |
 | Matching rollback scripts | `supabase/rollbacks/` |
+| Release readiness and commit identity | `app/api/health/route.ts`, `lib/release/health-report.ts` |
 | Framework security upgrade | commit `a3e4e87` |
 | Owner evidence/action loop | commit `4722f06` |
 | Claim/OTP hardening | commit `0991399` |

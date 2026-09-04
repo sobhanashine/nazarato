@@ -63,6 +63,7 @@ Copy `.env.example` → `.env.local` and fill in. Summary:
 | `KAVENEGAR_API_KEY` / `KAVENEGAR_TEMPLATE` | production | Kavenegar verify/lookup OTP delivery; both are mandatory in production |
 | `OTP_DEV_CODE` | development only | Optional six-digit local code (default `123456`; ignored in production) |
 | `NEXT_PUBLIC_APP_URL` | yes | Absolute base URL |
+| `RELEASE_SHA` | non-Vercel deploys | Optional Git commit identity for `/api/health`; Vercel/GitHub deployment variables are detected automatically |
 | `WP_API_URL` | for blog | Root URL of the headless WordPress site |
 | `WP_REVALIDATE_SECONDS` | no | Blog fetch cache TTL (default 60) |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | for push | Web Push (generate with `npx web-push generate-vapid-keys --json`) |
@@ -75,7 +76,7 @@ Copy `.env.example` → `.env.local` and fill in. Summary:
 
 ```
 app/                 App Router routes (see sitemap below)
-  api/               Route handlers (auth/me, transcribe)
+  api/               Route handlers (health, auth/me, Nabz votes, transcribe)
   (auth)/            Login + OTP verify — chrome-less layout
   (user)/            Authenticated consumer area (profile, saved, settings, notifications)
   (business)/        Owner dashboard (post-claim)

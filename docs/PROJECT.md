@@ -23,9 +23,9 @@ non-trivial task starts by reading this file and ends by updating it.
 
 | Path             | Purpose                                                                      |
 | ---------------- | ---------------------------------------------------------------------------- |
-| `app/`           | App Router routes: `/`, `/search`, `/about`, `/contact`, `/categories`, `/terms`, `/privacy`, `/company/[slug]`, `/blog`, `/blog/[slug]`, the `(auth)` group (`/login`, `/login/verify`), and the `(user)` group (`/profile`, `/profile/reviews`). |
+| `app/`           | App Router routes: `/`, `/search`, `/about`, `/contact`, `/categories`, `/terms`, `/privacy`, `/company/[slug]`, `/blog`, `/blog/[slug]`, `/api/health`, the `(auth)` group (`/login`, `/login/verify`), and the `(user)` group (`/profile`, `/profile/reviews`). |
 | `components/`    | Grouped by role: `layout/`, `sections/`, `ui/`, `blog/`, `categories/`, `icons/`, `pwa/`. |
-| `lib/`           | Data layer, integrations, security audit, and versioned product intelligence. `lib/intelligence/` contains the deterministic Persian baseline; `lib/wp.ts`, `lib/supabase/`, `lib/auth/`, and `lib/security/` own external content, DB, auth, and audit boundaries. |
+| `lib/`           | Data layer, integrations, security audit, release health, and versioned product intelligence. `lib/intelligence/` contains the deterministic Persian baseline; `lib/release/` owns the fail-closed release report; `lib/wp.ts`, `lib/supabase/`, `lib/auth/`, and `lib/security/` own external content, DB, auth, and audit boundaries. |
 | `lib/data/`      | Static/sample data: `blog-posts`, `blog-taxonomies`, `categories`, `reviews`, `instagram-shops`. |
 | `design-system/` | Design tokens / system reference (`nazarato/`).                              |
 | `docs/`          | Long-form docs, including the architecture source of truth, product specification, security runbooks, and the auditable pilot evidence pack. |
@@ -109,6 +109,9 @@ Set globally in `next.config.ts:31-40`:
   verified implementation, environment-dependent integration, live-pilot proof,
   and current official knowledge-based product criteria. It must remain explicit
   when a metric is synthetic, a migration is unapplied, or a release is unverified.
+- `GET /api/health` exposes a non-secret, fail-closed release report: it is ready
+  only with a valid Git SHA, a successful database probe, and a code-level
+  non-demo data mode. The current fictional fixture path deliberately returns 503.
 
 ---
 
@@ -195,6 +198,11 @@ Set globally in `next.config.ts:31-40`:
   Without `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, `next build`
   stops on those legacy pages. Configure a real development project before the
   persistence and deployment gates; do not commit the values.
+- **Public release identity is instrumented but unverified.** `/api/health`
+  currently returns 503 by design because the local environment has no release
+  SHA, no configured database, and still uses fictional demo data. A public
+  deployment must independently return the expected commit with `ok: true`,
+  `database: "ok"`, and `demoMode: false` before the release gate can close.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
   `npm audit --omit=dev` on 2026-09-04 reports zero production findings. The full
@@ -225,6 +233,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-04** — Added a non-secret, fail-closed `/api/health` contract for release verification. The endpoint validates Git identity, probes the database only when configured, and cannot report ready while the product is code-locked to fictional demo data; local HTTP verification correctly returns 503. Files: `.env.example`, `README.md`, `app/api/health/route.ts`, `lib/release/`, `docs/{pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-04** — Upgraded the framework and production transitives to patched Next.js 16.3.4, cleared the production dependency audit, and added an official-source-backed evidence pack that separates local implementation, synthetic evaluation, live-pilot proof, public release identity, and knowledge-based readiness without claiming approval. Files: `AGENTS.md`, `README.md`, `package.json`, `package-lock.json`, `docs/{pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-03** — Hardened the pilot owner path: OTP codes are challenge-bound, expiring and replay-resistant with a fail-closed Kavenegar provider; claim inputs, file signatures, decision races, proof access/cleanup and verified-approval invariants are guarded; private audit and rollback migrations plus the manual-review playbook are included. The remote migration, SMS credentials and real-owner acceptance remain open. Files: `.env.example`, `lib/auth/`, `lib/security/`, `app/(auth)/login/`, `app/company/[slug]/claim/`, `app/(admin)/admin/claims/`, `supabase/{migrations,rollbacks}/`, `docs/claim-verification-pilot.md`.
 - **2026-09-03** — Upgraded the fictional Nabz result into an evidence-bearing
