@@ -10,7 +10,7 @@
 
 ## Stack
 
-- **Next.js 16.2.6** — App Router only (no `pages/` directory)
+- **Next.js 16.3.4** — App Router only (no `pages/` directory)
 - **React 19.2.4**
 - **TypeScript 5** — `strict: true`, path alias `@/*` → repo root
 - **Tailwind CSS v4** — via `@tailwindcss/postcss` (v4 syntax only)
@@ -134,3 +134,4 @@ See [`AGENTS.md`](AGENTS.md) for the full rules and [`docs/PROJECT.md`](docs/PRO
 | [`docs/PROJECT.md`](docs/PROJECT.md) | Architecture, stack decisions, changelog |
 | [`docs/pages-master.md`](docs/pages-master.md) | Every page: status, purpose, layout |
 | [`docs/data-model.md`](docs/data-model.md) | Database schema and the reasoning behind it |
+| [`docs/pilot-evidence-pack.md`](docs/pilot-evidence-pack.md) | Auditable MVP, pilot, release, and knowledge-based readiness evidence |

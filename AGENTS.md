@@ -12,7 +12,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Stack
 
-- Next.js 16.2.6 (App Router), React 19.2, TypeScript 5
+- Next.js 16.3.4 (App Router), React 19.2, TypeScript 5
 - Tailwind CSS v4 (PostCSS plugin)
 - ESLint 9 + `eslint-config-next`
 - Deployment target: TBD (assume Vercel unless told otherwise)

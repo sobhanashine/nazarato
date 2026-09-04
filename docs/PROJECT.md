@@ -13,7 +13,7 @@ non-trivial task starts by reading this file and ends by updating it.
 
 ### Framework
 
-- **Next.js 16.2.6** (App Router only — no `pages/` directory).
+- **Next.js 16.3.4** (App Router only — no `pages/` directory).
 - **React 19.2.4**.
 - **TypeScript 5** with `strict: true`, `noEmit: true`. Path alias `@/*` → repo root (`tsconfig.json:21`).
 - **Tailwind CSS v4** via `@tailwindcss/postcss` (`postcss.config.mjs`). v4 syntax only — do not fall back to v3 patterns.
@@ -28,7 +28,7 @@ non-trivial task starts by reading this file and ends by updating it.
 | `lib/`           | Data layer, integrations, security audit, and versioned product intelligence. `lib/intelligence/` contains the deterministic Persian baseline; `lib/wp.ts`, `lib/supabase/`, `lib/auth/`, and `lib/security/` own external content, DB, auth, and audit boundaries. |
 | `lib/data/`      | Static/sample data: `blog-posts`, `blog-taxonomies`, `categories`, `reviews`, `instagram-shops`. |
 | `design-system/` | Design tokens / system reference (`nazarato/`).                              |
-| `docs/`          | Long-form docs (this file, plus `headless-wordpress-blog.md`, `pages-master.md`). |
+| `docs/`          | Long-form docs, including the architecture source of truth, product specification, security runbooks, and the auditable pilot evidence pack. |
 | `public/`        | Static assets — icons, service worker (`sw.js`), PWA manifest assets.        |
 | `.claude/`       | Repo-scoped Claude config: `skills/` (commit-style, testing-discipline, spec-first, security-review, db-migrations, project-loop), `settings.json`. |
 
@@ -105,6 +105,10 @@ Set globally in `next.config.ts:31-40`:
   Kavenegar delivery fails closed, claim proof bytes are signature-checked, and
   approval requires verified ownership with a private audit trail. The migration
   is not remotely applied and the real-owner pilot is still open.
+- `docs/pilot-evidence-pack.md` is the dated audit boundary between locally
+  verified implementation, environment-dependent integration, live-pilot proof,
+  and current official knowledge-based product criteria. It must remain explicit
+  when a metric is synthetic, a migration is unapplied, or a release is unverified.
 
 ---
 
@@ -191,10 +195,12 @@ Set globally in `next.config.ts:31-40`:
   Without `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, `next build`
   stops on those legacy pages. Configure a real development project before the
   persistence and deployment gates; do not commit the values.
-- **Dependency security update.** `npm audit --omit=dev` on 2026-09-03 reports
-  four high-severity production package findings in `nanoid`, Next.js 16.2.6,
-  and Next's `postcss`/`sharp` dependencies. The full fix recommends Next.js
-  16.3.4. Upgrade and rerun the full check suite before a public deployment.
+- **Development-toolchain audit and runtime warning.** Next.js and
+  `eslint-config-next` are pinned to 16.3.4 and the last successful
+  `npm audit --omit=dev` on 2026-09-04 reports zero production findings. The full
+  audit still reports one low and four high development-only transitive findings.
+  Local Node 22.11.0 is also below the `eslint-visitor-keys` 22.x engine floor;
+  use Node 20.19+, 22.13+, or a supported later major for CI and release checks.
 - **WP_API_URL** must be set in the deployment env or `lib/wp.ts` calls will
   fail. Not yet documented in a `.env.example`.
 - **Web Push (VAPID) keys** must be generated and set in the deployment environment (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) for Web Push notifications to function. See `.env.example` for details.
@@ -219,6 +225,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-04** — Upgraded the framework and production transitives to patched Next.js 16.3.4, cleared the production dependency audit, and added an official-source-backed evidence pack that separates local implementation, synthetic evaluation, live-pilot proof, public release identity, and knowledge-based readiness without claiming approval. Files: `AGENTS.md`, `README.md`, `package.json`, `package-lock.json`, `docs/{pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-03** — Hardened the pilot owner path: OTP codes are challenge-bound, expiring and replay-resistant with a fail-closed Kavenegar provider; claim inputs, file signatures, decision races, proof access/cleanup and verified-approval invariants are guarded; private audit and rollback migrations plus the manual-review playbook are included. The remote migration, SMS credentials and real-owner acceptance remain open. Files: `.env.example`, `lib/auth/`, `lib/security/`, `app/(auth)/login/`, `app/company/[slug]/claim/`, `app/(admin)/admin/claims/`, `supabase/{migrations,rollbacks}/`, `docs/claim-verification-pilot.md`.
 - **2026-09-03** — Upgraded the fictional Nabz result into an evidence-bearing
   Taste Graph and configurable `کجابریم؟` concierge. Scenario-aware Duel weights
