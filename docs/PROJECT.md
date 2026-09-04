@@ -81,7 +81,8 @@ Set globally in `next.config.ts:31-40`:
 - The additive, reversible Nabz data foundation is authored in
   `supabase/migrations/20260902000000_create_nabz_data_foundation.sql` with its down
   migration under `supabase/rollbacks/`. It was applied to the linked development
-  Supabase project on 2026-09-04; all new private tables are currently empty.
+  Supabase project on 2026-09-04. `business_sources` now contains 50 quarantined
+  OSM rows; the other new private evidence tables remain empty.
 - `lib/import/business-import.ts` is the strict factual-field boundary. New rows
   persist as pending, provenance persists next, and only an eligible source can
   activate a brand-new profile; deterministic development fixtures remain
@@ -94,8 +95,10 @@ Set globally in `next.config.ts:31-40`:
 - `data/rasht-osm-businesses.json` is the reviewed 50-record candidate supply
   snapshot (25 cafés, 25 restaurants) sourced from OpenStreetMap under ODbL.
   Its source URLs and attribution metadata are retained; every row is explicitly
-  unapproved for publication until visible attribution and the ODbL data boundary
-  are implemented. Refresh logic lives in `scripts/fetch-rasht-osm-businesses.mts`.
+  unapproved for publication pending per-record review and confirmation of the
+  ODbL derivative-data boundary. Refresh logic lives in
+  `scripts/fetch-rasht-osm-businesses.mts`; the fail-closed remote runner is
+  `scripts/import-rasht-osm-quarantine.mts`.
 - Shared Drive research is converted only through
   `scripts/prepare-rasht-drive-businesses.mts`. Real exports and prepared output
   stay under gitignored `data/private/` because this repository is public and the
@@ -215,9 +218,10 @@ Set globally in `next.config.ts:31-40`:
   deployment must independently return the expected commit with `ok: true`,
   `database: "ok"`, and `demoMode: false` before the release gate can close.
 - **The provenance gate is live but has no approved source rows yet.** Public
-  data queries require `business_sources.status = 'approved'`; the remote table
-  exists and is empty, so real data remains fail-closed. Review each OSM row
-  before changing `publicationApproved` or enabling the real data mode.
+  data queries require `business_sources.status = 'approved'`. The remote table
+  contains 50 OSM rows in `quarantined`, paired with 50 `pending` businesses;
+  independent verification found zero active, approved, or public records.
+  Review each OSM row before changing publication state or enabling real-data mode.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
   `npm audit --omit=dev` on 2026-09-04 reports zero production findings. The full
@@ -248,6 +252,14 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-04** — Added and executed the fail-closed Rasht OSM quarantine
+  runner. Strict preflight validation imported 25 cafés and 25 restaurants as
+  50 pending businesses plus 50 quarantined provenance rows; a repeated apply
+  created zero duplicates, and remote verification found zero active, approved,
+  or public records. TypeScript, 167 tests, lint, production build, and diff
+  checks pass. Files: `scripts/import-rasht-osm-quarantine.mts`,
+  `lib/import/{osm-quarantine-batch,supabase-business-import}.ts`,
+  `data/README.md`, `docs/{data-model,nabz-rasht-mvp,pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-04** — Reconciled 12 already-present legacy migration versions,
   backed up the empty `business_claims` table, and applied the uniquely versioned
   Nabz data-foundation, owner-improvement, and claim-security migrations to the

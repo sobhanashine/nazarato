@@ -24,6 +24,20 @@ Publication may be approved only after the product visibly displays
 `© OpenStreetMap contributors`, links to the license, and the team has confirmed
 how any publicly used derivative database will be offered under ODbL.
 
+The reviewed snapshot was staged in the linked development Supabase project on
+2026-09-04 as 50 `pending` businesses and 50 `quarantined` source rows. The
+runner defaults to a read-only preflight and refuses active identities,
+unexpected provenance, or any publication-enabled input:
+
+```sh
+npm run import:rasht-osm -- --dry-run
+npm run import:rasht-osm -- --apply-quarantined
+```
+
+The apply mode performs a postflight assertion. A repeated apply must report
+zero new businesses and zero new sources; publication still requires a separate
+reviewed workflow that this runner intentionally does not provide.
+
 The capture uses one small Overpass query over the bounding box stored in the
 manifest. It does not use Google Maps, Neshan, Balad, Bilbooard, Digikala,
 Basalam, or marketplace reviews as a data source.

@@ -140,7 +140,7 @@ acceptance path is defined but not complete.
 | Owner cited insight | `lib/data/owner-action-insights.ts`, `app/(business)/business/insights/page.tsx` | Requires 3 distinct reviews and 0.55 average confidence; weak evidence is withheld | Verified locally |
 | Improvement measurement | `business_improvement_actions` migration and owner actions | Reproducible baseline tests; 90-day observation contract | Implemented; follow-up outcome pending |
 | Claim and OTP | `lib/auth/`, `app/company/[slug]/claim/`, `app/(admin)/admin/claims/` | Replay, expiry, signature, race, proof, and authorization tests | Implemented; provider-backed owner run missing |
-| Provenance-aware import | `lib/import/business-import.ts`, `data/rasht-osm-businesses.json` | Import, deduplication, snapshot, and migration tests | Verified; publication approval remains false |
+| Provenance-aware import | `lib/import/business-import.ts`, `lib/import/osm-quarantine-batch.ts`, `scripts/import-rasht-osm-quarantine.mts`, `data/rasht-osm-businesses.json` | Validation, collision guard, idempotency, snapshot, migration, and remote postflight checks | 50 pending businesses + 50 quarantined sources remotely; zero public records |
 
 ## 5. Model, dataset, and provenance record
 
@@ -172,7 +172,11 @@ and out-of-lexicon language.
 The OSM snapshot contains 50 candidate records: 25 cafés and 25 restaurants, 49
 with normalized phone data, all 50 with coordinates and direct source references.
 Every record has `publicationApproved: false`; it cannot enter the live product
-until visible OpenStreetMap attribution and the publication boundary are in place.
+until per-record approval and the ODbL derivative-data decision are complete.
+The 2026-09-04 remote staging run produced 50 pending business rows and 50
+quarantined source rows. Reapplying the same snapshot created zero businesses
+and zero sources; postflight found zero active businesses, approved sources, or
+public records.
 The private legacy Drive snapshot remains gitignored and quarantined because its
 reuse permission is unknown.
 
@@ -182,11 +186,11 @@ reuse permission is unknown.
 | --- | --- | --- |
 | TypeScript | Pass | Strict type check succeeds |
 | ESLint | Pass | Current source passes lint |
-| Vitest | **161/161 pass across 32 files** | Local unit, provenance/UI, health-report, and migration-contract suite is green |
+| Vitest | **167/167 pass across 33 files** | Local unit, quarantine/idempotency, provenance/UI, health-report, and migration-contract suite is green |
 | Targeted critical browser slice | **8/8 pass** | Nabz consumer path and unauthenticated owner-route guards pass after the framework upgrade |
 | Open-data profile browser check | **Pass at 390 px and 1280 px** | Approved OSM source and ODbL links render in RTL with no horizontal overflow or console error against a local mock; no record was published remotely |
 | Full Playwright suite | **Not green:** 41 passed, 12 failed, 5 skipped, 13 did not run before the run was stopped | Observed failures require missing Supabase configuration or a populated fixture database; this remains a real pilot-environment blocker |
-| Production build | **Not green** | Compilation and type generation pass; static generation stops on `/shop/manto_sara` because Supabase URL and service-role credentials are absent |
+| Production build | **Pass against development Supabase** | Compilation, type generation, data reads, and static generation complete successfully; this is not deployment proof |
 | Production dependency audit | **0 findings** in the last successful 2026-09-04 `npm audit --omit=dev` run | Next.js and production transitives were upgraded to patched versions; a later repeat hit a registry timeout rather than returning contradictory results |
 | Full dependency audit | **5 development-only findings** | One low and four high issues remain in Babel/Vite/tooling transitives; track before a hardened CI release |
 | Release-health contract | **Local pass** | A live local request returns HTTP 503 with `releaseSha: "unknown"`, `database: "unconfigured"`, and `demoMode: true`, proving the incomplete environment cannot report ready |
@@ -200,11 +204,11 @@ development-tool engine warning from `eslint-visitor-keys`; CI should use Node
 
 | Risk | Current mitigation | Residual risk and owner |
 | --- | --- | --- |
-| Copied or unlawfully reused business data | Strict factual-field importer, field provenance, quarantine, approved-source public-read gate, visible HTTPS-validated open-data attribution, and manual reconciliation for an existing identity | Apply the migration and complete final per-record publication review - engineering |
+| Copied or unlawfully reused business data | Strict factual-field importer, field provenance, quarantine, approved-source public-read gate, visible HTTPS-validated open-data attribution, and manual reconciliation for an existing identity | Complete final per-record review and document the ODbL derivative-data publication approach - engineering |
 | Fabricated or weak recommendation | Minimum evidence, exact supporting Duel signals, deterministic reranking, explicit insufficient-data state | Needs real-user calibration and abuse monitoring - product/engineering |
 | Persian analysis error | Exact evidence spans, confidence, versioned output, append-only correction, no automatic deletion | Needs a consented, independently labelled held-out sample - pilot owner/product |
 | Coordinated or repeated voting | Same-origin boundary, bounded body, identity/network limits, hashed anonymous token, idempotency, human review | In-memory limiter is single-instance and must move to a shared store before scale - engineering |
-| False business claim | Challenge-bound OTP, expiry/attempt limits, file-signature checks, private proof bucket, short signed URLs, verified-before-approved database invariant | Kavenegar, Supabase migration, backup, and one real owner test are missing - founders plus engineering |
+| False business claim | Challenge-bound OTP, expiry/attempt limits, file-signature checks, private proof bucket, short signed URLs, verified-before-approved database invariant | Kavenegar configuration and one real owner test are missing; the migration and pre-apply backup are complete - founders plus engineering |
 | Sensitive preference leakage | Taste Graph remains private and is not queried by owner analytics | Requires deployed RLS verification and privacy acceptance test - engineering |
 | Misleading eligibility claim | Explicit status labels and separation of local, pilot, release, and official evidence | Only the official evaluator can decide eligibility - founders |
 

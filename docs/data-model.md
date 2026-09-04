@@ -23,9 +23,9 @@ the application `users` table is standalone.
   `enum` types). Allowed values are listed per column below.
 - **Phasing** — `[MVP]` is already built, `[MVP-NABZ]` has an authored migration
   applied to the linked development Supabase project on 2026-09-04 for the
-  active 14-day Rasht sprint, and `[P3]` remains deferred. The new private tables
-  are empty until approved pilot data is deliberately imported. See `nabz-rasht-mvp.md` and
-  `pages-master.md` §6.
+  active 14-day Rasht sprint, and `[P3]` remains deferred. `business_sources`
+  contains 50 quarantined OSM provenance rows; the other new private evidence
+  tables remain empty. See `nabz-rasht-mvp.md` and `pages-master.md` §6.
 - **Counters** — columns like `*_count`, `rating_sum`, `helpful_count`,
   `response_rate` are *denormalized*. Keep them in sync with **Postgres
   triggers**, not app code — triggers can't be bypassed.
@@ -150,7 +150,9 @@ MVP columns are live — see `supabase/migrations/0001_create_users_table.sql`.
 Migration `20260902000000_create_nabz_data_foundation.sql` creates this contract and
 its indexes/RLS; the companion down file is in `supabase/rollbacks/`. The schema
 was applied to the linked development project on 2026-09-04 after backup and
-history reconciliation. Its private tables remain empty pending approved data.
+history reconciliation. The OSM staging run added 50 quarantined rows to
+`business_sources`; no approved source was created and the other private tables
+remain empty pending pilot activity.
 
 | Table | Minimum columns | Key constraints | Phase |
 |---|---|---|---|
@@ -274,6 +276,10 @@ schema needed — it is a moderation query.
 
 ## 9. Changelog
 
+- **2026-09-04** — Executed the reviewed OSM snapshot through the guarded remote
+  runner: 50 businesses are pending and 50 exact provenance rows are
+  quarantined. A repeated apply created no duplicates; zero active or approved
+  rows were observed.
 - **2026-09-04** — Applied the uniquely versioned Nabz, owner-improvement, and
   claim-security migrations to the linked development Supabase project after a
   claim-table backup, legacy-history reconciliation, and clean dry-run. Remote

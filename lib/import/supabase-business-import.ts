@@ -4,14 +4,14 @@
  * source is retained as provenance and owner edits stay canonical.
  */
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { supabaseAdmin } from "../supabase/server.ts";
 import {
   executeBusinessImport,
   type BusinessImportRepository,
   type ExecuteBusinessImportResult,
   type PreparedBusinessRow,
   type PreparedBusinessSourceRow,
-} from "./business-import";
+} from "./business-import.ts";
 
 function failImport(
   stage: string,
