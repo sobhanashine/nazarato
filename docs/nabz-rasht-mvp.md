@@ -158,7 +158,7 @@ does not satisfy this boundary.
 | Days 11–12 | Owner insight, one improvement action, and before/after metric | Pilot owner gives a 15-minute reaction | Owner chooses one real action from cited evidence |
 | Days 13–14 | QA, security/privacy pass, deployment proof, and MVP evidence pack | Go/no-go confirmation | Critical flows and release identity verified |
 
-Current private supply status (2026-09-04): the tracked OSM snapshot's 50
+Current private supply status (2026-09-05): the tracked OSM snapshot's 50
 candidates have been imported to development Supabase as 50 pending businesses
 with 50 quarantined provenance rows. A repeated apply created no duplicates.
 A separate gitignored Drive snapshot contains 37
@@ -167,7 +167,13 @@ they remain manual match evidence, not merged or published profiles. The Drive
 source contributes factual profile fields only and does not provide review text
 for the Persian analysis evaluation set.
 
-Current publication-boundary status (2026-09-04): direct profiles, similar
+The admin-only `/admin/businesses/osm-review` queue now makes all 50 staged rows
+inspectable without changing them. It shows category, contact completeness,
+coordinates, capture date, and allowlisted OSM/ODbL references; local search and
+filters operate on a minimal DTO. There is deliberately no edit, approve, reject,
+or publish action in this slice.
+
+Current publication-boundary status (2026-09-05): direct profiles, similar
 results, category and Instagram-shop listings, popular/saved results, and
 bookmark mutations require an approved `business_sources` record in addition to
 an active/merged business status. Approved open-data credits render on the

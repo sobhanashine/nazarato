@@ -99,6 +99,10 @@ Set globally in `next.config.ts:31-40`:
   ODbL derivative-data boundary. Refresh logic lives in
   `scripts/fetch-rasht-osm-businesses.mts`; the fail-closed remote runner is
   `scripts/import-rasht-osm-quarantine.mts`.
+- `/admin/businesses/osm-review` is the admin-only, read-only inspection surface
+  for that staged supply. It exposes a minimal DTO, validates OSM and ODbL links
+  against an allowlist, and filters the 50 pending/quarantined rows without
+  providing an edit, approval, rejection, or publication action.
 - Shared Drive research is converted only through
   `scripts/prepare-rasht-drive-businesses.mts`. Real exports and prepared output
   stay under gitignored `data/private/` because this repository is public and the
@@ -221,7 +225,9 @@ Set globally in `next.config.ts:31-40`:
   data queries require `business_sources.status = 'approved'`. The remote table
   contains 50 OSM rows in `quarantined`, paired with 50 `pending` businesses;
   independent verification found zero active, approved, or public records.
-  Review each OSM row before changing publication state or enabling real-data mode.
+  The private read-only OSM queue makes those rows auditable, but a separate,
+  explicit review-state design and per-record decision are still required before
+  changing publication state or enabling real-data mode.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
   `npm audit --omit=dev` on 2026-09-04 reports zero production findings. The full
@@ -241,7 +247,7 @@ Set globally in `next.config.ts:31-40`:
   Redis/Postgres before multi-instance scale. Sessions remain HMAC-signed cookies,
   a deliberate placeholder for later Supabase Auth.
 - **Contact form delivery.** `app/contact/actions.ts` validates and logs but does not yet send email / write to DB. Wire to a transactional provider (or a `contact_messages` table) before launch.
-- **Pre-launch open routes.** `/profile/edit`, `/settings/security`, `/help`, `/admin` (overview), `/admin/reports`, `/admin/businesses`, `/admin/users` are still 📋. See `docs/journey-of-nazarato.md` for the prioritized launch backlog.
+- **Pre-launch open routes.** `/profile/edit`, `/settings/security`, `/help`, `/admin` (overview), `/admin/reports`, `/admin/users` are still 📋. See `docs/journey-of-nazarato.md` for the prioritized launch backlog.
 
 
 ---
@@ -252,6 +258,16 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-05** — Added the admin-only, read-only Rasht OSM inspection queue.
+  The page loads a minimal server-side DTO after repeating admin authorization,
+  validates outbound source/licence links, shows factual completeness, and
+  searches or filters all 50 quarantined records without any mutation or
+  publication control. Authenticated browser QA passed at 390 px and 1280 px;
+  strict TypeScript, lint, 173 unit tests, two access-boundary E2E tests,
+  production build, secret scan, and diff checks pass. Files:
+  `app/(admin)/admin/businesses/osm-review/`, `lib/admin/osm-review.ts`,
+  `lib/data/admin-osm-review.ts`, `e2e/admin-businesses.spec.ts`, and
+  `docs/{nabz-rasht-mvp,pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-04** — Added and executed the fail-closed Rasht OSM quarantine
   runner. Strict preflight validation imported 25 cafés and 25 restaurants as
   50 pending businesses plus 50 quarantined provenance rows; a repeated apply

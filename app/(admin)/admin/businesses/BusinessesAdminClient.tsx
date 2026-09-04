@@ -83,14 +83,22 @@ export function BusinessesAdminClient({
       <Header />
       <Container>
         <main className="space-y-6 py-8">
-          <header className="space-y-1">
-            <h1 className="text-[1.6rem] font-black text-strong">مدیریت کسب‌وکارها</h1>
-            <p className="text-[0.85rem] text-muted">
-              {faNum(items.length)} کسب‌وکار — وضعیت و تأیید.{" "}
-              <Link href="/admin/claims" className="text-mint hover:underline">
-                درخواست‌های مالکیت
-              </Link>
-            </p>
+          <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-1">
+              <h1 className="text-[1.6rem] font-black text-strong">مدیریت کسب‌وکارها</h1>
+              <p className="text-[0.85rem] text-muted">
+                {faNum(items.length)} کسب‌وکار — وضعیت و تأیید.{" "}
+                <Link href="/admin/claims" className="text-mint hover:underline">
+                  درخواست‌های مالکیت
+                </Link>
+              </p>
+            </div>
+            <Link
+              href="/admin/businesses/osm-review"
+              className="inline-flex min-h-11 w-fit items-center rounded-full border border-[#f4c66b]/35 bg-[#f4c66b]/[0.08] px-4 text-[0.78rem] font-bold text-[#f4c66b] transition-colors hover:bg-[#f4c66b]/[0.13]"
+            >
+              صف داده OSM
+            </Link>
           </header>
 
           <form onSubmit={onSearch} className="flex gap-2">
