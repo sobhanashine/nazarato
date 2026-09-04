@@ -180,11 +180,18 @@ database was changed because the required environment access is not configured.
   provenance. It is not a place to retain copied third-party descriptions,
   images, ratings, or reviews.
 - New imports are inserted as `businesses.status = 'pending'`. The importer marks
-  an eligible row active only after its approved source record persists; a
-  partial failure therefore stays private.
+  a brand-new eligible row active only after its approved source record persists;
+  a partial failure therefore stays private. An approved source attached to a
+  pre-existing identity requires manual reconciliation and never activates that
+  older row automatically.
 - Known rights do not automatically mean publication readiness. The import
   boundary also requires an explicit publication approval; `false` keeps the
   source quarantined while attribution or review work remains.
+- Public server reads require both a public business status and at least one
+  approved `business_sources` row. Direct slugs, related profiles, category/shop
+  lists, popular/saved results, and bookmark mutations all use this same gate.
+  Approved open-data rows expose only validated HTTPS source/licence links and
+  their attribution text on the business profile.
 
 ### Private legacy Drive staging
 
@@ -265,6 +272,9 @@ schema needed — it is a moderation query.
 
 ## 9. Changelog
 
+- **2026-09-04** — Enforced approved provenance on public business reads and
+  bookmark writes, rendered open-data attribution on profile pages, and stopped
+  new sources from auto-activating a pre-existing quarantined identity.
 - **2026-09-03** — Added Claim verification state, the database invariant that
   blocks unverified approval, and a private trigger-backed security audit table.
   Migration and rollback are authored but not remotely applied.

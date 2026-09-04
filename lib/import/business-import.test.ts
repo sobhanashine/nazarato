@@ -221,6 +221,37 @@ describe("executeBusinessImport", () => {
     expect(repository.businessStatus("cafe-sabz-rasht")).toBe("pending");
   });
 
+  it("does not activate a pre-existing quarantined profile from a new source", async () => {
+    const repository = new MemoryImportRepository();
+    const quarantined = await executeBusinessImport(
+      {
+        business: {
+          ...OWNER_INPUT.business,
+          name: "کافه قدیمی",
+        },
+        source: {
+          sourceType: "open_dataset",
+          sourceRef: "https://www.openstreetmap.org/node/1",
+          permissionBasis: "open_license",
+          licenseName: "ODbL-1.0",
+          licenseUrl: "https://www.openstreetmap.org/copyright",
+          attributionText: "© OpenStreetMap contributors",
+          publicationApproved: false,
+          capturedAt: OWNER_INPUT.source.capturedAt,
+        },
+      },
+      repository,
+    );
+    expect(quarantined.ok).toBe(true);
+    expect(repository.businessStatus("cafe-sabz-rasht")).toBe("pending");
+
+    const ownerSource = await executeBusinessImport(OWNER_INPUT, repository);
+
+    expect(ownerSource.ok && ownerSource.value.businessCreated).toBe(false);
+    expect(ownerSource.ok && ownerSource.value.requiresManualReview).toBe(true);
+    expect(repository.businessStatus("cafe-sabz-rasht")).toBe("pending");
+  });
+
   it("quarantines every development fixture and produces stable distinct hashes", () => {
     const firstPass = rashtBusinessImportFixtures.map(prepareBusinessImport);
     const secondPass = rashtBusinessImportFixtures.map(prepareBusinessImport);

@@ -16,6 +16,7 @@ import { useReviewSheet } from "@/components/review/ReviewSheetProvider";
 import { BookmarkButton } from "@/components/ui/BookmarkButton";
 import { ReviewCard } from "@/components/ui/ReviewCard";
 import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
+import { BusinessSourceNotice } from "@/components/company/BusinessSourceNotice";
 import type { Business, BusinessDetail } from "@/lib/data/businesses";
 import type { Review } from "@/lib/data/reviews";
 
@@ -267,7 +268,12 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
               </p>
             </section>
 
-            <section className={`${CARD} order-3 lg:order-none`}>
+            <BusinessSourceNotice
+              attributions={business.attributions ?? []}
+              className="order-3 lg:order-none"
+            />
+
+            <section className={`${CARD} order-4 lg:order-none`}>
               <div className="flex items-center justify-between gap-3">
                 <h2 className={SECTION_H2}>نظرات اخیر</h2>
                 {hasReviews && (
@@ -325,10 +331,10 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
               )}
             </section>
 
-            <ContactCard business={business} className="order-4 lg:order-none" />
+            <ContactCard business={business} className="order-5 lg:order-none" />
 
             {business.hours && business.hours.length > 0 && (
-              <section className={`${CARD} order-5 lg:order-none`}>
+              <section className={`${CARD} order-6 lg:order-none`}>
                 <h2 className={SECTION_H2}>ساعات کاری</h2>
                 <dl className="mt-3 flex flex-col gap-2 text-[0.85rem]">
                   {business.hours.map((h) => (

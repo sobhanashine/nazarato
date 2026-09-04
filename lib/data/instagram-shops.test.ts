@@ -79,6 +79,14 @@ describe("getInstagramShopsFromDb", () => {
 
     expect(mockSupabaseClient.from).toHaveBeenCalledWith("businesses");
     expect(mockSupabaseClient.eq).toHaveBeenCalledWith("type", "ig_shop");
+    expect(mockSupabaseClient.eq).toHaveBeenCalledWith(
+      "business_sources.status",
+      "approved",
+    );
+    expect(mockSupabaseClient.select).toHaveBeenCalledWith(
+      expect.stringContaining("business_sources!inner"),
+      { count: "exact" },
+    );
     expect(mockSupabaseClient.eq).toHaveBeenCalledWith("category_slug", "clothing");
     expect(result.shops).toHaveLength(1);
     expect(result.shops[0].name).toBe("مانتو سارا");
@@ -185,5 +193,13 @@ describe("getShopByHandle", () => {
     expect(shop?.reviews).toHaveLength(1);
     expect(shop?.reviews[0].user.name).toBe("مریم احمدی");
     expect(shop?.reviews[0].rating).toBe(5);
+    expect(mockSupabaseClient.in).toHaveBeenCalledWith("status", [
+      "active",
+      "merged",
+    ]);
+    expect(mockSupabaseClient.eq).toHaveBeenCalledWith(
+      "business_sources.status",
+      "approved",
+    );
   });
 });

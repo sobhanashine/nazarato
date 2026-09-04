@@ -138,6 +138,10 @@ does not satisfy this boundary.
 - Open datasets must also retain license name, license URL, and attribution text.
   A separate publication approval stays false until product-level obligations
   such as visible attribution are ready.
+- Public business reads now fail closed unless the profile status is public and
+  an approved provenance row exists. Open-data profiles render the approved
+  attribution and validated HTTPS source/licence links; an approved source for
+  an existing pending identity still requires manual field reconciliation.
 - Pilot review/support history requires explicit permission from the business and
   must preserve source, time range, and deletion expectations.
 
@@ -160,6 +164,14 @@ quarantined café/restaurant candidates. Three normalized names overlap exactly;
 they remain manual match evidence, not merged or published profiles. The Drive
 source contributes factual profile fields only and does not provide review text
 for the Persian analysis evaluation set.
+
+Current publication-boundary status (2026-09-04): direct profiles, similar
+results, category and Instagram-shop listings, popular/saved results, and
+bookmark mutations require an approved `business_sources` record in addition to
+an active/merged business status. Approved open-data credits render on the
+profile and were checked at 390 px and 1280 px with no overflow or console error.
+The OSM snapshot itself remains quarantined; the migration and real data have not
+been applied to a remote environment.
 
 Current consumer-loop status (2026-09-03): `/` now leads with an interactive
 `نبض رشت` demo containing four scenarios, five deterministic Duels per scenario,

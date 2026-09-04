@@ -83,7 +83,13 @@ Set globally in `next.config.ts:31-40`:
   migration under `supabase/rollbacks/`. It has not been applied remotely.
 - `lib/import/business-import.ts` is the strict factual-field boundary. New rows
   persist as pending, provenance persists next, and only an eligible source can
-  activate the profile; deterministic development fixtures remain quarantined.
+  activate a brand-new profile; deterministic development fixtures remain
+  quarantined. An approved source for an existing identity requires manual
+  reconciliation and cannot activate the older row automatically.
+- Public business reads and bookmark mutations require both a public status and
+  an approved provenance row. `BusinessSourceNotice` visibly credits approved
+  open datasets using only validated HTTPS source/licence links; local mobile and
+  desktop browser QA passed, but no real record has been published remotely.
 - `data/rasht-osm-businesses.json` is the reviewed 50-record candidate supply
   snapshot (25 cafés, 25 restaurants) sourced from OpenStreetMap under ODbL.
   Its source URLs and attribution metadata are retained; every row is explicitly
@@ -203,6 +209,11 @@ Set globally in `next.config.ts:31-40`:
   SHA, no configured database, and still uses fictional demo data. A public
   deployment must independently return the expected commit with `ok: true`,
   `database: "ok"`, and `demoMode: false` before the release gate can close.
+- **The provenance gate is local-only until the Nabz migration is applied.**
+  Public data queries now require `business_sources.status = 'approved'`, so a
+  real environment without the unapplied source table/seed will fail closed.
+  Apply the migration to a backed-up non-production project and review each OSM
+  row before changing `publicationApproved` or enabling the real data mode.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
   `npm audit --omit=dev` on 2026-09-04 reports zero production findings. The full
@@ -233,6 +244,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-04** — Closed the quarantined-profile publication bypass across direct, related, list, saved, and bookmark paths; added visible, URL-sanitized open-data attribution; and forced approved sources for existing identities through manual reconciliation. Unit and 390/1280 px RTL browser checks pass against a local mock; no remote data was published. Files: `lib/{data,import}/`, `app/(user)/saved/actions*`, `components/company/`, `docs/{data-model,nabz-rasht-mvp,pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-04** — Added a non-secret, fail-closed `/api/health` contract for release verification. The endpoint validates Git identity, probes the database only when configured, and cannot report ready while the product is code-locked to fictional demo data; local HTTP verification correctly returns 503. Files: `.env.example`, `README.md`, `app/api/health/route.ts`, `lib/release/`, `docs/{pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-04** — Upgraded the framework and production transitives to patched Next.js 16.3.4, cleared the production dependency audit, and added an official-source-backed evidence pack that separates local implementation, synthetic evaluation, live-pilot proof, public release identity, and knowledge-based readiness without claiming approval. Files: `AGENTS.md`, `README.md`, `package.json`, `package-lock.json`, `docs/{pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-03** — Hardened the pilot owner path: OTP codes are challenge-bound, expiring and replay-resistant with a fail-closed Kavenegar provider; claim inputs, file signatures, decision races, proof access/cleanup and verified-approval invariants are guarded; private audit and rollback migrations plus the manual-review playbook are included. The remote migration, SMS credentials and real-owner acceptance remain open. Files: `.env.example`, `lib/auth/`, `lib/security/`, `app/(auth)/login/`, `app/company/[slug]/claim/`, `app/(admin)/admin/claims/`, `supabase/{migrations,rollbacks}/`, `docs/claim-verification-pilot.md`.

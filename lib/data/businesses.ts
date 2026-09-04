@@ -60,6 +60,14 @@ export type Business = {
   verified?: boolean;
 };
 
+export type BusinessSourceAttribution = {
+  sourceType: "open_dataset";
+  sourceUrl: string;
+  licenseName: string;
+  licenseUrl: string;
+  attributionText: string;
+};
+
 /** A review as authored — `shop` is attached on read (see `getBusiness`). */
 type RawReview = {
   id: string;
@@ -91,7 +99,86 @@ export type BusinessDetail = {
   info: { label: string; value: string }[];
   similar: string[];
   reviews: RawReview[];
+  /** Visible licence credit for factual fields sourced from approved open data. */
+  attributions?: BusinessSourceAttribution[];
 };
+
+export const PUBLIC_BUSINESS_STATUSES = ["active", "merged"];
+
+export const PUBLIC_BUSINESS_SOURCE_SELECT = `
+  business_sources!inner (
+    source_type,
+    source_ref,
+    license_name,
+    license_url,
+    attribution_text,
+    status
+  )
+`;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function readHttpsUrl(value: unknown): string | null {
+  if (typeof value !== "string" || value.length > 500) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Reduce private source rows to safe public credits; incomplete rows disappear. */
+export function toPublicBusinessAttributions(
+  value: unknown,
+): BusinessSourceAttribution[] {
+  if (!Array.isArray(value)) return [];
+
+  const attributions: BusinessSourceAttribution[] = [];
+  const seen = new Set<string>();
+  for (const row of value) {
+    if (
+      !isRecord(row) ||
+      row.status !== "approved" ||
+      row.source_type !== "open_dataset"
+    ) {
+      continue;
+    }
+
+    const sourceUrl = readHttpsUrl(row.source_ref);
+    const licenseUrl = readHttpsUrl(row.license_url);
+    const licenseName =
+      typeof row.license_name === "string" ? row.license_name.trim() : "";
+    const attributionText =
+      typeof row.attribution_text === "string"
+        ? row.attribution_text.trim()
+        : "";
+    if (
+      !sourceUrl ||
+      !licenseUrl ||
+      !licenseName ||
+      licenseName.length > 120 ||
+      !attributionText ||
+      attributionText.length > 300
+    ) {
+      continue;
+    }
+
+    const key = `${sourceUrl}|${licenseUrl}|${attributionText}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    attributions.push({
+      sourceType: "open_dataset",
+      sourceUrl,
+      licenseName,
+      licenseUrl,
+      attributionText,
+    });
+  }
+  return attributions;
+}
 
 const faNum = (n: number) => n.toLocaleString("fa-IR");
 
@@ -330,8 +417,10 @@ export async function getBusiness(
   // 1. Fetch business row
   const { data: b, error: bError } = await supabase
     .from("businesses")
-    .select("*")
+    .select(`*, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
     .eq("slug", slug)
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .single();
     
   if (bError || !b) return undefined;
@@ -426,9 +515,10 @@ export async function getBusiness(
   let similarSlugs: string[] = [];
   const { data: similarData } = await supabase
     .from("businesses")
-    .select("slug")
+    .select(`slug, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
     .eq("category_slug", b.category_slug)
-    .eq("status", "active")
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .neq("slug", b.slug)
     .limit(4);
     
@@ -451,6 +541,7 @@ export async function getBusiness(
     info: b.info || [],
     similar: similarSlugs,
     reviews: reviews,
+    attributions: toPublicBusinessAttributions(b.business_sources),
   };
 }
 
@@ -461,8 +552,10 @@ export async function getSimilarBusinesses(detail: BusinessDetail): Promise<Busi
   
   const { data: list, error } = await supabase
     .from("businesses")
-    .select("*")
-    .in("slug", detail.similar);
+    .select(`*, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
+    .in("slug", detail.similar)
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved");
     
   if (error || !list) return [];
   
@@ -539,9 +632,10 @@ export async function getBusinessesByCategory(
   // 1. Start querying the businesses table
   let query = supabase
     .from("businesses")
-    .select("*", { count: "exact" })
+    .select(`*, ${PUBLIC_BUSINESS_SOURCE_SELECT}`, { count: "exact" })
     .eq("category_slug", categorySlug)
-    .in("status", ["active", "merged"]);
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved");
 
   // Apply sorting at the database level where possible
   if (sort === "rating") {

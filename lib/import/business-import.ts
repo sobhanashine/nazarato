@@ -68,6 +68,8 @@ export type BusinessImportPersistenceResult = {
   sourceId: string;
   businessCreated: boolean;
   sourceCreated: boolean;
+  /** Existing identities stay unchanged until a human reconciles their fields. */
+  requiresManualReview: boolean;
 };
 
 export interface BusinessImportRepository {
@@ -527,7 +529,8 @@ export async function executeBusinessImport(
     ...prepared.value.source,
     business_id: business.id,
   });
-  if (prepared.value.publishable) {
+  const requiresManualReview = prepared.value.publishable && !business.created;
+  if (prepared.value.publishable && business.created) {
     await repository.markBusinessPublishable(business.id);
   }
 
@@ -539,6 +542,7 @@ export async function executeBusinessImport(
       sourceId: source.id,
       businessCreated: business.created,
       sourceCreated: source.created,
+      requiresManualReview,
     },
   };
 }

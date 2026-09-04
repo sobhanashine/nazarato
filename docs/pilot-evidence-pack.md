@@ -182,8 +182,9 @@ reuse permission is unknown.
 | --- | --- | --- |
 | TypeScript | Pass | Strict type check succeeds |
 | ESLint | Pass | Current source passes lint |
-| Vitest | **154/154 pass across 31 files** | Local unit, health-report, and migration-contract suite is green |
+| Vitest | **161/161 pass across 32 files** | Local unit, provenance/UI, health-report, and migration-contract suite is green |
 | Targeted critical browser slice | **8/8 pass** | Nabz consumer path and unauthenticated owner-route guards pass after the framework upgrade |
+| Open-data profile browser check | **Pass at 390 px and 1280 px** | Approved OSM source and ODbL links render in RTL with no horizontal overflow or console error against a local mock; no record was published remotely |
 | Full Playwright suite | **Not green:** 41 passed, 12 failed, 5 skipped, 13 did not run before the run was stopped | Observed failures require missing Supabase configuration or a populated fixture database; this remains a real pilot-environment blocker |
 | Production build | **Not green** | Compilation and type generation pass; static generation stops on `/shop/manto_sara` because Supabase URL and service-role credentials are absent |
 | Production dependency audit | **0 findings** in the last successful 2026-09-04 `npm audit --omit=dev` run | Next.js and production transitives were upgraded to patched versions; a later repeat hit a registry timeout rather than returning contradictory results |
@@ -199,7 +200,7 @@ development-tool engine warning from `eslint-visitor-keys`; CI should use Node
 
 | Risk | Current mitigation | Residual risk and owner |
 | --- | --- | --- |
-| Copied or unlawfully reused business data | Strict factual-field importer, field provenance, licence metadata, quarantine, separate publication approval | Visible ODbL attribution and final publication review are still required - engineering |
+| Copied or unlawfully reused business data | Strict factual-field importer, field provenance, quarantine, approved-source public-read gate, visible HTTPS-validated open-data attribution, and manual reconciliation for an existing identity | Apply the migration and complete final per-record publication review - engineering |
 | Fabricated or weak recommendation | Minimum evidence, exact supporting Duel signals, deterministic reranking, explicit insufficient-data state | Needs real-user calibration and abuse monitoring - product/engineering |
 | Persian analysis error | Exact evidence spans, confidence, versioned output, append-only correction, no automatic deletion | Needs a consented, independently labelled held-out sample - pilot owner/product |
 | Coordinated or repeated voting | Same-origin boundary, bounded body, identity/network limits, hashed anonymous token, idempotency, human review | In-memory limiter is single-instance and must move to a shared store before scale - engineering |
@@ -269,6 +270,7 @@ No founder input is required for the remaining safe local preparation.
 | Persian model contract, metrics, and limitations | `docs/persian-intelligence-baseline.md` |
 | Claim security and real-owner acceptance path | `docs/claim-verification-pilot.md` |
 | Schema, provenance, and privacy model | `docs/data-model.md` |
+| Public provenance gate and visible attribution | `lib/data/businesses.ts`, `components/company/BusinessSourceNotice.tsx` |
 | Reversible database changes | `supabase/migrations/20260902_create_nabz_data_foundation.sql`, `supabase/migrations/20260903_harden_claim_otp_security.sql`, `supabase/migrations/20260903_create_owner_improvement_actions.sql` |
 | Matching rollback scripts | `supabase/rollbacks/` |
 | Release readiness and commit identity | `app/api/health/route.ts`, `lib/release/health-report.ts` |
