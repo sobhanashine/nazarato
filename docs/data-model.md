@@ -5,7 +5,7 @@
 > (pages) and [`PROJECT.md`](./PROJECT.md) (architecture).
 > Update this when you add/rename/remove a column or table.
 
-Last edited: 2026-09-03
+Last edited: 2026-09-04
 Owner: Sobhan (solo founder)
 Target DB: Supabase (Postgres). Auth is app-managed phone OTP + signed sessions;
 the application `users` table is standalone.
@@ -22,8 +22,9 @@ the application `users` table is standalone.
 - **Enums** — modeled as `text` + `CHECK` constraint (easier to evolve than PG
   `enum` types). Allowed values are listed per column below.
 - **Phasing** — `[MVP]` is already built, `[MVP-NABZ]` has an authored migration
-  for the active 14-day Rasht sprint but is not applied to a remote database,
-  and `[P3]` remains deferred. See `nabz-rasht-mvp.md` and
+  applied to the linked development Supabase project on 2026-09-04 for the
+  active 14-day Rasht sprint, and `[P3]` remains deferred. The new private tables
+  are empty until approved pilot data is deliberately imported. See `nabz-rasht-mvp.md` and
   `pages-master.md` §6.
 - **Counters** — columns like `*_count`, `rating_sum`, `helpful_count`,
   `response_rate` are *denormalized*. Keep them in sync with **Postgres
@@ -144,11 +145,12 @@ MVP columns are live — see `supabase/migrations/0001_create_users_table.sql`.
 
 ---
 
-## 5. Nabz Rasht tables — migration authored, not remotely applied
+## 5. Nabz Rasht tables — applied to development Supabase
 
-Migration `20260902_create_nabz_data_foundation.sql` creates this contract and
-its indexes/RLS; the companion down file is in `supabase/rollbacks/`. No remote
-database was changed because the required environment access is not configured.
+Migration `20260902000000_create_nabz_data_foundation.sql` creates this contract and
+its indexes/RLS; the companion down file is in `supabase/rollbacks/`. The schema
+was applied to the linked development project on 2026-09-04 after backup and
+history reconciliation. Its private tables remain empty pending approved data.
 
 | Table | Minimum columns | Key constraints | Phase |
 |---|---|---|---|
@@ -272,18 +274,23 @@ schema needed — it is a moderation query.
 
 ## 9. Changelog
 
+- **2026-09-04** — Applied the uniquely versioned Nabz, owner-improvement, and
+  claim-security migrations to the linked development Supabase project after a
+  claim-table backup, legacy-history reconciliation, and clean dry-run. Remote
+  migration history and schema probes pass; new private tables remain empty.
 - **2026-09-04** — Enforced approved provenance on public business reads and
   bookmark writes, rendered open-data attribution on profile pages, and stopped
   new sources from auto-activating a pre-existing quarantined identity.
 - **2026-09-03** — Added Claim verification state, the database invariant that
   blocks unverified approval, and a private trigger-backed security audit table.
-  Migration and rollback are authored but not remotely applied.
+  The migration was later applied to the development project on 2026-09-04.
 - **2026-09-02** — Extended source evidence with license name/URL/attribution
   metadata and made publication approval an explicit importer gate. The initial
   OSM snapshot remains quarantined despite its known ODbL permission basis.
 - **2026-09-02** — Authored the reversible Nabz data-foundation migration,
   private-by-default RLS, fail-closed importer, and deterministic quarantined
-  fixtures. The migration has not been applied to a remote database.
+  fixtures. The migration was later applied to the development project on
+  2026-09-04; no candidate source row was published by that operation.
 - **2026-09-02** — Locked the planned Nabz Rasht provenance, Duel, review-analysis,
   and private Taste Graph tables.
 

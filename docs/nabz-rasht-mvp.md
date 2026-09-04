@@ -170,8 +170,9 @@ results, category and Instagram-shop listings, popular/saved results, and
 bookmark mutations require an approved `business_sources` record in addition to
 an active/merged business status. Approved open-data credits render on the
 profile and were checked at 390 px and 1280 px with no overflow or console error.
-The OSM snapshot itself remains quarantined; the migration and real data have not
-been applied to a remote environment.
+The schema migration is applied to the linked development project, but the OSM
+snapshot remains quarantined and no real source row has been imported or
+published remotely.
 
 Current consumer-loop status (2026-09-03): `/` now leads with an interactive
 `نبض رشت` demo containing four scenarios, five deterministic Duels per scenario,
@@ -220,10 +221,11 @@ confidence, attaches review citations, and withholds sparse/weak candidates. An
 owner can append a correction without deleting the model output and can turn a
 supported issue into one active improvement cycle with a 90-day baseline,
 reduction target, follow-up date, model/version snapshot, and storage for the
-later observed result. Published reviews receive a best-effort durable analysis;
-without the private analysis migration the page labels live calculations as
-preview rather than official pilot evidence. The new reversible action migration
-is authored locally and has not been applied remotely. No Taste Graph or private
+later observed result. Published reviews receive a best-effort durable analysis.
+The private analysis and reversible improvement-action migrations are applied to
+the linked development Supabase project, but no real pilot analysis, correction,
+or action row exists yet; live calculations therefore remain non-pilot evidence.
+No Taste Graph or private
 user-preference field is queried for this owner surface. Real owner selection and
 the later before/after observation remain pilot gates.
 

@@ -1,8 +1,8 @@
--- Migration: 20260903_create_owner_improvement_actions — reversible —
+-- Migration: 20260903000000_create_owner_improvement_actions — reversible —
 -- CREATE TABLE/INDEX metadata locks — backup: n/a (new additive table)
 -- Stores a versioned baseline and target for one owner-led improvement cycle.
--- Not applied to a remote database by this task.
--- Rollback: supabase/rollbacks/20260903_create_owner_improvement_actions.down.sql
+-- Applied to the linked development Supabase project on 2026-09-04.
+-- Rollback: supabase/rollbacks/20260903000000_create_owner_improvement_actions.down.sql
 
 create table if not exists public.business_improvement_actions (
   id                         uuid primary key default gen_random_uuid(),

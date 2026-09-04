@@ -133,9 +133,9 @@ acceptance path is defined but not complete.
 | Rasht consumer loop | `components/nabz/NabzRasht.tsx`, `components/nabz/nabz-engine.ts` | Unit tests and targeted desktop/mobile Playwright coverage | Verified with fictional fixtures |
 | Private Taste Graph | `components/nabz/nabz-engine.ts`, `components/nabz/anonymous-taste-session.ts`, `components/nabz/TasteEvidencePanel.tsx` | Co-located engine and restore tests | Verified locally; account persistence missing |
 | Explainable concierge | `components/nabz/concierge-engine.ts`, `components/nabz/ConciergePanel.tsx` | Scenario, evidence, and weak-signal tests | Verified with fictional fixtures |
-| Real vote boundary | `app/api/nabz/votes/route.ts`, `lib/nabz/vote-contract.ts`, `lib/nabz/supabase-vote-repository.ts` | Boundary, origin, size, rate-limit, eligibility, and idempotency tests | Implemented; migration/data not connected |
+| Real vote boundary | `app/api/nabz/votes/route.ts`, `lib/nabz/vote-contract.ts`, `lib/nabz/supabase-vote-repository.ts` | Boundary, origin, size, rate-limit, eligibility, and idempotency tests | Schema connected; approved pilot IDs and live write not yet exercised |
 | Persian customer voice | `lib/intelligence/customer-voice-baseline.ts` | Reproducible 50-item synthetic evaluation and unit tests | Verified development baseline only |
-| Analysis durability | `lib/data/review-analysis-persistence.ts`, `review_analyses` schema | Persistence-path tests | Implemented; remote migration not applied |
+| Analysis durability | `lib/data/review-analysis-persistence.ts`, `review_analyses` schema | Persistence-path tests plus remote schema probe | Remote schema applied; real submission persistence not yet exercised |
 | Human correction | `app/(business)/business/insights/actions.ts`, `review_analysis_corrections` schema | Correction and fail-closed evidence tests | Implemented; real owner not exercised |
 | Owner cited insight | `lib/data/owner-action-insights.ts`, `app/(business)/business/insights/page.tsx` | Requires 3 distinct reviews and 0.55 average confidence; weak evidence is withheld | Verified locally |
 | Improvement measurement | `business_improvement_actions` migration and owner actions | Reproducible baseline tests; 90-day observation contract | Implemented; follow-up outcome pending |
@@ -271,7 +271,7 @@ No founder input is required for the remaining safe local preparation.
 | Claim security and real-owner acceptance path | `docs/claim-verification-pilot.md` |
 | Schema, provenance, and privacy model | `docs/data-model.md` |
 | Public provenance gate and visible attribution | `lib/data/businesses.ts`, `components/company/BusinessSourceNotice.tsx` |
-| Reversible database changes | `supabase/migrations/20260902_create_nabz_data_foundation.sql`, `supabase/migrations/20260903_harden_claim_otp_security.sql`, `supabase/migrations/20260903_create_owner_improvement_actions.sql` |
+| Reversible database changes | `supabase/migrations/20260902000000_create_nabz_data_foundation.sql`, `supabase/migrations/20260903000100_harden_claim_otp_security.sql`, `supabase/migrations/20260903000000_create_owner_improvement_actions.sql` |
 | Matching rollback scripts | `supabase/rollbacks/` |
 | Release readiness and commit identity | `app/api/health/route.ts`, `lib/release/health-report.ts` |
 | Framework security upgrade | commit `a3e4e87` |

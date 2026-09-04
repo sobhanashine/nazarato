@@ -1,4 +1,4 @@
--- Rollback for 20260903_harden_claim_otp_security.sql.
+-- Rollback for 20260903000100_harden_claim_otp_security.sql.
 -- WARNING: this removes the security audit history created after migration.
 
 alter table public.business_claims

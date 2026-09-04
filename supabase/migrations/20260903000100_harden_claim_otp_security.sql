@@ -1,4 +1,5 @@
--- Migration: harden owner claims and add a private security audit trail.
+-- Migration: 20260903000100_harden_claim_otp_security — harden owner claims
+-- and add a private security audit trail.
 -- Risk: additive columns/table plus a validated approval invariant.
 -- Existing approved claims are grandfathered with their historical review time;
 -- verified_by remains null when the old row did not retain a reviewer.

@@ -79,8 +79,9 @@ Set globally in `next.config.ts:31-40`:
 - Bilbooard and other directories are competitors/references, not default data
   sources. Unknown reuse permission means quarantine, not publication.
 - The additive, reversible Nabz data foundation is authored in
-  `supabase/migrations/20260902_create_nabz_data_foundation.sql` with its down
-  migration under `supabase/rollbacks/`. It has not been applied remotely.
+  `supabase/migrations/20260902000000_create_nabz_data_foundation.sql` with its down
+  migration under `supabase/rollbacks/`. It was applied to the linked development
+  Supabase project on 2026-09-04; all new private tables are currently empty.
 - `lib/import/business-import.ts` is the strict factual-field boundary. New rows
   persist as pending, provenance persists next, and only an eligible source can
   activate a brand-new profile; deterministic development fixtures remain
@@ -106,11 +107,11 @@ Set globally in `next.config.ts:31-40`:
   through `npm run evaluate:intelligence`; the honest pilot metric remains gated
   on consented, independently labelled real feedback.
 - Claim/OTP hardening is authored in
-  `supabase/migrations/20260903_harden_claim_otp_security.sql` and documented in
+  `supabase/migrations/20260903000100_harden_claim_otp_security.sql` and documented in
   `docs/claim-verification-pilot.md`: production codes are random and HMAC-bound,
   Kavenegar delivery fails closed, claim proof bytes are signature-checked, and
   approval requires verified ownership with a private audit trail. The migration
-  is not remotely applied and the real-owner pilot is still open.
+  is applied to the development project; the real-owner pilot is still open.
 - `docs/pilot-evidence-pack.md` is the dated audit boundary between locally
   verified implementation, environment-dependent integration, live-pilot proof,
   and current official knowledge-based product criteria. It must remain explicit
@@ -198,22 +199,25 @@ Set globally in `next.config.ts:31-40`:
 
 ## 3. Open items / known gaps
 
-- **Local production build needs Supabase configuration.** The Nabz homepage
-  compiles and its optional recent-review rail falls back safely, but existing
-  statically generated `/company/[slug]` pages call Supabase during prerender.
-  Without `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, `next build`
-  stops on those legacy pages. Configure a real development project before the
-  persistence and deployment gates; do not commit the values.
+- **Local Supabase and the MVP schema are connected.** The
+  project URL and public/server keys are present only in gitignored `.env.local`,
+  server-side read checks can see the existing 15 businesses and 37 reviews, and
+  `next build` now completes against the real development project. Read-only
+  probes confirm all three uniquely versioned 2026-09-02/03 Nabz,
+  owner-improvement, and claim-security migrations are present remotely. The
+  CLI is authenticated and linked, and the 12 already-present legacy migrations
+  are reconciled in remote history. The remaining gate is approved pilot data,
+  not schema deployment.
 - **Public release identity is instrumented but unverified.** `/api/health`
   currently returns 503 by design because the local environment has no release
-  SHA, no configured database, and still uses fictional demo data. A public
+  SHA and still uses fictional demo data; database connectivity is now present.
+  A public
   deployment must independently return the expected commit with `ok: true`,
   `database: "ok"`, and `demoMode: false` before the release gate can close.
-- **The provenance gate is local-only until the Nabz migration is applied.**
-  Public data queries now require `business_sources.status = 'approved'`, so a
-  real environment without the unapplied source table/seed will fail closed.
-  Apply the migration to a backed-up non-production project and review each OSM
-  row before changing `publicationApproved` or enabling the real data mode.
+- **The provenance gate is live but has no approved source rows yet.** Public
+  data queries require `business_sources.status = 'approved'`; the remote table
+  exists and is empty, so real data remains fail-closed. Review each OSM row
+  before changing `publicationApproved` or enabling the real data mode.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
   `npm audit --omit=dev` on 2026-09-04 reports zero production findings. The full
@@ -227,9 +231,9 @@ Set globally in `next.config.ts:31-40`:
 - **Auth / Claim — live pilot gate.** `/login` uses a visible fixed code only in
   development; production generates a random code and has a Kavenegar
   verify/lookup provider, but live receipt still needs SMS credit, an approved
-  template, and credentials. Apply the unapplied claim-security migration to a
-  backed-up Supabase project and complete one real Rasht owner flow before calling
-  Card 08 done. The send limiter is single-process for this pilot and must move to
+  template, and credentials. The claim-security migration is applied; complete
+  one real Rasht owner flow before calling Card 08 done. The send limiter is
+  single-process for this pilot and must move to
   Redis/Postgres before multi-instance scale. Sessions remain HMAC-signed cookies,
   a deliberate placeholder for later Supabase Auth.
 - **Contact form delivery.** `app/contact/actions.ts` validates and logs but does not yet send email / write to DB. Wire to a transactional provider (or a `contact_messages` table) before launch.
@@ -244,6 +248,22 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-04** — Reconciled 12 already-present legacy migration versions,
+  backed up the empty `business_claims` table, and applied the uniquely versioned
+  Nabz data-foundation, owner-improvement, and claim-security migrations to the
+  linked development Supabase project. Remote history and table/column probes,
+  production build, 161 tests, lint, and diff checks pass. New private tables
+  are intentionally empty pending approved pilot data. Files:
+  `supabase/{migrations,rollbacks}/`, `docs/{data-model,nabz-rasht-mvp,persian-intelligence-baseline,pilot-evidence-pack,PROJECT}.md`;
+  private backup: gitignored `data/private/backups/`.
+- **2026-09-04** — Connected the gitignored local environment and authenticated
+  Supabase CLI against the real development project. Public/server reads and the
+  production build pass without remote writes. Fetched the eight remote-history
+  files, confirmed all legacy tables/columns/buckets exist, and used dry-run to
+  block unsafe replay of 12 legacy files. Gave the three new migrations unique
+  14-digit versions; history repair, claim backup, explicit approval, and remote
+  apply remain open. Files: `.gitignore`, `supabase/{migrations,rollbacks}/`,
+  `docs/{data-model,pilot-evidence-pack,PROJECT}.md`; secrets stay in `.env.local`.
 - **2026-09-04** — Closed the quarantined-profile publication bypass across direct, related, list, saved, and bookmark paths; added visible, URL-sanitized open-data attribution; and forced approved sources for existing identities through manual reconciliation. Unit and 390/1280 px RTL browser checks pass against a local mock; no remote data was published. Files: `lib/{data,import}/`, `app/(user)/saved/actions*`, `components/company/`, `docs/{data-model,nabz-rasht-mvp,pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-04** — Added a non-secret, fail-closed `/api/health` contract for release verification. The endpoint validates Git identity, probes the database only when configured, and cannot report ready while the product is code-locked to fictional demo data; local HTTP verification correctly returns 503. Files: `.env.example`, `README.md`, `app/api/health/route.ts`, `lib/release/`, `docs/{pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-04** — Upgraded the framework and production transitives to patched Next.js 16.3.4, cleared the production dependency audit, and added an official-source-backed evidence pack that separates local implementation, synthetic evaluation, live-pilot proof, public release identity, and knowledge-based readiness without claiming approval. Files: `AGENTS.md`, `README.md`, `package.json`, `package-lock.json`, `docs/{pilot-evidence-pack,PROJECT}.md`.
@@ -299,7 +319,7 @@ task: what shipped, where to look, and any new decision worth remembering.
   candidates remain quarantined until visible attribution and the ODbL
   publication boundary are implemented; no database or public UI changed. Files:
   `data/`, `scripts/fetch-rasht-osm-businesses.mts`, `lib/import/`,
-  `supabase/migrations/20260902_create_nabz_data_foundation.sql`,
+  `supabase/migrations/20260902000000_create_nabz_data_foundation.sql`,
   `docs/data-model.md`, `docs/nabz-rasht-mvp.md`, `docs/PROJECT.md`.
 - **2026-09-02** — Authored the reversible Nabz data-foundation migration and a
   strict, idempotent business importer. Added private-by-default RLS for source
@@ -307,9 +327,9 @@ task: what shipped, where to look, and any new decision worth remembering.
   factual profile fields; quarantined unknown permissions and synthetic fixtures;
   and made new imports fail closed as pending until provenance persists. The
   migration was not applied remotely. Files: `lib/import/`,
-  `supabase/migrations/20260902_create_nabz_data_foundation.sql`,
-  `supabase/migrations/20260902_create_nabz_data_foundation.test.ts`,
-  `supabase/rollbacks/20260902_create_nabz_data_foundation.down.sql`,
+  `supabase/migrations/20260902000000_create_nabz_data_foundation.sql`,
+  `supabase/migrations/20260902000000_create_nabz_data_foundation.test.ts`,
+  `supabase/rollbacks/20260902000000_create_nabz_data_foundation.down.sql`,
   `docs/data-model.md`, `docs/nabz-rasht-mvp.md`, `docs/PROJECT.md`.
 - **2026-09-02** — Locked the 14-day Nabz Rasht MVP around contextual Duels,
   micro-reviews, a private Taste Graph, evidence-grounded recommendations, and

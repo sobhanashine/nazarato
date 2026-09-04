@@ -1,8 +1,8 @@
--- Migration: 20260902_create_nabz_data_foundation — reversible — brief ACCESS
+-- Migration: 20260902000000_create_nabz_data_foundation — reversible — brief ACCESS
 -- EXCLUSIVE lock on businesses for nullable columns; new tables/indexes — backup: n/a
--- (additive migration, not applied to a remote database by this task)
+-- Applied to the linked development Supabase project on 2026-09-04.
 --
--- Rollback: supabase/rollbacks/20260902_create_nabz_data_foundation.down.sql
+-- Rollback: supabase/rollbacks/20260902000000_create_nabz_data_foundation.down.sql
 
 -- 1. Minimal local-discovery fields. All are nullable so existing rows remain valid.
 alter table public.businesses

@@ -2,11 +2,11 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const migration = readFileSync(
-  new URL("./20260902_create_nabz_data_foundation.sql", import.meta.url),
+  new URL("./20260902000000_create_nabz_data_foundation.sql", import.meta.url),
   "utf8",
 );
 const rollback = readFileSync(
-  new URL("../rollbacks/20260902_create_nabz_data_foundation.down.sql", import.meta.url),
+  new URL("../rollbacks/20260902000000_create_nabz_data_foundation.down.sql", import.meta.url),
   "utf8",
 );
 

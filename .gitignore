@@ -58,3 +58,6 @@ next-env.d.ts
 
 # private research exports — never publish shared Drive data through Git
 /data/private/
+
+# Supabase CLI local state
+/supabase/.temp/

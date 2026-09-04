@@ -43,9 +43,9 @@ Suspicious content can produce only `needs_human_review` or `clear`. The module
 has no deletion action. Original review text is not overwritten.
 
 Human corrections retain both the reviewed model result and the corrected human
-label. The unapplied Nabz migration includes the private,
-RLS-protected `review_analysis_corrections` table for this append-only evaluation
-trail; no remote database has been changed yet.
+label. The Nabz migration now provides the private, RLS-protected
+`review_analysis_corrections` table in the linked development Supabase project
+for this append-only evaluation trail; it remains empty until a real pilot run.
 
 ## Reproducible development evaluation
 
@@ -91,8 +91,9 @@ the result look successful.
   probability.
 - Suspicious-pattern signals detect formatting and contact patterns; they do not
   prove fraud or coordinated behaviour.
-- The baseline is not yet invoked after a real review submission and its tables
-  are not applied to a configured Supabase project.
+- The baseline is not yet invoked after a real review submission. Its tables are
+  applied to the configured development Supabase project but contain no real
+  pilot analyses yet.
 
 ## Gate for the real pilot baseline
 

@@ -1,4 +1,4 @@
--- Rollback for 20260902_create_nabz_data_foundation.sql.
+-- Rollback for 20260902000000_create_nabz_data_foundation.sql.
 -- This deletes Nabz data and removes its nullable business columns. Back up any
 -- environment with real Nabz rows before running this file.
 

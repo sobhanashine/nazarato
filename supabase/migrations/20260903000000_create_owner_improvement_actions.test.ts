@@ -4,11 +4,11 @@ import { describe, expect, it } from "vitest";
 
 const root = process.cwd();
 const migration = readFileSync(
-  join(root, "supabase/migrations/20260903_create_owner_improvement_actions.sql"),
+  join(root, "supabase/migrations/20260903000000_create_owner_improvement_actions.sql"),
   "utf8",
 );
 const rollback = readFileSync(
-  join(root, "supabase/rollbacks/20260903_create_owner_improvement_actions.down.sql"),
+  join(root, "supabase/rollbacks/20260903000000_create_owner_improvement_actions.down.sql"),
   "utf8",
 );
 
