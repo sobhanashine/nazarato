@@ -103,6 +103,10 @@ Set globally in `next.config.ts:31-40`:
   that staged supply. It exposes a minimal DTO, validates OSM and ODbL links,
   filters all 50 pending/quarantined rows, and records review decisions in an
   append-only history without changing source or business publication status.
+  Its deterministic `nazarato-osm-prescreen/0.1.0` layer scores retained factual
+  signals, emits allowlisted explanation codes, and orders exception/completion
+  work before low-risk review. The current 50 rows classify as 30/20/0; this is
+  queue prioritization only, never an automatic decision or publication action.
 - Shared Drive research is converted only through
   `scripts/prepare-rasht-drive-businesses.mts`. Real exports and prepared output
   stay under gitignored `data/private/` because this repository is public and the
@@ -227,8 +231,10 @@ Set globally in `next.config.ts:31-40`:
   independent verification found zero active, approved, or public records.
   The private OSM queue now has a separate append-only review-state workflow;
   one explicit `unreviewed` QA event exists and the remaining records have no
-  human decision. Complete the real per-record review and a separate publication
-  approval design before changing source status or enabling real-data mode.
+  human decision. A versioned explainable pre-screen prioritizes the queue as 30
+  low-risk review, 20 completion, and zero exception rows, but changes no status.
+  Complete the real per-record review and a separate publication approval design
+  before changing source status or enabling real-data mode.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
   `npm audit --omit=dev` on 2026-09-04 reports zero production findings. The full
@@ -259,6 +265,17 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-05** — Added deterministic, versioned, explainable OSM pre-screening
+  to the private admin queue. Provenance, Rasht coordinates, phone structure,
+  address, and digital-channel signals now produce a score, recommendation, and
+  allowlisted reasons; exception/completion work sorts first and new human
+  decisions snapshot the machine result without auto-deciding or publishing.
+  The real 50-row queue reports 30 low-risk review, 20 completion, and zero
+  exceptions; 195 unit tests, strict TypeScript, lint, build, two access E2E
+  tests, and authenticated 390/1280 px RTL/no-overflow checks pass. Files:
+  `lib/admin/osm-{prescreen,review,source-review}*`,
+  `app/(admin)/admin/businesses/osm-review/OsmReviewQueue.tsx`, and
+  `docs/{osm-source-review-workflow,data-model,nabz-rasht-mvp,pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-05** — Added and remotely applied append-only OSM source-review
   events, server-authorized decision recording, criteria snapshots, current-state
   filtering, and visible history without changing publication state. Remote and

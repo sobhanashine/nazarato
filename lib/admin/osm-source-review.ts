@@ -1,4 +1,12 @@
 import type { OsmReviewCandidate, OsmReviewContact } from "./osm-review";
+import {
+  evaluateOsmPrescreen,
+  isOsmPrescreenReasonCode,
+  isOsmPrescreenRecommendation,
+  type OsmPrescreenInput,
+  type OsmPrescreenReasonCode,
+  type OsmPrescreenRecommendation,
+} from "./osm-prescreen";
 
 export const OSM_SOURCE_REVIEW_DECISIONS = [
   "unreviewed",
@@ -16,6 +24,12 @@ export type OsmSourceCriteriaSnapshot = {
   has_website: boolean;
   has_instagram: boolean;
   valid_source_links: boolean;
+  prescreen: {
+    version: string;
+    recommendation: OsmPrescreenRecommendation;
+    score: number;
+    reason_codes: OsmPrescreenReasonCode[];
+  } | null;
 };
 
 export type OsmSourceReviewEvent = {
@@ -66,12 +80,39 @@ function parseCriteriaSnapshot(value: unknown): OsmSourceCriteriaSnapshot {
       throw new Error("unexpected OSM source review event");
     }
   }
+  let prescreen: OsmSourceCriteriaSnapshot["prescreen"] = null;
+  if (value.prescreen !== undefined && value.prescreen !== null) {
+    if (!isRecord(value.prescreen)) {
+      throw new Error("unexpected OSM source review event");
+    }
+    const snapshot = value.prescreen;
+    if (
+      typeof snapshot.version !== "string" ||
+      snapshot.version.trim().length === 0 ||
+      !isOsmPrescreenRecommendation(snapshot.recommendation) ||
+      typeof snapshot.score !== "number" ||
+      !Number.isInteger(snapshot.score) ||
+      snapshot.score < 0 ||
+      snapshot.score > 100 ||
+      !Array.isArray(snapshot.reason_codes) ||
+      !snapshot.reason_codes.every(isOsmPrescreenReasonCode)
+    ) {
+      throw new Error("unexpected OSM source review event");
+    }
+    prescreen = {
+      version: snapshot.version.trim(),
+      recommendation: snapshot.recommendation,
+      score: snapshot.score,
+      reason_codes: snapshot.reason_codes,
+    };
+  }
   return {
     has_phone: value.has_phone as boolean,
     has_address: value.has_address as boolean,
     has_website: value.has_website as boolean,
     has_instagram: value.has_instagram as boolean,
     valid_source_links: value.valid_source_links as boolean,
+    prescreen,
   };
 }
 
@@ -124,14 +165,26 @@ export function validateOsmSourceReviewInput(
 export function buildOsmSourceCriteriaSnapshot(input: {
   contact: OsmReviewContact;
   sourceUrl: string | null;
+  licenseName: string;
   licenseUrl: string | null;
+  attributionText: string;
+  slug: string;
+  latitude: number | null;
+  longitude: number | null;
 }): OsmSourceCriteriaSnapshot {
+  const prescreen = evaluateOsmPrescreen(input satisfies OsmPrescreenInput);
   return {
     has_phone: Boolean(input.contact.phone),
     has_address: Boolean(input.contact.address),
     has_website: Boolean(input.contact.website),
     has_instagram: Boolean(input.contact.instagram),
     valid_source_links: Boolean(input.sourceUrl && input.licenseUrl),
+    prescreen: {
+      version: prescreen.version,
+      recommendation: prescreen.recommendation,
+      score: prescreen.score,
+      reason_codes: prescreen.reasonCodes,
+    },
   };
 }
 

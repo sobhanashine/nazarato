@@ -100,6 +100,18 @@ describe("recordAdminOsmSourceReviewDecision", () => {
         has_website: false,
         has_instagram: false,
         valid_source_links: true,
+        prescreen: {
+          version: "nazarato-osm-prescreen/0.1.0",
+          recommendation: "low_risk_review",
+          score: 90,
+          reason_codes: [
+            "valid_provenance",
+            "rasht_coordinates",
+            "phone_present",
+            "address_present",
+            "missing_digital_channel",
+          ],
+        },
       },
       created_at: "2026-09-05T10:00:00.000Z",
     };

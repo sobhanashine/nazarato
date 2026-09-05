@@ -170,10 +170,14 @@ for the Persian analysis evaluation set.
 The admin-only `/admin/businesses/osm-review` queue now makes all 50 staged rows
 inspectable and gives source-quality decisions their own append-only history. It
 shows category, factual completeness, coordinates, capture date, allowlisted
-OSM/ODbL references, criteria snapshots, and four internal review states. These
-events never edit imported facts or change source/business publication status.
-One explicit `unreviewed` QA event exists; it is test evidence, not a content
-approval.
+OSM/ODbL references, criteria snapshots, and four internal review states. A
+deterministic explainable pre-screen (`nazarato-osm-prescreen/0.1.0`) now sorts
+exceptions and incomplete rows first, with a score and allowlisted reasons for
+every recommendation. On the current snapshot it reports 30 low-risk review
+rows, 20 rows needing completion, and zero high-risk exceptions. The result is
+computed on read and snapshotted into new human-review events; it never edits
+imported facts or changes source/business publication status. One explicit
+`unreviewed` QA event exists; it is test evidence, not a content approval.
 
 Current publication-boundary status (2026-09-05): direct profiles, similar
 results, category and Instagram-shop listings, popular/saved results, and

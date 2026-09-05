@@ -203,8 +203,13 @@ separate append-only review history and was applied to development Supabase on
 - `business_source_review_events` stores internal quality decisions separately
   from `business_sources.status`. Its latest event is the current review state;
   prior events remain immutable, and each event snapshots factual completeness
-  plus source/licence validity. RLS has no browser policy and only an
-  admin-authorized server path may append events.
+  plus source/licence validity. New snapshots also include the exact
+  `nazarato-osm-prescreen/0.1.0` recommendation, integer score, and allowlisted
+  reason codes inside the existing `criteria_snapshot` JSON; old snapshots parse
+  with a null pre-screen, so no migration or backfill is required. The pre-screen
+  is computed on read and never writes `business_sources.status` or
+  `businesses.status`. RLS has no browser policy and only an admin-authorized
+  server path may append events.
 
 ### Private legacy Drive staging
 

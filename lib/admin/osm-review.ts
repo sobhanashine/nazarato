@@ -2,6 +2,10 @@ export type OsmReviewCategory = "cafe" | "restaurant";
 export type OsmReviewCompleteness = "all" | "complete" | "incomplete";
 
 export {
+  type OsmPrescreenRecommendation,
+  type OsmPrescreenResult,
+} from "./osm-prescreen";
+export {
   attachOsmSourceReviewEvents,
   type OsmSourceReviewDecision,
   type OsmSourceReviewEvent,
@@ -10,6 +14,11 @@ import type {
   OsmSourceReviewDecision,
   OsmSourceReviewEvent,
 } from "./osm-source-review";
+import {
+  evaluateOsmPrescreen,
+  type OsmPrescreenRecommendation,
+  type OsmPrescreenResult,
+} from "./osm-prescreen";
 
 export type OsmReviewContact = {
   phone?: string;
@@ -39,6 +48,7 @@ export type OsmReviewCandidate = {
   completenessScore: number;
   completenessTotal: 4;
   missingFields: string[];
+  prescreen: OsmPrescreenResult;
   reviewState: OsmSourceReviewDecision;
   reviewHistory: OsmSourceReviewEvent[];
 };
@@ -47,6 +57,7 @@ export type OsmReviewFilters = {
   query: string;
   category: "all" | OsmReviewCategory;
   completeness: OsmReviewCompleteness;
+  prescreen?: "all" | OsmPrescreenRecommendation;
   reviewState?: "all" | OsmSourceReviewDecision;
 };
 
@@ -56,6 +67,9 @@ export type OsmReviewSummary = {
   restaurants: number;
   complete: number;
   withPhone: number;
+  lowRiskReview: number;
+  needsCompletion: number;
+  highRiskException: number;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -174,7 +188,7 @@ export function parseOsmReviewRows(value: unknown): OsmReviewCandidate[] {
       { label: "وب‌سایت", present: Boolean(contact.website) },
     ];
 
-    return {
+    const candidate = {
       sourceId: requiredString(rawRow.id),
       businessId: requiredString(business.id),
       name: requiredString(business.name),
@@ -199,6 +213,10 @@ export function parseOsmReviewRows(value: unknown): OsmReviewCandidate[] {
         .map((field) => field.label),
       reviewState: "unreviewed",
       reviewHistory: [],
+    } satisfies Omit<OsmReviewCandidate, "prescreen">;
+    return {
+      ...candidate,
+      prescreen: evaluateOsmPrescreen(candidate),
     } satisfies OsmReviewCandidate;
   });
 }
@@ -215,6 +233,13 @@ export function filterOsmReviewCandidates(
     const complete = candidate.completenessScore === candidate.completenessTotal;
     if (filters.completeness === "complete" && !complete) return false;
     if (filters.completeness === "incomplete" && complete) return false;
+    if (
+      filters.prescreen &&
+      filters.prescreen !== "all" &&
+      candidate.prescreen.recommendation !== filters.prescreen
+    ) {
+      return false;
+    }
     if (
       filters.reviewState &&
       filters.reviewState !== "all" &&
@@ -240,6 +265,26 @@ export function filterOsmReviewCandidates(
   });
 }
 
+const PRESCREEN_PRIORITY: Record<OsmPrescreenRecommendation, number> = {
+  high_risk_exception: 0,
+  needs_completion: 1,
+  low_risk_review: 2,
+};
+
+export function sortOsmReviewCandidatesForReview(
+  candidates: OsmReviewCandidate[],
+): OsmReviewCandidate[] {
+  return [...candidates].sort((left, right) => {
+    const priority =
+      PRESCREEN_PRIORITY[left.prescreen.recommendation] -
+      PRESCREEN_PRIORITY[right.prescreen.recommendation];
+    if (priority !== 0) return priority;
+    const score = left.prescreen.score - right.prescreen.score;
+    if (score !== 0) return score;
+    return left.name.localeCompare(right.name, "fa-IR");
+  });
+}
+
 export function summarizeOsmReviewCandidates(
   candidates: OsmReviewCandidate[],
 ): OsmReviewSummary {
@@ -253,5 +298,14 @@ export function summarizeOsmReviewCandidates(
       (candidate) => candidate.completenessScore === candidate.completenessTotal,
     ).length,
     withPhone: candidates.filter((candidate) => Boolean(candidate.contact.phone)).length,
+    lowRiskReview: candidates.filter(
+      (candidate) => candidate.prescreen.recommendation === "low_risk_review",
+    ).length,
+    needsCompletion: candidates.filter(
+      (candidate) => candidate.prescreen.recommendation === "needs_completion",
+    ).length,
+    highRiskException: candidates.filter(
+      (candidate) => candidate.prescreen.recommendation === "high_risk_exception",
+    ).length,
   };
 }

@@ -9,12 +9,15 @@ import { Container } from "@/components/ui/Container";
 import { GLASS } from "@/components/ui/styles";
 import {
   filterOsmReviewCandidates,
+  sortOsmReviewCandidatesForReview,
   summarizeOsmReviewCandidates,
   type OsmReviewCandidate,
   type OsmReviewCategory,
   type OsmReviewCompleteness,
+  type OsmPrescreenRecommendation,
   type OsmSourceReviewDecision,
 } from "@/lib/admin/osm-review";
+import { OSM_PRESCREEN_REASON_LABELS } from "@/lib/admin/osm-prescreen";
 import { recordOsmSourceReviewDecision } from "./actions";
 
 const faNum = (value: number) => value.toLocaleString("fa-IR");
@@ -36,6 +39,30 @@ const REVIEW_TONES: Record<OsmSourceReviewDecision, string> = {
   needs_correction: "border-[#f4c66b]/30 bg-[#f4c66b]/[0.08] text-[#f4c66b]",
   ready_for_approval: "border-mint/30 bg-mint/[0.08] text-mint",
   rejected: "border-pomegr/30 bg-pomegr/[0.08] text-pomegr",
+};
+
+const PRESCREEN_LABELS: Record<OsmPrescreenRecommendation, string> = {
+  low_risk_review: "کم‌ریسک برای بررسی",
+  needs_completion: "نیازمند تکمیل",
+  high_risk_exception: "استثنای پرریسک",
+};
+
+const PRESCREEN_TONES: Record<OsmPrescreenRecommendation, string> = {
+  low_risk_review: "border-mint/30 bg-mint/[0.08] text-mint",
+  needs_completion: "border-[#f4c66b]/30 bg-[#f4c66b]/[0.08] text-[#f4c66b]",
+  high_risk_exception: "border-pomegr/30 bg-pomegr/[0.08] text-pomegr",
+};
+
+const PRESCREEN_BAR_TONES: Record<OsmPrescreenRecommendation, string> = {
+  low_risk_review: "bg-mint",
+  needs_completion: "bg-[#f4c66b]",
+  high_risk_exception: "bg-pomegr",
+};
+
+const PRESCREEN_DESCRIPTIONS: Record<OsmPrescreenRecommendation, string> = {
+  low_risk_review: "منبع و اطلاعات پایه برای بررسی انسانی کافی است.",
+  needs_completion: "پیش از تصمیم انسانی، اطلاعات زمینه‌ای باید تکمیل شود.",
+  high_risk_exception: "یک قاعده سخت شکست خورده؛ ابتدا منبع یا هویت بررسی شود.",
 };
 
 function formatCapturedAt(value: string): string {
@@ -72,6 +99,55 @@ function CompletenessMeter({ candidate }: { candidate: OsmReviewCandidate }) {
         ))}
       </div>
     </div>
+  );
+}
+
+function PrescreenPanel({ candidate }: { candidate: OsmReviewCandidate }) {
+  const { prescreen } = candidate;
+  return (
+    <section className="rounded-2xl border border-white/[0.09] bg-black/20 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="text-[0.58rem] font-bold text-white/35">
+            پیش‌غربالگری توضیح‌پذیر
+          </p>
+          <p className="mt-0.5 text-[0.58rem] text-white/30" dir="ltr">
+            {prescreen.version}
+          </p>
+        </div>
+        <span
+          className={`rounded-full border px-2.5 py-1 text-[0.62rem] font-black ${PRESCREEN_TONES[prescreen.recommendation]}`}
+        >
+          {PRESCREEN_LABELS[prescreen.recommendation]}
+        </span>
+      </div>
+      <div className="mt-3 flex items-center gap-3">
+        <strong className="text-lg font-black tabular-nums text-strong">
+          {faNum(prescreen.score)}
+        </strong>
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+          <div
+            className={`h-full rounded-full ${PRESCREEN_BAR_TONES[prescreen.recommendation]}`}
+            style={{ width: `${prescreen.score}%` }}
+          />
+        </div>
+        <span className="text-[0.58rem] text-white/35">از ۱۰۰</span>
+      </div>
+      <p className="mt-2 text-[0.64rem] leading-5 text-muted">
+        {PRESCREEN_DESCRIPTIONS[prescreen.recommendation]}
+      </p>
+      <ul className="mt-3 space-y-1.5">
+        {prescreen.reasonCodes.map((reasonCode) => (
+          <li
+            key={reasonCode}
+            className="flex items-start gap-2 text-[0.62rem] leading-5 text-muted"
+          >
+            <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-white/35" />
+            {OSM_PRESCREEN_REASON_LABELS[reasonCode]}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -128,6 +204,10 @@ function ReviewDecisionPanel({ candidate }: { candidate: OsmReviewCandidate }) {
           snapshot معیارهای فعلی
         </p>
         <CriteriaSnapshot candidate={candidate} />
+      </div>
+
+      <div className="mt-3">
+        <PrescreenPanel candidate={candidate} />
       </div>
 
       <form
@@ -239,6 +319,14 @@ function ReviewDecisionPanel({ candidate }: { candidate: OsmReviewCandidate }) {
                     {event.note}
                   </p>
                 )}
+                {event.criteriaSnapshot.prescreen && (
+                  <p className="mt-1.5 text-[0.58rem] leading-5 text-white/35">
+                    snapshot ماشین: {PRESCREEN_LABELS[event.criteriaSnapshot.prescreen.recommendation]}
+                    {" · "}امتیاز {faNum(event.criteriaSnapshot.prescreen.score)}
+                    {" · "}
+                    <span dir="ltr">{event.criteriaSnapshot.prescreen.version}</span>
+                  </p>
+                )}
               </li>
             ))}
           </ol>
@@ -273,6 +361,17 @@ function CandidateCard({ candidate }: { candidate: OsmReviewCandidate }) {
       <p className="mt-1 truncate text-[0.62rem] text-white/35" dir="ltr">
         {candidate.slug}
       </p>
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <span
+          className={`rounded-full border px-2 py-1 text-[0.58rem] font-black ${PRESCREEN_TONES[candidate.prescreen.recommendation]}`}
+        >
+          {PRESCREEN_LABELS[candidate.prescreen.recommendation]}
+        </span>
+        <span className="text-[0.62rem] font-black tabular-nums text-strong">
+          امتیاز {faNum(candidate.prescreen.score)} از ۱۰۰
+        </span>
+      </div>
 
       <div className="my-4 border-t border-dashed border-white/[0.09]" />
       <CompletenessMeter candidate={candidate} />
@@ -377,19 +476,25 @@ export function OsmReviewQueue({
   const [reviewState, setReviewState] = useState<"all" | OsmSourceReviewDecision>(
     "all",
   );
+  const [prescreen, setPrescreen] = useState<"all" | OsmPrescreenRecommendation>(
+    "all",
+  );
   const summary = useMemo(
     () => summarizeOsmReviewCandidates(initialCandidates),
     [initialCandidates],
   );
   const visibleCandidates = useMemo(
     () =>
-      filterOsmReviewCandidates(initialCandidates, {
-        query,
-        category,
-        completeness,
-        reviewState,
-      }),
-    [category, completeness, initialCandidates, query, reviewState],
+      sortOsmReviewCandidatesForReview(
+        filterOsmReviewCandidates(initialCandidates, {
+          query,
+          category,
+          completeness,
+          prescreen,
+          reviewState,
+        }),
+      ),
+    [category, completeness, initialCandidates, prescreen, query, reviewState],
   );
 
   return (
@@ -414,8 +519,8 @@ export function OsmReviewQueue({
                   صف بررسی ورودی‌های OSM
                 </h1>
                 <p className="mt-2 text-[0.82rem] leading-7 text-muted">
-                  بررسی کنترل‌شده‌ی کیفیت اطلاعات پایه و ثبت تاریخچه تصمیم؛ هیچ
-                  تصمیمی در این صفحه کسب‌وکار را تأیید یا منتشر نمی‌کند.
+                  موتور قطعی، نسخه‌دار و قابل‌توضیح، موارد ناقص و استثناها را
+                  جلو می‌آورد؛ تصمیم انسانی و انتشار همچنان کاملاً جداست.
                 </p>
               </div>
               <div className="inline-flex w-fit items-center gap-2 rounded-2xl border border-[#f4c66b]/25 bg-[#f4c66b]/[0.07] px-4 py-3 text-xs font-bold text-[#f4c66b]">
@@ -428,12 +533,12 @@ export function OsmReviewQueue({
             </div>
           </header>
 
-          <section aria-label="خلاصه صف" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <section aria-label="خلاصه پیش‌غربالگری" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
               { label: "کل رکوردها", value: summary.total, accent: "text-strong" },
-              { label: "کافه", value: summary.cafes, accent: "text-mint" },
-              { label: "رستوران", value: summary.restaurants, accent: "text-[#aeb7ff]" },
-              { label: "دارای تلفن", value: summary.withPhone, accent: "text-[#f4c66b]" },
+              { label: "کم‌ریسک برای بررسی", value: summary.lowRiskReview, accent: "text-mint" },
+              { label: "نیازمند تکمیل", value: summary.needsCompletion, accent: "text-[#f4c66b]" },
+              { label: "استثنای پرریسک", value: summary.highRiskException, accent: "text-pomegr" },
             ].map((metric) => (
               <div key={metric.label} className={`${GLASS} p-4 sm:p-5`}>
                 <p className="text-[0.68rem] font-bold text-muted">{metric.label}</p>
@@ -445,7 +550,7 @@ export function OsmReviewQueue({
           </section>
 
           <section aria-label="فیلتر صف" className={`${GLASS} p-4 sm:p-5`}>
-            <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_170px_180px_190px]">
+            <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_175px_170px_170px_180px]">
               <label className="block">
                 <span className="mb-1.5 block text-[0.7rem] font-bold text-muted">
                   جست‌وجوی نام، نشانی یا تماس
@@ -457,6 +562,25 @@ export function OsmReviewQueue({
                   placeholder="مثلاً گلسار یا کافه…"
                   className="min-h-11 w-full rounded-xl border border-glass-border bg-black/20 px-4 text-sm text-strong outline-none placeholder:text-white/25 focus:border-mint focus-visible:ring-2 focus-visible:ring-mint/20"
                 />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-[0.7rem] font-bold text-muted">
+                  پیشنهاد ماشین
+                </span>
+                <select
+                  value={prescreen}
+                  onChange={(event) =>
+                    setPrescreen(
+                      event.target.value as "all" | OsmPrescreenRecommendation,
+                    )
+                  }
+                  className="min-h-11 w-full rounded-xl border border-glass-border bg-[#0a0e18] px-3 text-sm font-bold text-strong outline-none focus:border-mint"
+                >
+                  <option value="all">همه پیشنهادها</option>
+                  <option value="high_risk_exception">استثنای پرریسک</option>
+                  <option value="needs_completion">نیازمند تکمیل</option>
+                  <option value="low_risk_review">کم‌ریسک برای بررسی</option>
+                </select>
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-[0.7rem] font-bold text-muted">
@@ -535,6 +659,7 @@ export function OsmReviewQueue({
                   setQuery("");
                   setCategory("all");
                   setCompleteness("all");
+                  setPrescreen("all");
                   setReviewState("all");
                 }}
                 className="mt-5 min-h-11 rounded-full border border-mint/35 bg-mint/10 px-5 text-sm font-bold text-mint transition-colors hover:bg-mint/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
@@ -545,7 +670,9 @@ export function OsmReviewQueue({
           )}
 
           <aside className="rounded-2xl border border-lapis/20 bg-lapis/[0.06] p-4 text-[0.72rem] leading-6 text-muted">
-            <strong className="text-[#aeb7ff]">مرز این صفحه:</strong> اطلاعات پایه
+            <strong className="text-[#aeb7ff]">مرز تصمیم:</strong> پیشنهاد ماشین فقط
+            صف را مرتب می‌کند و هیچ تصمیم انسانی، تأیید منبع یا انتشار ایجاد
+            نمی‌کند. اطلاعات پایه
             از OpenStreetMap تحت ODbL آمده است. امتیاز، نظر، تصویر، منو یا توضیح
             تجاری از منبع دیگری وارد نشده و این صفحه هیچ رکوردی را منتشر نمی‌کند.
           </aside>

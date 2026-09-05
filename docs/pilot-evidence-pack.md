@@ -4,8 +4,8 @@ Status: **local technical candidate; not yet a verified live pilot or an approve
 knowledge-based product**
 
 Evidence cut-off: **2026-09-05**<br>
-Branch: `codex/osm-review-decisions`<br>
-Evidence commits: `84f7acf` through `d9cb7c9`, plus the current reviewed decision-workflow change
+Branch: `codex/osm-prescreening`<br>
+Evidence commits: `84f7acf` through `d9cb7c9`, plus the current pre-screening change
 
 ## 1. Executive verdict
 
@@ -141,6 +141,7 @@ acceptance path is defined but not complete.
 | Improvement measurement | `business_improvement_actions` migration and owner actions | Reproducible baseline tests; 90-day observation contract | Implemented; follow-up outcome pending |
 | Claim and OTP | `lib/auth/`, `app/company/[slug]/claim/`, `app/(admin)/admin/claims/` | Replay, expiry, signature, race, proof, and authorization tests | Implemented; provider-backed owner run missing |
 | Provenance-aware import | `lib/import/business-import.ts`, `lib/import/osm-quarantine-batch.ts`, `scripts/import-rasht-osm-quarantine.mts`, `data/rasht-osm-businesses.json` | Validation, collision guard, idempotency, snapshot, migration, and remote postflight checks | 50 pending businesses + 50 quarantined sources remotely; zero public records |
+| Explainable supply pre-screen | `lib/admin/osm-prescreen.ts`, `lib/admin/osm-review.ts`, admin OSM queue | Versioned rule tests, real 50-row distribution, filters, reason display, and 390/1280 px authenticated browser checks | 30 low-risk review, 20 completion, 0 exception; recommendation only, no auto-decision |
 
 ## 5. Model, dataset, and provenance record
 
@@ -183,6 +184,13 @@ before opening the service-role client, validates the target and decision on the
 server, derives criteria snapshots from a trusted reread, and never changes
 source or business publication status. One explicit `unreviewed` QA event exists;
 the other rows remain without a human decision.
+The deterministic `nazarato-osm-prescreen/0.1.0` pass evaluates only retained
+OSM/ODbL provenance, Rasht coordinates, normalized phone structure, address, and
+website/Instagram presence. It produces an integer score plus allowlisted reason
+codes and currently classifies the snapshot as 30 low-risk review, 20 needing
+completion, and zero high-risk exception rows. It is computed on read, prioritizes
+the private queue, and is snapshotted into new human-review events; it does not
+approve, reject, activate, or publish a record.
 The private legacy Drive snapshot remains gitignored and quarantined because its
 reuse permission is unknown.
 
@@ -192,10 +200,11 @@ reuse permission is unknown.
 | --- | --- | --- |
 | TypeScript | Pass | Strict type check succeeds |
 | ESLint | Pass | Current source passes lint |
-| Vitest | **186/186 pass across 38 files** | Local unit, quarantine/idempotency, provenance/UI, append-only review workflow, health-report, and migration-contract suite is green |
+| Vitest | **195/195 pass across 39 files** | Local unit, deterministic pre-screen, quarantine/idempotency, provenance/UI, append-only review workflow, health-report, and migration-contract suite is green |
 | Targeted critical browser slice | **8/8 pass** | Nabz consumer path and unauthenticated owner-route guards pass after the framework upgrade |
 | Open-data profile browser check | **Pass at 390 px and 1280 px** | Approved OSM source and ODbL links render in RTL with no horizontal overflow or console error against a local mock; no record was published remotely |
 | Private OSM queue browser check | **Pass at 390 px and 1280 px; 2/2 access tests** | The authenticated page reads all 50 real quarantined rows, filters 25 restaurants, has no horizontal overflow or console error, and signed-out requests redirect to login |
+| OSM pre-screen browser check | **2/2 authenticated views pass at 390 px and 1280 px** | The real queue reports 30/20/0, filters every recommendation, explains the first score with a version and reason codes, keeps RTL/no-overflow, and displays zero publication |
 | OSM decision workflow | **Remote development pass** | One `unreviewed` QA event persisted and survived refresh; duplicate submit was a no-op, update was blocked by the append-only trigger, public RLS read returned zero, and source/business status stayed quarantined/pending |
 | Full Playwright suite | **Not green:** 41 passed, 12 failed, 5 skipped, 13 did not run before the run was stopped | Observed failures require missing Supabase configuration or a populated fixture database; this remains a real pilot-environment blocker |
 | Production build | **Pass against development Supabase** | Compilation, type generation, data reads, and static generation complete successfully; this is not deployment proof |

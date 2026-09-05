@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import snapshot from "../../data/rasht-osm-businesses.json";
+import { evaluateOsmPrescreen } from "../admin/osm-prescreen";
 import { prepareBusinessImport } from "./business-import";
 
 function duplicateKey(value: string): string {
@@ -85,5 +86,40 @@ describe("Rasht OpenStreetMap candidate snapshot", () => {
       }
     }
     expect(phones).toBeGreaterThanOrEqual(40);
+  });
+
+  it("produces a versioned recommendation for every quarantined candidate", () => {
+    const recommendations = snapshot.imports.map(({ business, source }) =>
+      evaluateOsmPrescreen({
+        slug: business.slug,
+        sourceUrl: source.sourceRef,
+        licenseName: source.licenseName,
+        licenseUrl: source.licenseUrl,
+        attributionText: source.attributionText,
+        latitude: business.latitude,
+        longitude: business.longitude,
+        contact: business.contact,
+      }),
+    );
+
+    expect(recommendations).toHaveLength(50);
+    expect(
+      recommendations.filter(
+        (result) => result.recommendation === "low_risk_review",
+      ),
+    ).toHaveLength(30);
+    expect(
+      recommendations.filter(
+        (result) => result.recommendation === "needs_completion",
+      ),
+    ).toHaveLength(20);
+    expect(
+      recommendations.filter(
+        (result) => result.recommendation === "high_risk_exception",
+      ),
+    ).toHaveLength(0);
+    expect(
+      new Set(recommendations.map((result) => result.version)),
+    ).toEqual(new Set(["nazarato-osm-prescreen/0.1.0"]));
   });
 });
