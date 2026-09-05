@@ -14,6 +14,7 @@ import type {
   OsmSourceReviewDecision,
   OsmSourceReviewEvent,
 } from "./osm-source-review";
+import type { OsmCompletionProposal } from "./osm-completion";
 import {
   evaluateOsmPrescreen,
   type OsmPrescreenRecommendation,
@@ -51,6 +52,7 @@ export type OsmReviewCandidate = {
   prescreen: OsmPrescreenResult;
   reviewState: OsmSourceReviewDecision;
   reviewHistory: OsmSourceReviewEvent[];
+  completionProposals: OsmCompletionProposal[];
 };
 
 export type OsmReviewFilters = {
@@ -213,6 +215,7 @@ export function parseOsmReviewRows(value: unknown): OsmReviewCandidate[] {
         .map((field) => field.label),
       reviewState: "unreviewed",
       reviewHistory: [],
+      completionProposals: [],
     } satisfies Omit<OsmReviewCandidate, "prescreen">;
     return {
       ...candidate,

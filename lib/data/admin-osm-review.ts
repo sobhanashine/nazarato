@@ -8,6 +8,7 @@ import {
   parseOsmReviewRows,
   type OsmReviewCandidate,
 } from "../admin/osm-review";
+import { attachOsmCompletionProposals } from "../admin/osm-completion";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 export const OSM_REVIEW_SELECT = `
@@ -81,5 +82,36 @@ export async function listAdminOsmReviewCandidates(): Promise<
     throw new Error("admin OSM review history failed");
   }
 
-  return attachOsmSourceReviewEvents(candidates, reviewEvents ?? []);
+  const reviewedCandidates = attachOsmSourceReviewEvents(
+    candidates,
+    reviewEvents ?? [],
+  );
+  const businessIds = [
+    ...new Set(candidates.map((candidate) => candidate.businessId)),
+  ];
+  const { data: completionProposals, error: completionError } =
+    await supabaseAdmin()
+      .from("business_sources")
+      .select(
+        "id,business_id,source_type,source_ref,permission_basis,field_payload,captured_at,status,created_by",
+      )
+      .in("business_id", businessIds)
+      .eq("source_type", "manual_public_facts")
+      .eq("status", "quarantined")
+      .order("captured_at", { ascending: false });
+
+  if (completionError) {
+    console.error("[admin/osm-review] failed to read completion history", {
+      route: "/admin/businesses/osm-review",
+      userId: admin.id,
+      code: completionError.code,
+      message: completionError.message,
+    });
+    throw new Error("admin OSM completion history failed");
+  }
+
+  return attachOsmCompletionProposals(
+    reviewedCandidates,
+    completionProposals ?? [],
+  );
 }

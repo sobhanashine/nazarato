@@ -142,6 +142,7 @@ acceptance path is defined but not complete.
 | Claim and OTP | `lib/auth/`, `app/company/[slug]/claim/`, `app/(admin)/admin/claims/` | Replay, expiry, signature, race, proof, and authorization tests | Implemented; provider-backed owner run missing |
 | Provenance-aware import | `lib/import/business-import.ts`, `lib/import/osm-quarantine-batch.ts`, `scripts/import-rasht-osm-quarantine.mts`, `data/rasht-osm-businesses.json` | Validation, collision guard, idempotency, snapshot, migration, and remote postflight checks | 50 pending businesses + 50 quarantined sources remotely; zero public records |
 | Explainable supply pre-screen | `lib/admin/osm-prescreen.ts`, `lib/admin/osm-review.ts`, admin OSM queue | Versioned rule tests, real 50-row distribution, filters, reason display, and 390/1280 px authenticated browser checks | 30 low-risk review, 20 completion, 0 exception; recommendation only, no auto-decision |
+| Source-backed completion evidence | `lib/admin/osm-completion.ts`, `lib/data/admin-osm-completion.ts`, admin OSM queue, creator migration | Boundary, duplicate, stale-target, permission, history, migration, and authenticated browser checks | Restricted to 20 completion rows; proposals remain separate and quarantined; exact QA row removed |
 
 ## 5. Model, dataset, and provenance record
 
@@ -194,21 +195,30 @@ approve, reject, activate, or publish a record.
 The private legacy Drive snapshot remains gitignored and quarantined because its
 reuse permission is unknown.
 
+The 20 machine-identified completion rows now support a controlled admin
+proposal history. The server re-reads the trusted OSM row and accepts only its
+missing factual contact fields with an HTTPS source. Known directories cannot be
+labeled as official business-controlled evidence, and `unknown` rows cannot
+leave quarantine. A real development round-trip verified creator attribution,
+refresh persistence, pending/quarantined state, score isolation, and public RLS;
+the exact temporary evidence row was then removed and zero QA rows remain.
+
 ## 6. Verification record
 
 | Gate | Result | Interpretation |
 | --- | --- | --- |
 | TypeScript | Pass | Strict type check succeeds |
 | ESLint | Pass | Current source passes lint |
-| Vitest | **195/195 pass across 39 files** | Local unit, deterministic pre-screen, quarantine/idempotency, provenance/UI, append-only review workflow, health-report, and migration-contract suite is green |
+| Vitest | **215/215 pass across 42 files** | Local unit, deterministic pre-screen, completion evidence, quarantine/idempotency, provenance/UI, append-only review workflow, health-report, and migration-contract suite is green |
 | Targeted critical browser slice | **8/8 pass** | Nabz consumer path and unauthenticated owner-route guards pass after the framework upgrade |
 | Open-data profile browser check | **Pass at 390 px and 1280 px** | Approved OSM source and ODbL links render in RTL with no horizontal overflow or console error against a local mock; no record was published remotely |
 | Private OSM queue browser check | **Pass at 390 px and 1280 px; 2/2 access tests** | The authenticated page reads all 50 real quarantined rows, filters 25 restaurants, has no horizontal overflow or console error, and signed-out requests redirect to login |
 | OSM pre-screen browser check | **2/2 authenticated views pass at 390 px and 1280 px** | The real queue reports 30/20/0, filters every recommendation, explains the first score with a version and reason codes, keeps RTL/no-overflow, and displays zero publication |
 | OSM decision workflow | **Remote development pass** | One `unreviewed` QA event persisted and survived refresh; duplicate submit was a no-op, update was blocked by the append-only trigger, public RLS read returned zero, and source/business status stayed quarantined/pending |
+| OSM completion proposal | **Remote development and browser pass** | Migration `20260905010000` is applied; submit/refresh/history passed at 390/1280 px, score stayed fixed, source/business stayed quarantined/pending, creator attribution persisted, and exact QA evidence was deleted |
 | Full Playwright suite | **Not green:** 41 passed, 12 failed, 5 skipped, 13 did not run before the run was stopped | Observed failures require missing Supabase configuration or a populated fixture database; this remains a real pilot-environment blocker |
 | Production build | **Pass against development Supabase** | Compilation, type generation, data reads, and static generation complete successfully; this is not deployment proof |
-| Production dependency audit | **0 findings** in the last successful 2026-09-04 `npm audit --omit=dev` run | Next.js and production transitives were upgraded to patched versions; a later repeat hit a registry timeout rather than returning contradictory results |
+| Production dependency audit | **0 findings** in the successful 2026-09-05 `npm audit --omit=dev` run | Next.js and all production transitives currently report no known npm advisory |
 | Full dependency audit | **5 development-only findings** | One low and four high issues remain in Babel/Vite/tooling transitives; track before a hardened CI release |
 | Release-health contract | **Local pass** | A live local request returns HTTP 503 with `releaseSha: "unknown"`, `database: "unconfigured"`, and `demoMode: true`, proving the incomplete environment cannot report ready |
 | Public release identity | **Instrumented, not verified** | `/api/health` fails closed unless the Git SHA, database, and non-demo data mode are all real; no deployment URL has been checked yet |

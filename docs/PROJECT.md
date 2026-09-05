@@ -107,6 +107,11 @@ Set globally in `next.config.ts:31-40`:
   signals, emits allowlisted explanation codes, and orders exception/completion
   work before low-risk review. The current 50 rows classify as 30/20/0; this is
   queue prioritization only, never an automatic decision or publication action.
+  The 20 completion rows now expose a source-backed factual proposal form. It
+  appends creator-attributed `manual_public_facts` evidence in quarantine,
+  preserves the original OSM payload and machine score, and treats map,
+  directory, and marketplace pages as unknown-permission leads rather than
+  reusable content.
 - Shared Drive research is converted only through
   `scripts/prepare-rasht-drive-businesses.mts`. Real exports and prepared output
   stay under gitignored `data/private/` because this repository is public and the
@@ -233,11 +238,16 @@ Set globally in `next.config.ts:31-40`:
   one explicit `unreviewed` QA event exists and the remaining records have no
   human decision. A versioned explainable pre-screen prioritizes the queue as 30
   low-risk review, 20 completion, and zero exception rows, but changes no status.
+  Migration `20260905010000_add_business_source_created_by` is applied to the
+  development project. The completion workflow is restricted to the 20 machine
+  completion rows; its authenticated QA proposal remained quarantined against a
+  pending business, survived refresh without changing score, and was deleted by
+  exact ID afterward. No manual completion or public QA row remains.
   Complete the real per-record review and a separate publication approval design
   before changing source status or enabling real-data mode.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
-  `npm audit --omit=dev` on 2026-09-04 reports zero production findings. The full
+  `npm audit --omit=dev` on 2026-09-05 reports zero production findings. The full
   audit still reports one low and four high development-only transitive findings.
   Local Node 22.11.0 is also below the `eslint-visitor-keys` 22.x engine floor;
   use Node 20.19+, 22.13+, or a supported later major for CI and release checks.
@@ -265,6 +275,19 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-05** — Added controlled source-backed completion proposals for the
+  20 private OSM rows in `needs_completion`. The admin form accepts only factual
+  contact fields missing from the trusted OSM row, requires an HTTPS source and
+  permission basis, stores separate creator-attributed evidence in quarantine,
+  shows history, rejects copied content and mislabeled directory sources, and
+  never changes score, review state, approval, activation, or publication. The
+  reversible creator migration is applied to development; 215 unit tests,
+  strict TypeScript, lint, build, two access tests, and authenticated 390/1280 px
+  submit/refresh/no-overflow QA pass. The exact temporary QA row was removed.
+  Files: `lib/admin/osm-completion*`, `lib/data/admin-osm-completion*`,
+  `app/(admin)/admin/businesses/osm-review/`,
+  `supabase/{migrations,rollbacks}/20260905010000_*`, and
+  `docs/{osm-completion-proposals,data-model,nabz-rasht-mvp,pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-05** — Added deterministic, versioned, explainable OSM pre-screening
   to the private admin queue. Provenance, Rasht coordinates, phone structure,
   address, and digital-channel signals now produce a score, recommendation, and

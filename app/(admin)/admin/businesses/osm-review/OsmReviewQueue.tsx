@@ -18,7 +18,14 @@ import {
   type OsmSourceReviewDecision,
 } from "@/lib/admin/osm-review";
 import { OSM_PRESCREEN_REASON_LABELS } from "@/lib/admin/osm-prescreen";
-import { recordOsmSourceReviewDecision } from "./actions";
+import type {
+  OsmCompletionContact,
+  OsmCompletionPermissionBasis,
+} from "@/lib/admin/osm-completion";
+import {
+  recordOsmCompletionProposal,
+  recordOsmSourceReviewDecision,
+} from "./actions";
 
 const faNum = (value: number) => value.toLocaleString("fa-IR");
 
@@ -174,6 +181,264 @@ function CriteriaSnapshot({ candidate }: { candidate: OsmReviewCandidate }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+const COMPLETION_FIELDS = [
+  {
+    key: "phone",
+    label: "تلفن",
+    placeholder: "مثلاً ۰۱۳ ۳۳۱۱ ۲۲۳۳",
+    direction: "ltr",
+  },
+  {
+    key: "address",
+    label: "نشانی",
+    placeholder: "نشانی عمومی کسب‌وکار",
+    direction: "rtl",
+  },
+  {
+    key: "website",
+    label: "وب‌سایت",
+    placeholder: "https://example.ir",
+    direction: "ltr",
+  },
+  {
+    key: "instagram",
+    label: "اینستاگرام",
+    placeholder: "@business",
+    direction: "ltr",
+  },
+] as const;
+
+const COMPLETION_LABELS: Record<keyof OsmCompletionContact, string> = {
+  phone: "تلفن",
+  address: "نشانی",
+  website: "وب‌سایت",
+  instagram: "اینستاگرام",
+};
+
+function CompletionProposalPanel({ candidate }: { candidate: OsmReviewCandidate }) {
+  const router = useRouter();
+  const [contact, setContact] = useState<OsmCompletionContact>({});
+  const [sourceRef, setSourceRef] = useState("");
+  const [permissionBasis, setPermissionBasis] =
+    useState<OsmCompletionPermissionBasis>("unknown");
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const missingFields = COMPLETION_FIELDS.filter(
+    ({ key }) => !candidate.contact[key],
+  );
+  const hasContactValue = Object.values(contact).some(
+    (value) => typeof value === "string" && value.trim().length > 0,
+  );
+
+  return (
+    <section className="mt-4 overflow-hidden rounded-2xl border border-[#f4c66b]/25 bg-[#f4c66b]/[0.045]">
+      <div className="border-b border-[#f4c66b]/15 px-3 py-3 sm:px-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 className="text-[0.72rem] font-black text-[#f4c66b]">
+              پیشنهاد تکمیل منبع‌دار
+            </h3>
+            <p className="mt-1 text-[0.62rem] leading-5 text-muted">
+              یک مدرک جدا و قرنطینه ثبت می‌شود؛ داده‌ی OSM، امتیاز ماشین و وضعیت
+              انتشار تغییر نمی‌کند.
+            </p>
+          </div>
+          <span className="rounded-full border border-[#f4c66b]/25 px-2.5 py-1 text-[0.58rem] font-black text-[#f4c66b]">
+            {faNum(candidate.completionProposals.length)} مدرک
+          </span>
+        </div>
+      </div>
+
+      {candidate.completionProposals.length > 0 && (
+        <ol className="space-y-2 border-b border-[#f4c66b]/15 p-3 sm:p-4">
+          {candidate.completionProposals.map((proposal) => (
+            <li
+              key={proposal.id}
+              className="rounded-xl border border-white/[0.08] bg-black/20 p-3"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span
+                  className={`rounded-full border px-2 py-1 text-[0.58rem] font-black ${
+                    proposal.permissionBasis === "public_factual_contact"
+                      ? "border-mint/25 bg-mint/[0.06] text-mint"
+                      : "border-pomegr/25 bg-pomegr/[0.06] text-pomegr"
+                  }`}
+                >
+                  {proposal.permissionBasis === "public_factual_contact"
+                    ? "اطلاعات عمومی رسمی · هنوز قرنطینه"
+                    : "مجوز نامشخص · غیرقابل استفاده"}
+                </span>
+                <time className="text-[0.58rem] text-white/35">
+                  {formatCapturedAt(proposal.capturedAt)}
+                </time>
+              </div>
+              <dl className="mt-2 grid gap-1.5 sm:grid-cols-2">
+                {Object.entries(proposal.contact).map(([key, value]) => (
+                  <div key={key} className="rounded-lg bg-white/[0.035] px-2.5 py-2">
+                    <dt className="text-[0.56rem] text-white/35">
+                      {COMPLETION_LABELS[key as keyof OsmCompletionContact]}
+                    </dt>
+                    <dd className="mt-0.5 break-words text-[0.64rem] text-strong">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                {proposal.sourceWarning ? (
+                  <span className="text-[0.6rem] text-pomegr">
+                    {proposal.sourceWarning}؛ لینک نمایش داده نشد.
+                  </span>
+                ) : (
+                  <a
+                    href={proposal.sourceUrl ?? undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[0.62rem] font-bold text-[#aeb7ff] underline decoration-[#aeb7ff]/35 underline-offset-4"
+                  >
+                    مشاهده منبع مدرک
+                  </a>
+                )}
+                <span className="text-[0.56rem] text-white/30">
+                  {proposal.createdBy ? "ثبت‌شده توسط ادمین" : "ثبت‌کننده نامشخص"}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {candidate.prescreen.recommendation === "needs_completion" &&
+      missingFields.length > 0 ? (
+        <form
+          className="space-y-3 p-3 sm:p-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setFeedback(null);
+            startTransition(async () => {
+              const result = await recordOsmCompletionProposal({
+                sourceId: candidate.sourceId,
+                sourceRef,
+                permissionBasis,
+                contact,
+              });
+              if (!result.ok) {
+                setFeedback(result.error);
+                return;
+              }
+              setFeedback(
+                result.noAction
+                  ? "این مدرک قبلاً ثبت شده است."
+                  : "مدرک در قرنطینه ثبت شد؛ هنوز در داده کسب‌وکار استفاده نشده است.",
+              );
+              if (!result.noAction) {
+                setContact({});
+                setSourceRef("");
+                setPermissionBasis("unknown");
+                router.refresh();
+              }
+            });
+          }}
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            {missingFields.map(({ key, label, placeholder, direction }) => (
+              <label key={key} className="block">
+                <span className="mb-1.5 block text-[0.62rem] font-bold text-muted">
+                  {label} گمشده
+                </span>
+                <input
+                  type={key === "website" ? "url" : "text"}
+                  value={contact[key] ?? ""}
+                  disabled={isPending}
+                  dir={direction}
+                  onChange={(event) =>
+                    setContact((current) => ({
+                      ...current,
+                      [key]: event.target.value,
+                    }))
+                  }
+                  placeholder={placeholder}
+                  className="min-h-11 w-full rounded-xl border border-glass-border bg-[#0a0e18] px-3 text-[0.7rem] text-strong outline-none placeholder:text-white/25 focus:border-[#f4c66b] disabled:opacity-60"
+                />
+              </label>
+            ))}
+          </div>
+          <label className="block">
+            <span className="mb-1.5 block text-[0.62rem] font-bold text-muted">
+              لینک دقیق منبع · اجباری
+            </span>
+            <input
+              type="url"
+              required
+              value={sourceRef}
+              disabled={isPending}
+              dir="ltr"
+              onChange={(event) => setSourceRef(event.target.value)}
+              placeholder="https://business.example/contact"
+              className="min-h-11 w-full rounded-xl border border-glass-border bg-[#0a0e18] px-3 text-[0.7rem] text-strong outline-none placeholder:text-white/25 focus:border-[#f4c66b] disabled:opacity-60"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-[0.62rem] font-bold text-muted">
+              مبنای استفاده از منبع
+            </span>
+            <select
+              value={permissionBasis}
+              disabled={isPending}
+              onChange={(event) =>
+                setPermissionBasis(
+                  event.target.value as OsmCompletionPermissionBasis,
+                )
+              }
+              className="min-h-11 w-full rounded-xl border border-glass-border bg-[#0a0e18] px-3 text-[0.7rem] font-bold text-strong outline-none focus:border-[#f4c66b] disabled:opacity-60"
+            >
+              <option value="unknown">نامشخص · فقط سرنخ، غیرقابل استفاده</option>
+              <option value="public_factual_contact">
+                صفحه رسمی کسب‌وکار · اطلاعات عمومی factual
+              </option>
+            </select>
+          </label>
+          <p className="rounded-xl border border-pomegr/20 bg-pomegr/[0.05] p-2.5 text-[0.61rem] leading-5 text-muted">
+            Google Maps، نشان، بلد، دیجی‌کالا، باسلام، ترب، اسنپ و دایرکتوری‌های
+            مشابه را «نامشخص» ثبت کن. نظر، امتیاز، تصویر و توضیح تبلیغاتی اینجا
+            مجاز نیست.
+          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[0.58rem] text-white/35">
+              فقط فیلدهای خالی OSM قابل پیشنهادند.
+            </span>
+            <button
+              type="submit"
+              disabled={isPending || !hasContactValue || sourceRef.trim().length === 0}
+              className="min-h-11 rounded-full border border-[#f4c66b]/35 bg-[#f4c66b]/10 px-4 text-[0.68rem] font-black text-[#f4c66b] transition-colors hover:bg-[#f4c66b]/15 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {isPending ? "در حال ثبت…" : "ثبت مدرک در قرنطینه"}
+            </button>
+          </div>
+          {feedback && (
+            <p
+              className={`rounded-xl border p-2.5 text-[0.64rem] leading-5 ${
+                feedback.includes("قرنطینه") || feedback.includes("قبلاً")
+                  ? "border-mint/20 bg-mint/[0.06] text-mint"
+                  : "border-pomegr/25 bg-pomegr/[0.07] text-pomegr"
+              }`}
+              role="status"
+            >
+              {feedback}
+            </p>
+          )}
+        </form>
+      ) : (
+        <p className="p-3 text-[0.64rem] leading-5 text-muted sm:p-4">
+          {candidate.prescreen.recommendation === "needs_completion"
+            ? "OSM هر چهار فیلد اصلی را دارد؛ فرم تکمیل برای جلوگیری از بازنویسی بسته است."
+            : "این رکورد در صف نیازمند تکمیل نیست؛ فرم ثبت مدرک برای جلوگیری از تغییر خارج از صف بسته است."}
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -457,6 +722,7 @@ function CandidateCard({ candidate }: { candidate: OsmReviewCandidate }) {
               </a>
             </div>
           )}
+          <CompletionProposalPanel candidate={candidate} />
           <ReviewDecisionPanel candidate={candidate} />
         </div>
       </details>

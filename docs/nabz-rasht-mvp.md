@@ -179,6 +179,17 @@ computed on read and snapshotted into new human-review events; it never edits
 imported facts or changes source/business publication status. One explicit
 `unreviewed` QA event exists; it is test evidence, not a content approval.
 
+The same private queue now has a controlled evidence-capture step for those 20
+`needs_completion` rows. An admin may propose only factual contact fields still
+missing from the original OSM payload and must attach an exact HTTPS source plus
+permission basis. Each proposal is a separate `manual_public_facts` source row
+with creator attribution and stays quarantined. Directory and marketplace leads
+default to `unknown` and are not usable; copied reviews, ratings, images, and
+descriptions are rejected. Proposals do not recalculate the pre-screen, alter a
+human decision, merge facts, or publish a business. The development migration is
+applied; the authenticated 390/1280 px round-trip passed and its exact QA row was
+removed afterward.
+
 Current publication-boundary status (2026-09-05): direct profiles, similar
 results, category and Instagram-shop listings, popular/saved results, and
 bookmark mutations require an approved `business_sources` record in addition to

@@ -156,10 +156,13 @@ remain empty pending pilot activity.
 Migration `20260905000000_create_business_source_review_events.sql` adds the
 separate append-only review history and was applied to development Supabase on
 2026-09-05; its down migration is destructive only to that new event table.
+Migration `20260905010000_add_business_source_created_by.sql` adds nullable
+creator attribution to source evidence and was applied on 2026-09-05. It has no
+backfill and never changes source or business status.
 
 | Table | Minimum columns | Key constraints | Phase |
 |---|---|---|---|
-| `business_sources` | `id`, `business_id`, `source_type`, `source_ref`, `permission_basis`, `license_name`, `license_url`, `attribution_text`, `field_payload`, `payload_hash`, `captured_at`, `status` | `UNIQUE (business_id, payload_hash)`; unknown permission stays `quarantined`; open data requires attribution metadata | MVP-NABZ |
+| `business_sources` | `id`, `business_id`, `source_type`, `source_ref`, `permission_basis`, `license_name`, `license_url`, `attribution_text`, `field_payload`, `payload_hash`, `captured_at`, `status`, `created_by` | `UNIQUE (business_id, payload_hash)`; unknown permission stays `quarantined`; open data requires attribution metadata; creator is nullable for legacy imports | MVP-NABZ |
 | `business_source_review_events` | `id`, `source_id`, `reviewer_id`, `decision`, `note`, `criteria_snapshot`, `created_at` | Append-only trigger; correction/rejection requires a note; review state never changes publication state | MVP-NABZ |
 | `comparison_votes` | `id`, `user_id`, `anonymous_session_id`, `city_slug`, `scenario_slug`, `winner_business_id`, `loser_business_id`, `reason_text`, `created_at` | winner ≠ loser; one vote per normalized pair/scenario/session window | MVP-NABZ |
 | `review_analyses` | `review_id`, `normalized_text`, `aspect_scores`, `sentiment`, `evidence_spans`, `issue_cluster`, `suspicious_score`, `model_id`, `model_version`, `confidence`, `human_status`, `analyzed_at` | one active result per review/model version; original review is immutable input evidence | MVP-NABZ |
@@ -187,6 +190,13 @@ separate append-only review history and was applied to development Supabase on
 - `business_sources.field_payload` records only reusable factual fields and their
   provenance. It is not a place to retain copied third-party descriptions,
   images, ratings, or reviews.
+- Source-backed OSM completion proposals append a new
+  `manual_public_facts`/`quarantined` source row and never edit the original OSM
+  row. The server accepts only a currently missing phone, address, website, or
+  Instagram field for the 20 `needs_completion` candidates. An exact HTTPS
+  source, deterministic payload hash, permission basis, capture time, and
+  authenticated creator are retained. Known directory and marketplace leads
+  must use `unknown` permission and remain explicitly unusable.
 - New imports are inserted as `businesses.status = 'pending'`. The importer marks
   a brand-new eligible row active only after its approved source record persists;
   a partial failure therefore stays private. An approved source attached to a
