@@ -1,6 +1,16 @@
 export type OsmReviewCategory = "cafe" | "restaurant";
 export type OsmReviewCompleteness = "all" | "complete" | "incomplete";
 
+export {
+  attachOsmSourceReviewEvents,
+  type OsmSourceReviewDecision,
+  type OsmSourceReviewEvent,
+} from "./osm-source-review";
+import type {
+  OsmSourceReviewDecision,
+  OsmSourceReviewEvent,
+} from "./osm-source-review";
+
 export type OsmReviewContact = {
   phone?: string;
   website?: string;
@@ -29,12 +39,15 @@ export type OsmReviewCandidate = {
   completenessScore: number;
   completenessTotal: 4;
   missingFields: string[];
+  reviewState: OsmSourceReviewDecision;
+  reviewHistory: OsmSourceReviewEvent[];
 };
 
 export type OsmReviewFilters = {
   query: string;
   category: "all" | OsmReviewCategory;
   completeness: OsmReviewCompleteness;
+  reviewState?: "all" | OsmSourceReviewDecision;
 };
 
 export type OsmReviewSummary = {
@@ -184,6 +197,8 @@ export function parseOsmReviewRows(value: unknown): OsmReviewCandidate[] {
       missingFields: fieldChecks
         .filter((field) => !field.present)
         .map((field) => field.label),
+      reviewState: "unreviewed",
+      reviewHistory: [],
     } satisfies OsmReviewCandidate;
   });
 }
@@ -200,6 +215,13 @@ export function filterOsmReviewCandidates(
     const complete = candidate.completenessScore === candidate.completenessTotal;
     if (filters.completeness === "complete" && !complete) return false;
     if (filters.completeness === "incomplete" && complete) return false;
+    if (
+      filters.reviewState &&
+      filters.reviewState !== "all" &&
+      candidate.reviewState !== filters.reviewState
+    ) {
+      return false;
+    }
     if (!query) return true;
 
     const searchable = normalizeSearch(

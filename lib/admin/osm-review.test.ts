@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  attachOsmSourceReviewEvents,
   filterOsmReviewCandidates,
   parseOsmReviewRows,
   summarizeOsmReviewCandidates,
@@ -115,5 +116,53 @@ describe("OSM review filters", () => {
       complete: 0,
       withPhone: 1,
     });
+  });
+
+  it("attaches newest-first review history and filters by its current state", () => {
+    const [candidate] = parseOsmReviewRows([rawRow()]);
+    const [reviewed] = attachOsmSourceReviewEvents([candidate], [
+      {
+        id: "30000000-0000-4000-8000-000000000001",
+        source_id: candidate.sourceId,
+        decision: "needs_correction",
+        note: "شماره تماس بررسی شود",
+        criteria_snapshot: {
+          has_phone: true,
+          has_address: true,
+          has_website: false,
+          has_instagram: true,
+          valid_source_links: true,
+        },
+        created_at: "2026-09-05T08:00:00.000Z",
+      },
+      {
+        id: "30000000-0000-4000-8000-000000000002",
+        source_id: candidate.sourceId,
+        decision: "ready_for_approval",
+        note: null,
+        criteria_snapshot: {
+          has_phone: true,
+          has_address: true,
+          has_website: false,
+          has_instagram: true,
+          valid_source_links: true,
+        },
+        created_at: "2026-09-05T09:00:00.000Z",
+      },
+    ]);
+
+    expect(reviewed.reviewState).toBe("ready_for_approval");
+    expect(reviewed.reviewHistory.map((event) => event.decision)).toEqual([
+      "ready_for_approval",
+      "needs_correction",
+    ]);
+    expect(
+      filterOsmReviewCandidates([reviewed], {
+        query: "",
+        category: "all",
+        completeness: "all",
+        reviewState: "ready_for_approval",
+      }),
+    ).toHaveLength(1);
   });
 });

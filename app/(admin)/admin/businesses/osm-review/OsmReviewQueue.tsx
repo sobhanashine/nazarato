@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Container } from "@/components/ui/Container";
@@ -12,13 +13,29 @@ import {
   type OsmReviewCandidate,
   type OsmReviewCategory,
   type OsmReviewCompleteness,
+  type OsmSourceReviewDecision,
 } from "@/lib/admin/osm-review";
+import { recordOsmSourceReviewDecision } from "./actions";
 
 const faNum = (value: number) => value.toLocaleString("fa-IR");
 
 const CATEGORY_LABELS: Record<OsmReviewCategory, string> = {
   cafe: "کافه",
   restaurant: "رستوران",
+};
+
+const REVIEW_LABELS: Record<OsmSourceReviewDecision, string> = {
+  unreviewed: "بررسی‌نشده",
+  needs_correction: "نیازمند اصلاح",
+  ready_for_approval: "آماده بررسی انتشار",
+  rejected: "ردشده",
+};
+
+const REVIEW_TONES: Record<OsmSourceReviewDecision, string> = {
+  unreviewed: "border-white/15 bg-white/[0.04] text-muted",
+  needs_correction: "border-[#f4c66b]/30 bg-[#f4c66b]/[0.08] text-[#f4c66b]",
+  ready_for_approval: "border-mint/30 bg-mint/[0.08] text-mint",
+  rejected: "border-pomegr/30 bg-pomegr/[0.08] text-pomegr",
 };
 
 function formatCapturedAt(value: string): string {
@@ -58,10 +75,187 @@ function CompletenessMeter({ candidate }: { candidate: OsmReviewCandidate }) {
   );
 }
 
+function CriteriaSnapshot({ candidate }: { candidate: OsmReviewCandidate }) {
+  const criteria = [
+    ["تلفن", Boolean(candidate.contact.phone)],
+    ["نشانی", Boolean(candidate.contact.address)],
+    ["وب‌سایت", Boolean(candidate.contact.website)],
+    ["اینستاگرام", Boolean(candidate.contact.instagram)],
+    ["منبع و مجوز", Boolean(candidate.sourceUrl && candidate.licenseUrl)],
+  ] as const;
+  return (
+    <ul className="grid grid-cols-2 gap-1.5 text-[0.64rem] sm:grid-cols-3">
+      {criteria.map(([label, present]) => (
+        <li
+          key={label}
+          className={`rounded-lg border px-2 py-1.5 font-bold ${
+            present
+              ? "border-mint/20 bg-mint/[0.06] text-mint"
+              : "border-white/10 bg-white/[0.03] text-white/35"
+          }`}
+        >
+          {present ? "✓" : "—"} {label}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ReviewDecisionPanel({ candidate }: { candidate: OsmReviewCandidate }) {
+  const router = useRouter();
+  const [decision, setDecision] = useState<OsmSourceReviewDecision>(
+    candidate.reviewState,
+  );
+  const [note, setNote] = useState("");
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const requiresNote =
+    decision === "needs_correction" || decision === "rejected";
+
+  return (
+    <section className="mt-4 rounded-2xl border border-white/[0.09] bg-black/20 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-[0.72rem] font-black text-strong">تصمیم بررسی داخلی</h3>
+        <span
+          className={`rounded-full border px-2.5 py-1 text-[0.62rem] font-black ${REVIEW_TONES[candidate.reviewState]}`}
+        >
+          {REVIEW_LABELS[candidate.reviewState]}
+        </span>
+      </div>
+
+      <div className="mt-3">
+        <p className="mb-2 text-[0.62rem] font-bold text-white/40">
+          snapshot معیارهای فعلی
+        </p>
+        <CriteriaSnapshot candidate={candidate} />
+      </div>
+
+      <form
+        className="mt-4 space-y-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setFeedback(null);
+          startTransition(async () => {
+            const result = await recordOsmSourceReviewDecision({
+              sourceId: candidate.sourceId,
+              decision,
+              note,
+            });
+            if (!result.ok) {
+              setFeedback(result.error);
+              return;
+            }
+            setFeedback(
+              result.noAction
+                ? "این تصمیم قبلاً به‌عنوان آخرین وضعیت ثبت شده است."
+                : "تصمیم ثبت شد؛ وضعیت انتشار همچنان قرنطینه است.",
+            );
+            if (!result.noAction) {
+              setNote("");
+              router.refresh();
+            }
+          });
+        }}
+      >
+        <label className="block">
+          <span className="mb-1.5 block text-[0.65rem] font-bold text-muted">
+            وضعیت بررسی
+          </span>
+          <select
+            value={decision}
+            disabled={isPending}
+            onChange={(event) =>
+              setDecision(event.target.value as OsmSourceReviewDecision)
+            }
+            className="min-h-11 w-full rounded-xl border border-glass-border bg-[#0a0e18] px-3 text-[0.72rem] font-bold text-strong outline-none focus:border-mint disabled:opacity-60"
+          >
+            <option value="unreviewed">بررسی‌نشده</option>
+            <option value="needs_correction">نیازمند اصلاح</option>
+            <option value="ready_for_approval">آماده بررسی انتشار</option>
+            <option value="rejected">ردشده</option>
+          </select>
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block text-[0.65rem] font-bold text-muted">
+            توضیح {requiresNote ? "(اجباری)" : "(اختیاری)"}
+          </span>
+          <textarea
+            value={note}
+            required={requiresNote}
+            maxLength={500}
+            disabled={isPending}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="دلیل تصمیم یا موردی که باید بررسی شود…"
+            className="min-h-20 w-full resize-y rounded-xl border border-glass-border bg-black/20 px-3 py-2 text-[0.72rem] leading-6 text-strong outline-none placeholder:text-white/25 focus:border-mint disabled:opacity-60"
+          />
+        </label>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[0.6rem] text-white/35">
+            {faNum(note.length)} از {faNum(500)}
+          </span>
+          <button
+            type="submit"
+            disabled={isPending || (requiresNote && note.trim().length === 0)}
+            className="min-h-11 rounded-full border border-mint/35 bg-mint/10 px-4 text-[0.7rem] font-black text-mint transition-colors hover:bg-mint/15 disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            {isPending ? "در حال ثبت…" : "ثبت تصمیم داخلی"}
+          </button>
+        </div>
+        {feedback && (
+          <p
+            className={`rounded-xl border p-2.5 text-[0.66rem] leading-5 ${
+              feedback.startsWith("تصمیم ثبت شد") || feedback.startsWith("این تصمیم")
+                ? "border-mint/20 bg-mint/[0.06] text-mint"
+                : "border-pomegr/25 bg-pomegr/[0.07] text-pomegr"
+            }`}
+            role="status"
+          >
+            {feedback}
+          </p>
+        )}
+      </form>
+
+      <details className="group/history mt-4 border-t border-white/[0.08] pt-2">
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-[0.66rem] font-bold text-muted [&::-webkit-details-marker]:hidden">
+          <span>تاریخچه تصمیم‌ها ({faNum(candidate.reviewHistory.length)})</span>
+          <span aria-hidden className="transition-transform group-open/history:rotate-45">
+            +
+          </span>
+        </summary>
+        {candidate.reviewHistory.length > 0 ? (
+          <ol className="space-y-2 pb-1 pt-2">
+            {candidate.reviewHistory.map((event) => (
+              <li key={event.id} className="rounded-xl border border-white/[0.08] p-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <strong className="text-[0.64rem] text-strong">
+                    {REVIEW_LABELS[event.decision]}
+                  </strong>
+                  <time className="text-[0.58rem] text-white/35">
+                    {formatCapturedAt(event.createdAt)}
+                  </time>
+                </div>
+                {event.note && (
+                  <p className="mt-1.5 text-[0.64rem] leading-5 text-muted">
+                    {event.note}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="pb-2 pt-1 text-[0.64rem] text-white/35">
+            هنوز تصمیمی ثبت نشده است.
+          </p>
+        )}
+      </details>
+    </section>
+  );
+}
+
 function CandidateCard({ candidate }: { candidate: OsmReviewCandidate }) {
   return (
     <article
-      className={`${GLASS} flex min-w-0 flex-col overflow-hidden border-white/[0.08] bg-[linear-gradient(160deg,rgba(18,33,30,0.8),rgba(7,10,18,0.92))] p-3.5 sm:p-5`}
+      className={`${GLASS} flex min-w-0 flex-col overflow-hidden border-white/[0.08] bg-[linear-gradient(160deg,rgba(18,33,30,0.8),rgba(7,10,18,0.92))] p-3.5 has-[details[open]]:col-span-2 sm:p-5 lg:has-[details[open]]:col-span-2`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="rounded-full border border-mint/25 bg-mint/[0.08] px-2.5 py-1 text-[0.65rem] font-black text-mint">
@@ -69,7 +263,7 @@ function CandidateCard({ candidate }: { candidate: OsmReviewCandidate }) {
         </span>
         <span className="inline-flex items-center gap-1.5 text-[0.62rem] font-bold text-[#f4c66b]">
           <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[#f4c66b]" />
-          خصوصی · در انتظار
+          خصوصی · قرنطینه
         </span>
       </div>
 
@@ -164,6 +358,7 @@ function CandidateCard({ candidate }: { candidate: OsmReviewCandidate }) {
               </a>
             </div>
           )}
+          <ReviewDecisionPanel candidate={candidate} />
         </div>
       </details>
     </article>
@@ -179,6 +374,9 @@ export function OsmReviewQueue({
   const [category, setCategory] = useState<"all" | OsmReviewCategory>("all");
   const [completeness, setCompleteness] =
     useState<OsmReviewCompleteness>("all");
+  const [reviewState, setReviewState] = useState<"all" | OsmSourceReviewDecision>(
+    "all",
+  );
   const summary = useMemo(
     () => summarizeOsmReviewCandidates(initialCandidates),
     [initialCandidates],
@@ -189,8 +387,9 @@ export function OsmReviewQueue({
         query,
         category,
         completeness,
+        reviewState,
       }),
-    [category, completeness, initialCandidates, query],
+    [category, completeness, initialCandidates, query, reviewState],
   );
 
   return (
@@ -215,8 +414,8 @@ export function OsmReviewQueue({
                   صف بررسی ورودی‌های OSM
                 </h1>
                 <p className="mt-2 text-[0.82rem] leading-7 text-muted">
-                  نمای فقط‌خواندنی برای سنجش کیفیت اطلاعات پایه؛ هیچ گزینه‌ای برای
-                  تأیید، ویرایش یا انتشار در این صفحه وجود ندارد.
+                  بررسی کنترل‌شده‌ی کیفیت اطلاعات پایه و ثبت تاریخچه تصمیم؛ هیچ
+                  تصمیمی در این صفحه کسب‌وکار را تأیید یا منتشر نمی‌کند.
                 </p>
               </div>
               <div className="inline-flex w-fit items-center gap-2 rounded-2xl border border-[#f4c66b]/25 bg-[#f4c66b]/[0.07] px-4 py-3 text-xs font-bold text-[#f4c66b]">
@@ -246,7 +445,7 @@ export function OsmReviewQueue({
           </section>
 
           <section aria-label="فیلتر صف" className={`${GLASS} p-4 sm:p-5`}>
-            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_190px_190px]">
+            <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_170px_180px_190px]">
               <label className="block">
                 <span className="mb-1.5 block text-[0.7rem] font-bold text-muted">
                   جست‌وجوی نام، نشانی یا تماس
@@ -258,6 +457,26 @@ export function OsmReviewQueue({
                   placeholder="مثلاً گلسار یا کافه…"
                   className="min-h-11 w-full rounded-xl border border-glass-border bg-black/20 px-4 text-sm text-strong outline-none placeholder:text-white/25 focus:border-mint focus-visible:ring-2 focus-visible:ring-mint/20"
                 />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-[0.7rem] font-bold text-muted">
+                  وضعیت بررسی
+                </span>
+                <select
+                  value={reviewState}
+                  onChange={(event) =>
+                    setReviewState(
+                      event.target.value as "all" | OsmSourceReviewDecision,
+                    )
+                  }
+                  className="min-h-11 w-full rounded-xl border border-glass-border bg-[#0a0e18] px-3 text-sm font-bold text-strong outline-none focus:border-mint"
+                >
+                  <option value="all">همه تصمیم‌ها</option>
+                  <option value="unreviewed">بررسی‌نشده</option>
+                  <option value="needs_correction">نیازمند اصلاح</option>
+                  <option value="ready_for_approval">آماده بررسی انتشار</option>
+                  <option value="rejected">ردشده</option>
+                </select>
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-[0.7rem] font-bold text-muted">دسته‌بندی</span>
@@ -316,6 +535,7 @@ export function OsmReviewQueue({
                   setQuery("");
                   setCategory("all");
                   setCompleteness("all");
+                  setReviewState("all");
                 }}
                 className="mt-5 min-h-11 rounded-full border border-mint/35 bg-mint/10 px-5 text-sm font-bold text-mint transition-colors hover:bg-mint/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
               >

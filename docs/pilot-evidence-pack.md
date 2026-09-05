@@ -4,8 +4,8 @@ Status: **local technical candidate; not yet a verified live pilot or an approve
 knowledge-based product**
 
 Evidence cut-off: **2026-09-05**<br>
-Branch: `codex/osm-review-queue`<br>
-Evidence commits: `84f7acf` through `513895b`, plus the current reviewed queue change
+Branch: `codex/osm-review-decisions`<br>
+Evidence commits: `84f7acf` through `d9cb7c9`, plus the current reviewed decision-workflow change
 
 ## 1. Executive verdict
 
@@ -177,10 +177,12 @@ The 2026-09-04 remote staging run produced 50 pending business rows and 50
 quarantined source rows. Reapplying the same snapshot created zero businesses
 and zero sources; postflight found zero active businesses, approved sources, or
 public records.
-An admin-only read model now exposes these 50 rows in a read-only inspection
-queue. The queue repeats admin authorization before opening the service-role
-client, passes only validated factual fields to the browser, rejects source and
-licence URLs outside the OSM allowlist, and contains no state-changing control.
+An admin-only workspace exposes these 50 rows and records source-quality
+decisions in a separate append-only event table. It repeats admin authorization
+before opening the service-role client, validates the target and decision on the
+server, derives criteria snapshots from a trusted reread, and never changes
+source or business publication status. One explicit `unreviewed` QA event exists;
+the other rows remain without a human decision.
 The private legacy Drive snapshot remains gitignored and quarantined because its
 reuse permission is unknown.
 
@@ -190,10 +192,11 @@ reuse permission is unknown.
 | --- | --- | --- |
 | TypeScript | Pass | Strict type check succeeds |
 | ESLint | Pass | Current source passes lint |
-| Vitest | **173/173 pass across 35 files** | Local unit, quarantine/idempotency, provenance/UI, admin read-model, health-report, and migration-contract suite is green |
+| Vitest | **186/186 pass across 38 files** | Local unit, quarantine/idempotency, provenance/UI, append-only review workflow, health-report, and migration-contract suite is green |
 | Targeted critical browser slice | **8/8 pass** | Nabz consumer path and unauthenticated owner-route guards pass after the framework upgrade |
 | Open-data profile browser check | **Pass at 390 px and 1280 px** | Approved OSM source and ODbL links render in RTL with no horizontal overflow or console error against a local mock; no record was published remotely |
 | Private OSM queue browser check | **Pass at 390 px and 1280 px; 2/2 access tests** | The authenticated page reads all 50 real quarantined rows, filters 25 restaurants, has no horizontal overflow or console error, and signed-out requests redirect to login |
+| OSM decision workflow | **Remote development pass** | One `unreviewed` QA event persisted and survived refresh; duplicate submit was a no-op, update was blocked by the append-only trigger, public RLS read returned zero, and source/business status stayed quarantined/pending |
 | Full Playwright suite | **Not green:** 41 passed, 12 failed, 5 skipped, 13 did not run before the run was stopped | Observed failures require missing Supabase configuration or a populated fixture database; this remains a real pilot-environment blocker |
 | Production build | **Pass against development Supabase** | Compilation, type generation, data reads, and static generation complete successfully; this is not deployment proof |
 | Production dependency audit | **0 findings** in the last successful 2026-09-04 `npm audit --omit=dev` run | Next.js and production transitives were upgraded to patched versions; a later repeat hit a registry timeout rather than returning contradictory results |

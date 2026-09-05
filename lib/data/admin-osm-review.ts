@@ -4,12 +4,13 @@
  */
 import { requireAdmin } from "@/lib/auth/admin";
 import {
+  attachOsmSourceReviewEvents,
   parseOsmReviewRows,
   type OsmReviewCandidate,
 } from "../admin/osm-review";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
-const OSM_REVIEW_SELECT = `
+export const OSM_REVIEW_SELECT = `
   id,
   source_type,
   source_ref,
@@ -57,5 +58,28 @@ export async function listAdminOsmReviewCandidates(): Promise<
     throw new Error("admin OSM review list failed");
   }
 
-  return parseOsmReviewRows(data ?? []);
+  const candidates = parseOsmReviewRows(data ?? []);
+  if (candidates.length === 0) return candidates;
+
+  const { data: reviewEvents, error: reviewError } = await supabaseAdmin()
+    .from("business_source_review_events")
+    .select("id,source_id,decision,note,criteria_snapshot,created_at")
+    .in(
+      "source_id",
+      candidates.map((candidate) => candidate.sourceId),
+    )
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
+
+  if (reviewError) {
+    console.error("[admin/osm-review] failed to read decision history", {
+      route: "/admin/businesses/osm-review",
+      userId: admin.id,
+      code: reviewError.code,
+      message: reviewError.message,
+    });
+    throw new Error("admin OSM review history failed");
+  }
+
+  return attachOsmSourceReviewEvents(candidates, reviewEvents ?? []);
 }

@@ -168,10 +168,12 @@ source contributes factual profile fields only and does not provide review text
 for the Persian analysis evaluation set.
 
 The admin-only `/admin/businesses/osm-review` queue now makes all 50 staged rows
-inspectable without changing them. It shows category, contact completeness,
-coordinates, capture date, and allowlisted OSM/ODbL references; local search and
-filters operate on a minimal DTO. There is deliberately no edit, approve, reject,
-or publish action in this slice.
+inspectable and gives source-quality decisions their own append-only history. It
+shows category, factual completeness, coordinates, capture date, allowlisted
+OSM/ODbL references, criteria snapshots, and four internal review states. These
+events never edit imported facts or change source/business publication status.
+One explicit `unreviewed` QA event exists; it is test evidence, not a content
+approval.
 
 Current publication-boundary status (2026-09-05): direct profiles, similar
 results, category and Instagram-shop listings, popular/saved results, and

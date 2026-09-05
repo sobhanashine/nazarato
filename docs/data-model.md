@@ -153,10 +153,14 @@ was applied to the linked development project on 2026-09-04 after backup and
 history reconciliation. The OSM staging run added 50 quarantined rows to
 `business_sources`; no approved source was created and the other private tables
 remain empty pending pilot activity.
+Migration `20260905000000_create_business_source_review_events.sql` adds the
+separate append-only review history and was applied to development Supabase on
+2026-09-05; its down migration is destructive only to that new event table.
 
 | Table | Minimum columns | Key constraints | Phase |
 |---|---|---|---|
 | `business_sources` | `id`, `business_id`, `source_type`, `source_ref`, `permission_basis`, `license_name`, `license_url`, `attribution_text`, `field_payload`, `payload_hash`, `captured_at`, `status` | `UNIQUE (business_id, payload_hash)`; unknown permission stays `quarantined`; open data requires attribution metadata | MVP-NABZ |
+| `business_source_review_events` | `id`, `source_id`, `reviewer_id`, `decision`, `note`, `criteria_snapshot`, `created_at` | Append-only trigger; correction/rejection requires a note; review state never changes publication state | MVP-NABZ |
 | `comparison_votes` | `id`, `user_id`, `anonymous_session_id`, `city_slug`, `scenario_slug`, `winner_business_id`, `loser_business_id`, `reason_text`, `created_at` | winner ≠ loser; one vote per normalized pair/scenario/session window | MVP-NABZ |
 | `review_analyses` | `review_id`, `normalized_text`, `aspect_scores`, `sentiment`, `evidence_spans`, `issue_cluster`, `suspicious_score`, `model_id`, `model_version`, `confidence`, `human_status`, `analyzed_at` | one active result per review/model version; original review is immutable input evidence | MVP-NABZ |
 | `review_analysis_corrections` | `review_id`, `model_id`, `model_version`, `reviewer_id`, `model_output`, `human_label`, `note`, `corrected_at` | each event references the exact analysis version it corrected; private under RLS | MVP-NABZ |
@@ -196,6 +200,11 @@ remain empty pending pilot activity.
   lists, popular/saved results, and bookmark mutations all use this same gate.
   Approved open-data rows expose only validated HTTPS source/licence links and
   their attribution text on the business profile.
+- `business_source_review_events` stores internal quality decisions separately
+  from `business_sources.status`. Its latest event is the current review state;
+  prior events remain immutable, and each event snapshots factual completeness
+  plus source/licence validity. RLS has no browser policy and only an
+  admin-authorized server path may append events.
 
 ### Private legacy Drive staging
 

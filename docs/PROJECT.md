@@ -99,10 +99,10 @@ Set globally in `next.config.ts:31-40`:
   ODbL derivative-data boundary. Refresh logic lives in
   `scripts/fetch-rasht-osm-businesses.mts`; the fail-closed remote runner is
   `scripts/import-rasht-osm-quarantine.mts`.
-- `/admin/businesses/osm-review` is the admin-only, read-only inspection surface
-  for that staged supply. It exposes a minimal DTO, validates OSM and ODbL links
-  against an allowlist, and filters the 50 pending/quarantined rows without
-  providing an edit, approval, rejection, or publication action.
+- `/admin/businesses/osm-review` is the admin-only source-quality workspace for
+  that staged supply. It exposes a minimal DTO, validates OSM and ODbL links,
+  filters all 50 pending/quarantined rows, and records review decisions in an
+  append-only history without changing source or business publication status.
 - Shared Drive research is converted only through
   `scripts/prepare-rasht-drive-businesses.mts`. Real exports and prepared output
   stay under gitignored `data/private/` because this repository is public and the
@@ -225,9 +225,10 @@ Set globally in `next.config.ts:31-40`:
   data queries require `business_sources.status = 'approved'`. The remote table
   contains 50 OSM rows in `quarantined`, paired with 50 `pending` businesses;
   independent verification found zero active, approved, or public records.
-  The private read-only OSM queue makes those rows auditable, but a separate,
-  explicit review-state design and per-record decision are still required before
-  changing publication state or enabling real-data mode.
+  The private OSM queue now has a separate append-only review-state workflow;
+  one explicit `unreviewed` QA event exists and the remaining records have no
+  human decision. Complete the real per-record review and a separate publication
+  approval design before changing source status or enabling real-data mode.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
   `npm audit --omit=dev` on 2026-09-04 reports zero production findings. The full
@@ -258,6 +259,15 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-05** — Added and remotely applied append-only OSM source-review
+  events, server-authorized decision recording, criteria snapshots, current-state
+  filtering, and visible history without changing publication state. Remote and
+  browser QA proved idempotency, RLS, immutable events, 50 quarantined/pending
+  OSM rows, and zero approved/active OSM records; TypeScript, lint, 186 unit
+  tests, two access E2E tests, build, secret scan, and 390/1280 px RTL checks
+  pass. Files: `supabase/{migrations,rollbacks}/20260905000000_*`,
+  `lib/{admin,data}/osm-*review*`, `app/(admin)/admin/businesses/osm-review/`,
+  and `docs/{osm-source-review-workflow,data-model,nabz-rasht-mvp,pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-05** — Added the admin-only, read-only Rasht OSM inspection queue.
   The page loads a minimal server-side DTO after repeating admin authorization,
   validates outbound source/licence links, shows factual completeness, and
