@@ -1,8 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { loadHomepageReviews } from "./recent-reviews-data";
 
-const fallbackReviews = [{ id: "fallback-review", text: "نظر نمونه" }];
-
 describe("loadHomepageReviews", () => {
   it("returns database reviews when they are available", async () => {
     const databaseReview = { id: "database-review", text: "تجربه خوبی بود." };
@@ -10,13 +8,21 @@ describe("loadHomepageReviews", () => {
     const result = await loadHomepageReviews({
       getViewer: async () => ({ id: "viewer-1" }),
       getReviews: async () => ({ reviews: [databaseReview], total: 1 }),
-      fallback: fallbackReviews,
     });
 
     expect(result).toEqual([databaseReview]);
   });
 
-  it("falls back to static reviews when Supabase configuration is unavailable", async () => {
+  it("returns an honest empty result when no approved reviews exist", async () => {
+    const result = await loadHomepageReviews({
+      getViewer: async () => null,
+      getReviews: async () => ({ reviews: [], total: 0 }),
+    });
+
+    expect(result).toEqual([]);
+  });
+
+  it("fails closed when Supabase configuration is unavailable", async () => {
     const warningSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
 
     const result = await loadHomepageReviews({
@@ -24,12 +30,11 @@ describe("loadHomepageReviews", () => {
       getReviews: async () => {
         throw new Error("Supabase env missing");
       },
-      fallback: fallbackReviews,
     });
 
-    expect(result).toEqual(fallbackReviews);
+    expect(result).toEqual([]);
     expect(warningSpy).toHaveBeenCalledWith(
-      "[homepage] recent reviews unavailable; using static fallback",
+      "[homepage] recent reviews unavailable; hiding the review rail",
       expect.objectContaining({ error: "Supabase env missing" }),
     );
     warningSpy.mockRestore();
@@ -46,7 +51,6 @@ describe("loadHomepageReviews", () => {
           throw frameworkError;
         },
         getReviews: async () => ({ reviews: [], total: 0 }),
-        fallback: fallbackReviews,
       }),
     ).rejects.toBe(frameworkError);
   });

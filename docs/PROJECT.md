@@ -92,6 +92,10 @@ Set globally in `next.config.ts:31-40`:
   an approved provenance row. `BusinessSourceNotice` visibly credits approved
   open datasets using only validated HTTPS source/licence links; local mobile and
   desktop browser QA passed, but no real record has been published remotely.
+- Global and user-profile review feeds apply the same public-status plus
+  approved-provenance join. The homepage and `/reviews` now fail closed to an
+  explicit empty state instead of substituting legacy fixture reviews when the
+  approved dataset is empty or unavailable.
 - `data/rasht-osm-businesses.json` is the reviewed 50-record candidate supply
   snapshot (25 cafés, 25 restaurants) sourced from OpenStreetMap under ODbL.
   Its source URLs and attribution metadata are retained; every row is explicitly
@@ -231,7 +235,8 @@ Set globally in `next.config.ts:31-40`:
   deployment must independently return the expected commit with `ok: true`,
   `database: "ok"`, and `demoMode: false` before the release gate can close.
 - **The provenance gate is live but has no approved source rows yet.** Public
-  data queries require `business_sources.status = 'approved'`. The remote table
+  business and review queries require `business_sources.status = 'approved'`.
+  The remote table
   contains 50 OSM rows in `quarantined`, paired with 50 `pending` businesses;
   independent verification found zero active, approved, or public records.
   The private OSM queue now has a separate append-only review-state workflow;
@@ -275,6 +280,16 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-06** — Closed the remaining public-review provenance bypass before
+  connecting Nabz to real businesses. Global and user review reads now inner
+  join only active/merged businesses with an approved source; the homepage and
+  `/reviews` render an honest pilot-empty state instead of legacy fixture
+  reviews on an empty or failed read. Regression-first coverage produced four
+  failures before the fix; 232 unit tests, two targeted desktop/mobile RTL
+  Playwright scenarios, strict TypeScript, lint, build, focused security review,
+  and diff checks pass. Files: `lib/data/reviews*`,
+  `components/sections/{RecentReviews,recent-reviews-data}*`,
+  `app/reviews/page.tsx`, and `e2e/reviews.spec.ts`.
 - **2026-09-06** — Completed account-backed Taste Graph readback without a
   schema change. The server action reauthenticates, scopes to the signed-in user
   and active current model, validates stored weights, and returns only a minimal

@@ -158,19 +158,14 @@ export default async function ReviewsPage({
               </span>
               <div className="flex flex-col gap-1.5">
                 <h4 className="text-[17px] font-black text-strong">
-                  هنوز نظری ثبت نشده!
+                  هنوز نظر عمومیِ تأییدشده‌ای نداریم
                 </h4>
                 <p className="max-w-[40ch] text-[13px] leading-[1.9] text-muted">
-                  اولین نفری باش که تجربه‌ات از یک خرید را با بقیه به اشتراک
-                  می‌گذاری.
+                  فقط نظرهای منتشرشده برای کسب‌وکارهایی با منبع داده تأییدشده
+                  اینجا نمایش داده می‌شوند. این بخش با شروع پایلوت رشت فعال
+                  خواهد شد.
                 </p>
               </div>
-              <Link
-                href="/write-review"
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-[#06231b] bg-[linear-gradient(135deg,#5BE6B2_0%,#3FBF92_100%)] hover:shadow-[0_0_20px_rgba(91,230,178,0.4)] transition-all duration-300 transform hover:-translate-y-0.5"
-              >
-                اولین نظر را بنویس
-              </Link>
             </div>
           )}
         </main>

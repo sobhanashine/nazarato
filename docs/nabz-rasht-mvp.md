@@ -190,11 +190,15 @@ human decision, merge facts, or publish a business. The development migration is
 applied; the authenticated 390/1280 px round-trip passed and its exact QA row was
 removed afterward.
 
-Current publication-boundary status (2026-09-05): direct profiles, similar
+Current publication-boundary status (2026-09-06): direct profiles, similar
 results, category and Instagram-shop listings, popular/saved results, and
 bookmark mutations require an approved `business_sources` record in addition to
 an active/merged business status. Approved open-data credits render on the
 profile and were checked at 390 px and 1280 px with no overflow or console error.
+Global and user-profile review feeds now enforce the same two-part gate. The
+homepage and `/reviews` return a truthful pilot-empty state when no approved
+reviews exist or the optional feed read fails; they never replace that absence
+with legacy fixture reviews.
 The schema migration is applied to the linked development project. The OSM
 snapshot is now staged remotely, but remains fully quarantined: verification
 found zero active businesses, zero approved sources, and zero public records.

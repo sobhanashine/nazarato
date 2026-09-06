@@ -231,7 +231,7 @@ development-tool engine warning from `eslint-visitor-keys`; CI should use Node
 
 | Risk | Current mitigation | Residual risk and owner |
 | --- | --- | --- |
-| Copied or unlawfully reused business data | Strict factual-field importer, field provenance, quarantine, approved-source public-read gate, visible HTTPS-validated open-data attribution, and manual reconciliation for an existing identity | Complete final per-record review and document the ODbL derivative-data publication approach - engineering |
+| Copied or unlawfully reused business data | Strict factual-field importer, field provenance, quarantine, approved-source business and review gates, honest no-fixture empty states, visible HTTPS-validated open-data attribution, and manual reconciliation for an existing identity | Complete final per-record review and document the ODbL derivative-data publication approach - engineering |
 | Fabricated or weak recommendation | Minimum evidence, exact supporting Duel signals, deterministic reranking, explicit insufficient-data state | Needs real-user calibration and abuse monitoring - product/engineering |
 | Persian analysis error | Exact evidence spans, confidence, versioned output, append-only correction, no automatic deletion | Needs a consented, independently labelled held-out sample - pilot owner/product |
 | Coordinated or repeated voting | Same-origin boundary, bounded body, identity/network limits, hashed anonymous token, idempotency, human review | In-memory limiter is single-instance and must move to a shared store before scale - engineering |
