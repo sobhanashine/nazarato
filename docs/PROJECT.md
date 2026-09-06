@@ -275,6 +275,14 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-06** — Added a server-validated Taste Graph save boundary for
+  logged-in Nabz sessions. Choice IDs are rebuilt against trusted fixtures,
+  versioned private weights are upserted into `taste_profiles`, raw reasons and
+  forged scores are rejected, and the UI serializes saves to protect fast
+  multi-click sessions. Profile hydrate/readback remains a separate gate.
+  Files: `components/nabz/{actions,actions.test,NabzRasht,ConciergePanel}.tsx`,
+  `lib/nabz/{taste-profile-input,taste-profile-input.test}.ts`, and
+  `docs/{nabz-rasht-mvp,data-model,pilot-evidence-pack}.md`.
 - **2026-09-06** — Wired the versioned Persian customer-voice baseline into
   quick-review creation: each accepted review now returns its generated ID and
   persists an evidence-bearing analysis best-effort before moderation

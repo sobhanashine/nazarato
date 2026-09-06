@@ -49,9 +49,11 @@ function defaultConciergeInput(session: NabzSession): ConciergeInput {
 export function ConciergePanel({
   session,
   places,
+  profileSaveStatus = "idle",
 }: {
   session: NabzSession;
   places: readonly NabzPlace[];
+  profileSaveStatus?: "idle" | "saving" | "saved" | "error";
 }) {
   const initialInput = useMemo(() => defaultConciergeInput(session), [session]);
   const [draft, setDraft] = useState<ConciergeInput>(initialInput);
@@ -291,7 +293,15 @@ export function ConciergePanel({
       <div className="mt-5 rounded-xl border border-white/[0.07] bg-black/15 px-3.5 py-3 text-[11px] leading-6 text-muted">
         جلسه ناشناس حداکثر هفت روز روی همین دستگاه می‌ماند و دلیل‌های متنی در آن ذخیره نمی‌شوند. {" "}
         {sessionStatus?.loggedIn ? (
-          <span className="text-[#cbd2dc]">اتصال ذخیره چنددستگاهی پس از راه‌اندازی دیتابیس فعال می‌شود.</span>
+          <span className="text-[#cbd2dc]">
+            {profileSaveStatus === "saved"
+              ? "سلیقه‌ی این جلسه روی حساب ذخیره شد و روی دستگاه‌های دیگر هم می‌آید."
+              : profileSaveStatus === "saving"
+                ? "در حال ذخیره‌ی سلیقه روی حساب…"
+                : profileSaveStatus === "error"
+                  ? "ذخیره‌ی بین‌دستگاهی موقتاً ناموفق بود؛ انتخاب بعدی دوباره تلاش می‌کند."
+                  : "سلیقه‌ی این جلسه پس از انتخاب‌ها روی حساب ذخیره می‌شود."}
+          </span>
         ) : (
           <Link href="/login?next=/" className="font-bold text-mint hover:underline">
             برای ذخیره بین چند دستگاه وارد شو

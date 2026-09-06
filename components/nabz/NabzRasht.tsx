@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Container } from "@/components/ui/Container";
+import { useSessionStatus } from "@/components/layout/useSessionStatus";
 import { ConciergePanel } from "./ConciergePanel";
 import { TasteEvidencePanel } from "./TasteEvidencePanel";
+import { saveTasteProfile } from "./actions";
 import {
   ANONYMOUS_TASTE_STORAGE_KEY,
   restoreAnonymousTasteSession,
@@ -231,7 +233,21 @@ function DuelStage({
   );
 }
 
-function ResultStage({ scenario, session, onRestart }: { scenario: NabzScenario; session: NabzSession; onRestart: () => void }) {
+type ProfileSaveStatus = "idle" | "saving" | "saved" | "error";
+
+function ResultStage({
+  scenario,
+  session,
+  onRestart,
+  profileSaveStatus,
+  loggedIn,
+}: {
+  scenario: NabzScenario;
+  session: NabzSession;
+  onRestart: () => void;
+  profileSaveStatus: ProfileSaveStatus;
+  loggedIn: boolean;
+}) {
   const summary = summarizeTaste(session.scores);
   const evidence = buildTasteEvidence(session, scenario);
 
@@ -251,11 +267,26 @@ function ResultStage({ scenario, session, onRestart }: { scenario: NabzScenario;
       </div>
 
       <TasteEvidencePanel evidence={evidence} />
-      <ConciergePanel session={session} places={NABZ_DEMO_PLACES} />
+      <ConciergePanel
+        session={session}
+        places={NABZ_DEMO_PLACES}
+        profileSaveStatus={profileSaveStatus}
+      />
 
       <div className="mt-6 flex flex-col gap-3 border-t border-white/[0.07] pt-5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs leading-6 text-muted">
           این نتیجه فقط عملکرد الگوریتم را نشان می‌دهد؛ هیچ کسب‌وکار واقعی رتبه‌بندی نشده است.
+          {loggedIn ? (
+            <span className="mt-1 block text-[#b8f7df]">
+              {profileSaveStatus === "saved"
+                ? "سلیقه‌ات روی حساب ذخیره شد و روی دستگاه‌های دیگر هم قابل بازیابی است."
+                : profileSaveStatus === "saving"
+                  ? "در حال ذخیره‌ی سلیقه روی حساب…"
+                  : profileSaveStatus === "error"
+                    ? "ذخیره‌ی بین‌دستگاهی موقتاً ناموفق بود؛ انتخاب بعدی دوباره تلاش می‌کند."
+                    : "سلیقه‌ی این جلسه پس از انتخاب‌ها روی حساب ذخیره می‌شود."}
+            </span>
+          ) : null}
         </p>
         <button
           type="button"
@@ -275,7 +306,12 @@ export function NabzRasht() {
   const [reason, setReason] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [profileSaveStatus, setProfileSaveStatus] =
+    useState<ProfileSaveStatus>("idle");
+  const sessionStatus = useSessionStatus();
   const restoredSessionRef = useRef(false);
+  const profileSaveChainRef = useRef(Promise.resolve());
+  const lastQueuedProfileRef = useRef<string | null>(null);
 
   const scenario = useMemo(
     () => NABZ_SCENARIOS.find((candidate) => candidate.id === scenarioId) ?? null,
@@ -320,12 +356,62 @@ export function NabzRasht() {
     }
   }, [session]);
 
+  const queueProfileSave = useCallback(
+    (nextSession: NabzSession) => {
+      if (!sessionStatus?.loggedIn || nextSession.choices.length === 0) {
+        return;
+      }
+
+      const selectedPlaceIds = nextSession.choices.map(
+        (choice) => choice.selectedPlaceId,
+      );
+      const fingerprint = `${nextSession.scenarioId}:${selectedPlaceIds.join(",")}`;
+      if (lastQueuedProfileRef.current === fingerprint) {
+        return;
+      }
+
+      lastQueuedProfileRef.current = fingerprint;
+      setProfileSaveStatus("saving");
+      profileSaveChainRef.current = profileSaveChainRef.current
+        .catch(() => undefined)
+        .then(async () => {
+          try {
+            const result = await saveTasteProfile({
+              scenarioId: nextSession.scenarioId,
+              selectedPlaceIds,
+            });
+            if (lastQueuedProfileRef.current !== fingerprint) {
+              return;
+            }
+            if (result.ok) {
+              setProfileSaveStatus("saved");
+            } else if (result.reason !== "unauthenticated") {
+              setProfileSaveStatus("error");
+            }
+          } catch {
+            if (lastQueuedProfileRef.current === fingerprint) {
+              setProfileSaveStatus("error");
+            }
+          }
+        });
+    },
+    [sessionStatus?.loggedIn],
+  );
+
+  useEffect(() => {
+    if (sessionStatus?.loggedIn && session?.choices.length) {
+      queueProfileSave(session);
+    }
+  }, [queueProfileSave, session, sessionStatus?.loggedIn]);
+
   const startScenario = (nextScenarioId: NabzScenarioId) => {
     setScenarioId(nextScenarioId);
     setSession(createEmptyNabzSession(nextScenarioId));
     setReason("");
     setFeedback(null);
     setError(null);
+    setProfileSaveStatus("idle");
+    lastQueuedProfileRef.current = null;
   };
 
   const reset = () => {
@@ -339,6 +425,8 @@ export function NabzRasht() {
     setReason("");
     setFeedback(null);
     setError(null);
+    setProfileSaveStatus("idle");
+    lastQueuedProfileRef.current = null;
   };
 
   const choosePlace = (place: NabzPlace) => {
@@ -358,6 +446,7 @@ export function NabzRasht() {
     }
 
     setSession(result.session);
+    queueProfileSave(result.session);
     setReason("");
     setError(null);
     setFeedback(
@@ -447,7 +536,13 @@ export function NabzRasht() {
                 />
               ) : null}
               {scenario && session && isComplete ? (
-                <ResultStage scenario={scenario} session={session} onRestart={reset} />
+                <ResultStage
+                  scenario={scenario}
+                  session={session}
+                  onRestart={reset}
+                  profileSaveStatus={profileSaveStatus}
+                  loggedIn={Boolean(sessionStatus?.loggedIn)}
+                />
               ) : null}
             </div>
           </div>

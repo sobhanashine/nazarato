@@ -131,7 +131,7 @@ acceptance path is defined but not complete.
 | Capability | Implementation evidence | Verification evidence | State |
 | --- | --- | --- | --- |
 | Rasht consumer loop | `components/nabz/NabzRasht.tsx`, `components/nabz/nabz-engine.ts` | Unit tests and targeted desktop/mobile Playwright coverage | Verified with fictional fixtures |
-| Private Taste Graph | `components/nabz/nabz-engine.ts`, `components/nabz/anonymous-taste-session.ts`, `components/nabz/TasteEvidencePanel.tsx` | Co-located engine and restore tests | Verified locally; account persistence missing |
+| Private Taste Graph | `components/nabz/nabz-engine.ts`, `components/nabz/anonymous-taste-session.ts`, `components/nabz/TasteEvidencePanel.tsx`, `components/nabz/actions.ts`, `lib/nabz/taste-profile-input.ts` | Co-located engine, input-boundary, and server-action tests | Verified locally; versioned account save is wired, profile hydrate/readback remains open |
 | Explainable concierge | `components/nabz/concierge-engine.ts`, `components/nabz/ConciergePanel.tsx` | Scenario, evidence, and weak-signal tests | Verified with fictional fixtures |
 | Real vote boundary | `app/api/nabz/votes/route.ts`, `lib/nabz/vote-contract.ts`, `lib/nabz/supabase-vote-repository.ts` | Boundary, origin, size, rate-limit, eligibility, and idempotency tests | Schema connected; approved pilot IDs and live write not yet exercised |
 | Persian customer voice | `lib/intelligence/customer-voice-baseline.ts` | Reproducible 50-item synthetic evaluation and unit tests | Verified development baseline only |

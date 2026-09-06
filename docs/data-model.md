@@ -172,6 +172,10 @@ backfill and never changes source or business status.
 
 - Anonymous Duel sessions use a rotating opaque identifier and are not reviews.
   Login is required to persist a Taste Graph across devices or submit a review.
+  `components/nabz/actions.ts` accepts only validated scenario/choice IDs,
+  rebuilds scores from trusted fixtures, and upserts the private versioned
+  `taste_profiles` row; free-text reasons are deliberately excluded. Profile
+  hydrate/readback is a separate integration slice.
 - Do not store raw IP addresses in these tables. Abuse controls may use a
   short-lived server-side HMAC/rate-limit key that is not exposed in product data.
 - AI output never overwrites `reviews.body`; it is versioned, confidence-bearing,

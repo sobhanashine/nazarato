@@ -228,7 +228,7 @@ micro-F1, 78.0% issue-cluster accuracy, and 100% valid evidence spans. These are
 not pilot metrics. The method, dataset hash, limitations, and real-data gate are
 recorded in `docs/persian-intelligence-baseline.md`.
 
-Current Taste Graph and concierge status (2026-09-03): Duel contributions are
+Current Taste Graph and concierge status (2026-09-06): Duel contributions are
 now weighted by the selected scenario, and every visible taste dimension links
 back to the exact Duel prompt, selected fictional place, and optional reason
 that shaped it. The `کجابریم؟` panel collects occasion, budget band, group size,
@@ -236,9 +236,12 @@ preferred neighborhood, and up to three priorities, then deterministically
 ranks three fictional examples with links to supporting taste signals. Fewer
 than three choices returns `داده کافی نداریم`. An anonymous session stores only
 validated selected fixture IDs on the same device for seven days; it discards
-free-text reasons and recomputes scores from trusted fixtures on restore. Login
-is presented as the cross-device boundary, but real account persistence remains
-unwired until the Supabase migration and pilot data are available.
+free-text reasons and recomputes scores from trusted fixtures on restore. A
+logged-in session now sends only validated choice IDs to a server action, which
+rebuilds the weights and upserts a private, versioned `taste_profiles` row; raw
+reasons and client-supplied scores are never stored. The current UI reports save
+state. Cross-device profile hydrate/readback and real publication-approved pilot
+interactions remain open gates.
 
 Current owner-decision status (2026-09-04): `/business/insights` now ranks only
 patterns supported by at least three independent reviews at 0.55 average
