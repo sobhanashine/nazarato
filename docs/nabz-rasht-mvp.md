@@ -228,6 +228,18 @@ recommendation-ready businesses, so the page explicitly says «داده کافی
 نداریم» and keeps all fictional names and results isolated. No source or business
 status was changed in this slice.
 
+`GET /api/nabz/duel` now turns that same approved pool into the read-only contract
+needed by the future live game. It accepts exactly one supported scenario and a
+round from 0 through 4, then returns a deterministic pair that has not appeared
+in an earlier round of the same daily scenario deck. Only ID, slug, name,
+category label, neighborhood slug, and price band leave the server; provenance,
+review evidence, and internal counts do not. Duplicate or non-Duel-ready
+candidates are removed. When fewer unique pairs exist than the requested round,
+the response is `insufficient_supply` and never substitutes demo businesses. A
+pool failure returns 503 without database details. The connected development
+database currently returns zero available pairs, and this slice changed no
+source or publication decision.
+
 `POST /api/nabz/votes` now defines the production persistence boundary for the
 next slice. It accepts only same-origin JSON no larger than 4 KiB, validates the
 Rasht scenario and two distinct UUID business IDs, caps optional reasons at 120

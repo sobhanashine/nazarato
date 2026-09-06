@@ -107,6 +107,13 @@ Set globally in `next.config.ts:31-40`:
   fail closed; the fictional game stays visibly separate. The development
   snapshot currently reports 0/0/0 eligible, Duel-ready, and
   recommendation-ready businesses, so no real record is ranked.
+- `GET /api/nabz/duel` is the read-only handoff from that approved pool to the
+  future live Duel UI. It strictly accepts one allowlisted `scenario` and a
+  `round` from 0–4, creates a deterministic deck of unique unordered pairs, and
+  exposes only the candidate ID, slug, name, kind, neighborhood slug, and price
+  band. Exhausted supply returns `insufficient_supply`; pool read failures return
+  503 without database detail. It never falls back to fixtures or changes a
+  source/publication status. The current development response has zero pairs.
 - `data/rasht-osm-businesses.json` is the reviewed 50-record candidate supply
   snapshot (25 cafés, 25 restaurants) sourced from OpenStreetMap under ODbL.
   Its source URLs and attribution metadata are retained; every row is explicitly
@@ -291,6 +298,14 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-07** — Added the fail-closed real Duel read API. The pure deck builder
+  validates one allowlisted scenario plus round 0–4, removes duplicate and
+  non-Duel-ready candidates, produces up to five deterministic unique pairs,
+  and reduces each option to safe public fields. `GET /api/nabz/duel` returns
+  `insufficient_supply` instead of fixtures when pairs run out and a bounded 503
+  on pool failure. The connected development database currently returns 0 real
+  pairs; invalid scenarios return 400. No data or publication status changed.
+  Files: `app/api/nabz/duel/route.ts`, `lib/nabz/duel-deck.ts` and co-located tests.
 - **2026-09-07** — Added the real-data readiness gate for Nabz. A bounded
   server-side pool accepts only active Rasht cafés/restaurants with an approved,
   identity-matching source payload; it requires a reconciled contextual fact for
