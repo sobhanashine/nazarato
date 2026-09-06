@@ -91,9 +91,9 @@ the result look successful.
   probability.
 - Suspicious-pattern signals detect formatting and contact patterns; they do not
   prove fraud or coordinated behaviour.
-- The baseline is not yet invoked after a real review submission. Its tables are
-  applied to the configured development Supabase project but contain no real
-  pilot analyses yet.
+- The baseline is invoked best-effort when a real review is created, before the
+  moderation queue notification. Its tables are applied to the configured
+  development Supabase project but contain no real pilot analyses yet.
 
 ## Gate for the real pilot baseline
 

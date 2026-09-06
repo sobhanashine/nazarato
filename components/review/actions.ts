@@ -10,6 +10,7 @@
 
 import { getSession } from "@/lib/auth/session";
 import { notifyAdminsOfNewReview } from "@/lib/data/notifications";
+import { persistReviewAnalysisBestEffort } from "@/lib/data/review-analysis-persistence";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 const BODY_MIN = 10;
@@ -74,19 +75,23 @@ export async function submitQuickReview(
     return { ok: false, error: "کسب‌وکار موردنظر در سیستم پیدا نشد." };
   }
 
-  const { error: insertError } = await supabase.from("reviews").insert({
-    business_id: businessRow.id,
-    author_id: session.id,
-    rating,
-    title: null,
-    body,
-    status: "pending",
-    verified: false,
-    proof_status: "none",
-    proof_url: null,
-    proof_type: null,
-    purchase_date: null,
-  });
+  const { data: insertedReview, error: insertError } = await supabase
+    .from("reviews")
+    .insert({
+      business_id: businessRow.id,
+      author_id: session.id,
+      rating,
+      title: null,
+      body,
+      status: "pending",
+      verified: false,
+      proof_status: "none",
+      proof_url: null,
+      proof_type: null,
+      purchase_date: null,
+    })
+    .select("id")
+    .single();
 
   if (insertError) {
     if (insertError.code === "23505") {
@@ -98,6 +103,18 @@ export async function submitQuickReview(
     });
     return { ok: false, error: "خطا در ثبت نظر. لطفاً دوباره تلاش کن." };
   }
+
+  if (!insertedReview?.id || typeof insertedReview.id !== "string") {
+    console.error("[quick-review] insert returned no review id", {
+      authorId: session.id,
+      businessId: businessRow.id,
+    });
+    return { ok: false, error: "خطا در ثبت نظر. لطفاً دوباره تلاش کن." };
+  }
+
+  // Analysis is deliberately best-effort: a review remains publishable in the
+  // moderation queue even if the optional intelligence write is unavailable.
+  await persistReviewAnalysisBestEffort(insertedReview.id, body);
 
   await notifyAdminsOfNewReview({ businessName: businessRow.name });
 

@@ -275,6 +275,12 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-06** — Wired the versioned Persian customer-voice baseline into
+  quick-review creation: each accepted review now returns its generated ID and
+  persists an evidence-bearing analysis best-effort before moderation
+  notification; analysis failure never blocks review submission. Added happy
+  path and non-blocking failure tests. Files: `components/review/actions.ts`,
+  `components/review/actions.test.ts`, `docs/persian-intelligence-baseline.md`.
 - **2026-09-05** — Added controlled source-backed completion proposals for the
   20 private OSM rows in `needs_completion`. The admin form accepts only factual
   contact fields missing from the trusted OSM row, requires an HTTPS source and
