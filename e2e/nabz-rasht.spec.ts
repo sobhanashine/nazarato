@@ -6,6 +6,12 @@ test.describe("Nabz Rasht demo loop", () => {
 
     await expect(page.getByRole("heading", { name: /با پنج انتخاب بگو/ })).toBeVisible();
     await expect(page.getByText("نسخه نمایشی · نام‌ها ساختگی‌اند")).toBeVisible();
+    const dataReadiness = page.getByRole("region", {
+      name: "وضعیت داده‌های واقعی نبض رشت",
+    });
+    await expect(dataReadiness).toBeVisible();
+    await expect(dataReadiness).toContainText(/داده کافی نداریم|دوئل واقعی آماده است|قابل بررسی نیست/);
+    await expect(dataReadiness).toContainText("آماده توصیه");
     await page.getByRole("button", { name: /قرار دونفره/ }).click();
 
     const reason = page.getByLabel(/اگر دلیل کوتاهی داری بنویس/);

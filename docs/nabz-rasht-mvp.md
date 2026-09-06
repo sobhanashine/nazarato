@@ -212,6 +212,22 @@ records are not loaded into the component. The interaction is intentionally
 in-memory in this slice and is deliberately not connected to the production vote
 endpoint because fictional IDs must never enter the evidence store.
 
+Current real-supply readiness status (2026-09-07): the homepage now reads a
+bounded, server-only pool from the connected development Supabase project. A
+candidate must be an active Rasht café/restaurant with an approved source payload
+whose identity facts match the canonical business row. It is Duel-ready only
+when that approved evidence also matches at least one reconciled contextual fact:
+neighborhood, coordinates, price band, or address. Recommendation evidence is
+reported separately and requires at least three first-party records per business;
+only accepted pairwise comparisons and published analyses from the active
+`nazarato-fa-rules/0.1.0` model at confidence 0.55 or higher count. Rejected,
+flagged, cross-pool, malformed, weak, quarantined, and mismatched evidence is
+excluded. A read error returns an unavailable state rather than partial results.
+The current live development result is 0 identity-eligible, 0 Duel-ready, and 0
+recommendation-ready businesses, so the page explicitly says «داده کافی
+نداریم» and keeps all fictional names and results isolated. No source or business
+status was changed in this slice.
+
 `POST /api/nabz/votes` now defines the production persistence boundary for the
 next slice. It accepts only same-origin JSON no larger than 4 KiB, validates the
 Rasht scenario and two distinct UUID business IDs, caps optional reasons at 120
@@ -299,7 +315,8 @@ limited:
    each week. Everything else—product, design, implementation, tests, research,
    Trello, and completion reports—belongs to Codex.
 
-Current local credential check: Supabase, Gemini, JWT, and VAPID values are not
-configured in `.env.local`. This is not a blocker for specification, schema, or
-fixture-backed development; it becomes a blocker only at the integration and live
-pilot gates above.
+Current local credential check: Supabase URL and server credentials are present
+only in gitignored `.env.local`, and the read-only readiness query is verified
+against the development project. JWT still uses the insecure development
+fallback, and Gemini/VAPID remain optional environment gates for their respective
+features. None of these values belongs in Git, Trello, email, or public docs.

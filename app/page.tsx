@@ -9,12 +9,20 @@ import { HowToReview } from "@/components/sections/HowToReview";
 import { InstagramShops } from "@/components/sections/InstagramShops";
 import { RecentReviews } from "@/components/sections/RecentReviews";
 import { NabzRasht } from "@/components/nabz/NabzRasht";
+import { getSupabaseNabzBusinessPool } from "@/lib/nabz/supabase-business-pool";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const businessPool = await getSupabaseNabzBusinessPool();
+  const dataReadiness = {
+    status: businessPool.status,
+    summary: businessPool.summary,
+    message: businessPool.message,
+  };
+
   return (
     <>
       <Header />
-      <NabzRasht />
+      <NabzRasht dataReadiness={dataReadiness} />
       <main>
         <RecentReviews />
         <HowItWorks />

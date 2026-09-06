@@ -96,6 +96,17 @@ Set globally in `next.config.ts:31-40`:
   approved-provenance join. The homepage and `/reviews` now fail closed to an
   explicit empty state instead of substituting legacy fixture reviews when the
   approved dataset is empty or unavailable.
+- The homepage computes a server-side Nabz supply snapshot before rendering. A
+  business is identity-eligible only when it is active, in Rasht, a café or
+  restaurant, and has an approved source payload whose name/category/city match
+  the canonical row. It becomes Duel-ready only with at least one reconciled
+  contextual fact (neighborhood, coordinates, price band, or address), while
+  recommendation evidence is reported separately. Only accepted pairwise votes
+  and published current-model analyses at confidence 0.55 or higher count as
+  first-party evidence. Read errors and fewer than two Duel-ready businesses
+  fail closed; the fictional game stays visibly separate. The development
+  snapshot currently reports 0/0/0 eligible, Duel-ready, and
+  recommendation-ready businesses, so no real record is ranked.
 - `data/rasht-osm-businesses.json` is the reviewed 50-record candidate supply
   snapshot (25 cafés, 25 restaurants) sourced from OpenStreetMap under ODbL.
   Its source URLs and attribution metadata are retained; every row is explicitly
@@ -280,6 +291,21 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-07** — Added the real-data readiness gate for Nabz. A bounded
+  server-side pool accepts only active Rasht cafés/restaurants with an approved,
+  identity-matching source payload; it requires a reconciled contextual fact for
+  Duel readiness and counts only accepted comparisons plus published,
+  current-model, confidence-qualified analyses toward the three-signal
+  recommendation threshold. The homepage now exposes separate eligible,
+  Duel-ready, and recommendation-ready counts and fails closed to «داده کافی
+  نداریم» or an unavailable state while the fictional game remains isolated.
+  The connected development snapshot truthfully reports 0/0/0. Seven new unit
+  tests, 239 total unit tests, four Nabz Playwright scenarios, strict TypeScript,
+  lint, production build, 390/1280 px RTL/no-overflow browser checks, security
+  review, and diff checks pass. Files:
+  `lib/nabz/{business-pool,supabase-business-pool}*`,
+  `components/nabz/{NabzDataReadiness,NabzRasht}*`, `app/page.tsx`,
+  `e2e/nabz-rasht.spec.ts`, and `docs/{nabz-rasht-mvp,PROJECT}.md`.
 - **2026-09-06** — Closed the remaining public-review provenance bypass before
   connecting Nabz to real businesses. Global and user review reads now inner
   join only active/merged businesses with an approved source; the homepage and

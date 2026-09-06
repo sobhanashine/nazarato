@@ -5,6 +5,10 @@ import { Container } from "@/components/ui/Container";
 import { useSessionStatus } from "@/components/layout/useSessionStatus";
 import { ConciergePanel } from "./ConciergePanel";
 import {
+  NabzDataReadiness,
+  type NabzDataReadinessStatus,
+} from "./NabzDataReadiness";
+import {
   SavedTasteProfileCard,
   type TasteProfileLoadStatus,
 } from "./SavedTasteProfileCard";
@@ -308,7 +312,11 @@ function ResultStage({
   );
 }
 
-export function NabzRasht() {
+export function NabzRasht({
+  dataReadiness,
+}: {
+  dataReadiness: NabzDataReadinessStatus;
+}) {
   const [scenarioId, setScenarioId] = useState<NabzScenarioId | null>(null);
   const [session, setSession] = useState<NabzSession | null>(null);
   const [reason, setReason] = useState("");
@@ -568,6 +576,8 @@ export function NabzRasht() {
               </div>
             </div>
 
+            <NabzDataReadiness status={dataReadiness} />
+
             {sessionStatus?.loggedIn ? (
               <SavedTasteProfileCard
                 status={profileLoadStatus}
@@ -577,7 +587,7 @@ export function NabzRasht() {
 
             <p className="mt-5 flex max-w-[500px] items-start gap-2 text-xs leading-6 text-muted">
               <span aria-hidden className="mt-1 text-saffron">✦</span>
-              داده‌های واقعی Drive و OpenStreetMap هنوز قرنطینه‌اند و در این صفحه استفاده نشده‌اند.
+              نام‌ها و نتیجه‌های داخل بازی هنوز ساختگی‌اند؛ داده واقعی فقط بعد از عبور از دروازه منبع و اتصال دوئل وارد بازی می‌شود.
             </p>
           </div>
 
