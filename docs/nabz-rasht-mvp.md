@@ -240,8 +240,12 @@ free-text reasons and recomputes scores from trusted fixtures on restore. A
 logged-in session now sends only validated choice IDs to a server action, which
 rebuilds the weights and upserts a private, versioned `taste_profiles` row; raw
 reasons and client-supplied scores are never stored. The current UI reports save
-state. Cross-device profile hydrate/readback and real publication-approved pilot
-interactions remain open gates.
+state and, after login, reads back only the current model's six aggregate weights,
+evidence count, and update time. A signed-in development QA run proved save,
+local-session removal, reload, and account-backed recovery at 390 px with no
+horizontal overflow; its exact temporary user and profile were removed afterward.
+Choice history and free-text reasons remain device-local. Real
+publication-approved pilot interactions remain the open gate.
 
 Current owner-decision status (2026-09-04): `/business/insights` now ranks only
 patterns supported by at least three independent reviews at 0.55 average

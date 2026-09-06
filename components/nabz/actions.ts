@@ -2,17 +2,27 @@
 
 import { getSession } from "@/lib/auth/session";
 import {
+  parseStoredTasteProfile,
   parseTasteProfileInput,
   rebuildTasteProfileSession,
   TASTE_PROFILE_MODEL,
+  type TasteProfileView,
 } from "../../lib/nabz/taste-profile-input";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 export type TasteProfileSaveResult =
-  | { ok: true; evidenceCount: number }
+  | { ok: true; profile: TasteProfileView }
   | {
       ok: false;
       reason: "unauthenticated" | "invalid" | "unavailable";
+      message: string;
+    };
+
+export type TasteProfileLoadResult =
+  | { ok: true; profile: TasteProfileView | null }
+  | {
+      ok: false;
+      reason: "unauthenticated" | "unavailable";
       message: string;
     };
 
@@ -46,6 +56,7 @@ export async function saveTasteProfile(
     };
   }
 
+  const updatedAt = new Date().toISOString();
   try {
     const { error } = await supabaseAdmin()
       .from("taste_profiles")
@@ -57,7 +68,7 @@ export async function saveTasteProfile(
           dimension_weights: rebuilt.scores,
           evidence_count: rebuilt.choices.length,
           is_active: true,
-          updated_at: new Date().toISOString(),
+          updated_at: updatedAt,
         },
         { onConflict: "user_id,model_id,model_version" },
       );
@@ -91,5 +102,86 @@ export async function saveTasteProfile(
     };
   }
 
-  return { ok: true, evidenceCount: rebuilt.choices.length };
+  return {
+    ok: true,
+    profile: {
+      modelId: TASTE_PROFILE_MODEL.id,
+      modelVersion: TASTE_PROFILE_MODEL.version,
+      scores: rebuilt.scores,
+      evidenceCount: rebuilt.choices.length,
+      updatedAt,
+    },
+  };
+}
+
+/** Read only the signed-in user's current, active aggregate Taste Graph. */
+export async function loadTasteProfile(): Promise<TasteProfileLoadResult> {
+  const session = await getSession();
+  if (!session) {
+    return {
+      ok: false,
+      reason: "unauthenticated",
+      message: "برای بازیابی سلیقه باید وارد حساب شوی.",
+    };
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin()
+      .from("taste_profiles")
+      .select(
+        "model_id,model_version,dimension_weights,evidence_count,updated_at",
+      )
+      .eq("user_id", session.id)
+      .eq("model_id", TASTE_PROFILE_MODEL.id)
+      .eq("model_version", TASTE_PROFILE_MODEL.version)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (error) {
+      console.error("[nabz] taste profile read failed", {
+        userId: session.id,
+        modelId: TASTE_PROFILE_MODEL.id,
+        modelVersion: TASTE_PROFILE_MODEL.version,
+        error: error.message,
+      });
+      return {
+        ok: false,
+        reason: "unavailable",
+        message: "بازیابی سلیقه فعلاً ممکن نیست.",
+      };
+    }
+
+    if (!data) {
+      return { ok: true, profile: null };
+    }
+
+    const parsed = parseStoredTasteProfile(data);
+    if (!parsed.ok) {
+      console.error("[nabz] stored taste profile failed validation", {
+        userId: session.id,
+        modelId: TASTE_PROFILE_MODEL.id,
+        modelVersion: TASTE_PROFILE_MODEL.version,
+        error: parsed.error,
+      });
+      return {
+        ok: false,
+        reason: "unavailable",
+        message: "پروفایل ذخیره‌شده قابل بازیابی نیست.",
+      };
+    }
+
+    return { ok: true, profile: parsed.value };
+  } catch (error) {
+    console.error("[nabz] taste profile read threw", {
+      userId: session.id,
+      modelId: TASTE_PROFILE_MODEL.id,
+      modelVersion: TASTE_PROFILE_MODEL.version,
+      error: error instanceof Error ? error.message : "unknown error",
+    });
+    return {
+      ok: false,
+      reason: "unavailable",
+      message: "بازیابی سلیقه فعلاً ممکن نیست.",
+    };
+  }
 }

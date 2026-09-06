@@ -4,8 +4,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Container } from "@/components/ui/Container";
 import { useSessionStatus } from "@/components/layout/useSessionStatus";
 import { ConciergePanel } from "./ConciergePanel";
+import {
+  SavedTasteProfileCard,
+  type TasteProfileLoadStatus,
+} from "./SavedTasteProfileCard";
 import { TasteEvidencePanel } from "./TasteEvidencePanel";
-import { saveTasteProfile } from "./actions";
+import { loadTasteProfile, saveTasteProfile } from "./actions";
+import {
+  chooseFreshTasteProfile,
+  type TasteProfileView,
+} from "@/lib/nabz/taste-profile-input";
 import {
   ANONYMOUS_TASTE_STORAGE_KEY,
   restoreAnonymousTasteSession,
@@ -308,8 +316,14 @@ export function NabzRasht() {
   const [error, setError] = useState<string | null>(null);
   const [profileSaveStatus, setProfileSaveStatus] =
     useState<ProfileSaveStatus>("idle");
+  const [storedProfile, setStoredProfile] = useState<TasteProfileView | null>(
+    null,
+  );
+  const [profileLoadStatus, setProfileLoadStatus] =
+    useState<TasteProfileLoadStatus>("idle");
   const sessionStatus = useSessionStatus();
   const restoredSessionRef = useRef(false);
+  const storedProfileRef = useRef<TasteProfileView | null>(null);
   const profileSaveChainRef = useRef(Promise.resolve());
   const lastQueuedProfileRef = useRef<string | null>(null);
 
@@ -317,6 +331,45 @@ export function NabzRasht() {
     () => NABZ_SCENARIOS.find((candidate) => candidate.id === scenarioId) ?? null,
     [scenarioId],
   );
+
+  useEffect(() => {
+    if (!sessionStatus) {
+      return;
+    }
+    if (!sessionStatus.loggedIn) {
+      storedProfileRef.current = null;
+      setStoredProfile(null);
+      setProfileLoadStatus("idle");
+      return;
+    }
+
+    let alive = true;
+    setProfileLoadStatus("loading");
+    loadTasteProfile()
+      .then((result) => {
+        if (!alive) {
+          return;
+        }
+        if (!result.ok) {
+          setProfileLoadStatus(storedProfileRef.current ? "ready" : "error");
+          return;
+        }
+        const current = storedProfileRef.current;
+        const nextProfile = chooseFreshTasteProfile(current, result.profile);
+        storedProfileRef.current = nextProfile;
+        setStoredProfile(nextProfile);
+        setProfileLoadStatus("ready");
+      })
+      .catch(() => {
+        if (alive) {
+          setProfileLoadStatus(storedProfileRef.current ? "ready" : "error");
+        }
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [sessionStatus]);
 
   useEffect(() => {
     try {
@@ -384,6 +437,9 @@ export function NabzRasht() {
               return;
             }
             if (result.ok) {
+              storedProfileRef.current = result.profile;
+              setStoredProfile(result.profile);
+              setProfileLoadStatus("ready");
               setProfileSaveStatus("saved");
             } else if (result.reason !== "unauthenticated") {
               setProfileSaveStatus("error");
@@ -511,6 +567,13 @@ export function NabzRasht() {
                 <span className="text-[11px] text-muted">برای شروع</span>
               </div>
             </div>
+
+            {sessionStatus?.loggedIn ? (
+              <SavedTasteProfileCard
+                status={profileLoadStatus}
+                profile={storedProfile}
+              />
+            ) : null}
 
             <p className="mt-5 flex max-w-[500px] items-start gap-2 text-xs leading-6 text-muted">
               <span aria-hidden className="mt-1 text-saffron">✦</span>

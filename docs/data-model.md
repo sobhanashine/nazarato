@@ -174,8 +174,11 @@ backfill and never changes source or business status.
   Login is required to persist a Taste Graph across devices or submit a review.
   `components/nabz/actions.ts` accepts only validated scenario/choice IDs,
   rebuilds scores from trusted fixtures, and upserts the private versioned
-  `taste_profiles` row; free-text reasons are deliberately excluded. Profile
-  hydrate/readback is a separate integration slice.
+  `taste_profiles` row; free-text reasons are deliberately excluded. Account
+  readback authenticates again, scopes the query to the session user plus the
+  active current model/version, validates the database row, and returns only six
+  aggregate weights, evidence count, model identity, and update time. It never
+  hydrates raw choices or reasons into the client.
 - Do not store raw IP addresses in these tables. Abuse controls may use a
   short-lived server-side HMAC/rate-limit key that is not exposed in product data.
 - AI output never overwrites `reviews.body`; it is versioned, confidence-bearing,

@@ -275,6 +275,18 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-06** — Completed account-backed Taste Graph readback without a
+  schema change. The server action reauthenticates, scopes to the signed-in user
+  and active current model, validates stored weights, and returns only a minimal
+  aggregate DTO. The homepage now shows a responsive saved-profile summary with
+  explicit loading/empty/error states; a temporary signed-in QA user proved
+  save, local-session removal, reload recovery, and 390 px no-overflow behavior,
+  then was deleted with its profile. 231 unit tests, four targeted Playwright
+  scenarios, strict TypeScript, lint, build, production audit, intelligence
+  evaluation, security review, and diff checks pass. Files:
+  `components/nabz/{NabzRasht,SavedTasteProfileCard,actions}*`,
+  `lib/nabz/taste-profile-input*`, and
+  `docs/{nabz-rasht-mvp,data-model,pilot-evidence-pack,PROJECT}.md`.
 - **2026-09-06** — Added a server-validated Taste Graph save boundary for
   logged-in Nabz sessions. Choice IDs are rebuilt against trusted fixtures,
   versioned private weights are upserted into `taste_profiles`, raw reasons and

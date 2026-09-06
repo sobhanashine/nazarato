@@ -5,6 +5,9 @@ const mocks = vi.hoisted(() => ({
   supabaseAdmin: vi.fn(),
   from: vi.fn(),
   upsert: vi.fn(),
+  select: vi.fn(),
+  eq: vi.fn(),
+  maybeSingle: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/session", () => ({
@@ -15,14 +18,21 @@ vi.mock("@/lib/supabase/server", () => ({
   supabaseAdmin: mocks.supabaseAdmin,
 }));
 
-import { saveTasteProfile } from "./actions";
+import { loadTasteProfile, saveTasteProfile } from "./actions";
 
 describe("saveTasteProfile", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    const query = { eq: mocks.eq, maybeSingle: mocks.maybeSingle };
     mocks.supabaseAdmin.mockReturnValue({ from: mocks.from });
-    mocks.from.mockReturnValue({ upsert: mocks.upsert });
+    mocks.from.mockReturnValue({
+      upsert: mocks.upsert,
+      select: mocks.select,
+    });
+    mocks.select.mockReturnValue(query);
+    mocks.eq.mockReturnValue(query);
     mocks.upsert.mockResolvedValue({ error: null });
+    mocks.maybeSingle.mockResolvedValue({ data: null, error: null });
   });
 
   it("does not touch the profile store for an anonymous visitor", async () => {
@@ -51,7 +61,16 @@ describe("saveTasteProfile", () => {
       selectedPlaceIds: ["baran", "toranj", "kaghaz"],
     });
 
-    expect(result).toEqual({ ok: true, evidenceCount: 3 });
+    expect(result).toEqual({
+      ok: true,
+      profile: expect.objectContaining({
+        modelId: "nazarato-taste-graph",
+        modelVersion: "0.1.0",
+        evidenceCount: 3,
+        scores: expect.objectContaining({ cozy: expect.any(Number) }),
+        updatedAt: expect.any(String),
+      }),
+    });
     expect(mocks.from).toHaveBeenCalledWith("taste_profiles");
     expect(mocks.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -83,6 +102,102 @@ describe("saveTasteProfile", () => {
       selectedPlaceIds: ["baran"],
     });
     expect(unavailable).toEqual(
+      expect.objectContaining({ ok: false, reason: "unavailable" }),
+    );
+  });
+});
+
+describe("loadTasteProfile", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    const query = { eq: mocks.eq, maybeSingle: mocks.maybeSingle };
+    mocks.supabaseAdmin.mockReturnValue({ from: mocks.from });
+    mocks.from.mockReturnValue({ select: mocks.select });
+    mocks.select.mockReturnValue(query);
+    mocks.eq.mockReturnValue(query);
+    mocks.maybeSingle.mockResolvedValue({ data: null, error: null });
+  });
+
+  it("does not touch the profile store for an anonymous visitor", async () => {
+    mocks.getSession.mockResolvedValue(null);
+
+    await expect(loadTasteProfile()).resolves.toEqual(
+      expect.objectContaining({ ok: false, reason: "unauthenticated" }),
+    );
+    expect(mocks.supabaseAdmin).not.toHaveBeenCalled();
+  });
+
+  it("reads the signed-in user's active current-model aggregate", async () => {
+    mocks.getSession.mockResolvedValue({
+      id: "user-1",
+      name: "کاربر تست",
+      phone: "+989121234567",
+    });
+    mocks.maybeSingle.mockResolvedValue({
+      data: {
+        model_id: "nazarato-taste-graph",
+        model_version: "0.1.0",
+        dimension_weights: {
+          cozy: 14,
+          quiet: 9,
+          value: 4,
+          local: 3,
+          social: 1,
+          service: 8,
+        },
+        evidence_count: 5,
+        updated_at: "2026-09-06T10:30:00.000Z",
+      },
+      error: null,
+    });
+
+    await expect(loadTasteProfile()).resolves.toEqual({
+      ok: true,
+      profile: expect.objectContaining({
+        evidenceCount: 5,
+        scores: expect.objectContaining({ cozy: 14, quiet: 9 }),
+      }),
+    });
+    expect(mocks.select).toHaveBeenCalledWith(
+      "model_id,model_version,dimension_weights,evidence_count,updated_at",
+    );
+    expect(mocks.eq).toHaveBeenCalledWith("user_id", "user-1");
+    expect(mocks.eq).toHaveBeenCalledWith("model_id", "nazarato-taste-graph");
+    expect(mocks.eq).toHaveBeenCalledWith("model_version", "0.1.0");
+    expect(mocks.eq).toHaveBeenCalledWith("is_active", true);
+  });
+
+  it("returns no profile when none exists and fails closed on bad storage data", async () => {
+    mocks.getSession.mockResolvedValue({
+      id: "user-1",
+      name: "کاربر تست",
+      phone: "+989121234567",
+    });
+
+    await expect(loadTasteProfile()).resolves.toEqual({
+      ok: true,
+      profile: null,
+    });
+
+    mocks.maybeSingle.mockResolvedValue({
+      data: {
+        model_id: "nazarato-taste-graph",
+        model_version: "0.1.0",
+        dimension_weights: { cozy: "forged" },
+        evidence_count: 5,
+        updated_at: "2026-09-06T10:30:00.000Z",
+      },
+      error: null,
+    });
+    await expect(loadTasteProfile()).resolves.toEqual(
+      expect.objectContaining({ ok: false, reason: "unavailable" }),
+    );
+
+    mocks.maybeSingle.mockResolvedValue({
+      data: null,
+      error: { message: "table unavailable" },
+    });
+    await expect(loadTasteProfile()).resolves.toEqual(
       expect.objectContaining({ ok: false, reason: "unavailable" }),
     );
   });

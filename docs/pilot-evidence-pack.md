@@ -131,7 +131,7 @@ acceptance path is defined but not complete.
 | Capability | Implementation evidence | Verification evidence | State |
 | --- | --- | --- | --- |
 | Rasht consumer loop | `components/nabz/NabzRasht.tsx`, `components/nabz/nabz-engine.ts` | Unit tests and targeted desktop/mobile Playwright coverage | Verified with fictional fixtures |
-| Private Taste Graph | `components/nabz/nabz-engine.ts`, `components/nabz/anonymous-taste-session.ts`, `components/nabz/TasteEvidencePanel.tsx`, `components/nabz/actions.ts`, `lib/nabz/taste-profile-input.ts` | Co-located engine, input-boundary, and server-action tests | Verified locally; versioned account save is wired, profile hydrate/readback remains open |
+| Private Taste Graph | `components/nabz/nabz-engine.ts`, `components/nabz/anonymous-taste-session.ts`, `components/nabz/TasteEvidencePanel.tsx`, `components/nabz/SavedTasteProfileCard.tsx`, `components/nabz/actions.ts`, `lib/nabz/taste-profile-input.ts` | Co-located engine, input-boundary, server-action, and presentation tests plus signed-in save/clear/reload QA at 390 px | Verified locally; versioned account save and aggregate current-model readback are wired; real pilot evidence remains open |
 | Explainable concierge | `components/nabz/concierge-engine.ts`, `components/nabz/ConciergePanel.tsx` | Scenario, evidence, and weak-signal tests | Verified with fictional fixtures |
 | Real vote boundary | `app/api/nabz/votes/route.ts`, `lib/nabz/vote-contract.ts`, `lib/nabz/supabase-vote-repository.ts` | Boundary, origin, size, rate-limit, eligibility, and idempotency tests | Schema connected; approved pilot IDs and live write not yet exercised |
 | Persian customer voice | `lib/intelligence/customer-voice-baseline.ts` | Reproducible 50-item synthetic evaluation and unit tests | Verified development baseline only |
@@ -236,7 +236,7 @@ development-tool engine warning from `eslint-visitor-keys`; CI should use Node
 | Persian analysis error | Exact evidence spans, confidence, versioned output, append-only correction, no automatic deletion | Needs a consented, independently labelled held-out sample - pilot owner/product |
 | Coordinated or repeated voting | Same-origin boundary, bounded body, identity/network limits, hashed anonymous token, idempotency, human review | In-memory limiter is single-instance and must move to a shared store before scale - engineering |
 | False business claim | Challenge-bound OTP, expiry/attempt limits, file-signature checks, private proof bucket, short signed URLs, verified-before-approved database invariant | Kavenegar configuration and one real owner test are missing; the migration and pre-apply backup are complete - founders plus engineering |
-| Sensitive preference leakage | Taste Graph remains private and is not queried by owner analytics | Requires deployed RLS verification and privacy acceptance test - engineering |
+| Sensitive preference leakage | Taste Graph remains private, account readback is session-user/current-model scoped, the database row is revalidated, only aggregate weights are returned, and owner analytics never query it | Requires deployed RLS verification and privacy acceptance test - engineering |
 | Misleading eligibility claim | Explicit status labels and separation of local, pilot, release, and official evidence | Only the official evaluator can decide eligibility - founders |
 
 No critical or high application-code issue is currently known from the focused
