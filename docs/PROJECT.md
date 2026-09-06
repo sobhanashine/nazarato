@@ -114,6 +114,14 @@ Set globally in `next.config.ts:31-40`:
   band. Exhausted supply returns `insufficient_supply`; pool read failures return
   503 without database detail. It never falls back to fixtures or changes a
   source/publication status. The current development response has zero pairs.
+- The homepage now probes that route when a visitor chooses a scenario. Live
+  mode opens only when the API confirms at least five unique pairs (therefore
+  at least four valid Duel-ready businesses), validates every response again in
+  the browser, and advances only after `POST /api/nabz/votes` succeeds. Initial
+  shortage or transport failure returns to the clearly labelled demo; a
+  mid-session failure preserves the accepted vote and offers retry. Five real
+  choices end in an evidence-collection receipt, never the fictional Taste
+  Graph or demo recommendations.
 - `data/rasht-osm-businesses.json` is the reviewed 50-record candidate supply
   snapshot (25 cafés, 25 restaurants) sourced from OpenStreetMap under ODbL.
   Its source URLs and attribution metadata are retained; every row is explicitly
@@ -298,6 +306,14 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-07** — Connected the Nabz homepage to the real Duel read/vote
+  boundaries with a five-unique-pair activation gate, runtime response
+  validation, idempotent vote handling, retry-safe progression, and an explicit
+  demo fallback. Real completion reports evidence collection without attaching
+  fictional Taste Graph or recommendation output. The current zero-supply
+  development database still opens the labelled demo. Files:
+  `components/nabz/{NabzRasht,LiveDuelFlow}.tsx`,
+  `lib/nabz/live-duel-client*`, `e2e/nabz-rasht.spec.ts`.
 - **2026-09-07** — Added the fail-closed real Duel read API. The pure deck builder
   validates one allowlisted scenario plus round 0–4, removes duplicate and
   non-Duel-ready candidates, produces up to five deterministic unique pairs,

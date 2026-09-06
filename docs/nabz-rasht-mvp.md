@@ -240,6 +240,19 @@ pool failure returns 503 without database details. The connected development
 database currently returns zero available pairs, and this slice changed no
 source or publication decision.
 
+The homepage client now uses this contract before starting a scenario. A real
+five-choice session activates only when the first response confirms at least
+five unique pairs, which requires at least four valid Duel-ready businesses.
+Every response is runtime-validated before display; only factual approved
+fields appear on real cards. A choice is allowed to advance only after
+`POST /api/nabz/votes` returns a valid success, while duplicate success remains
+idempotent. Initial shortage or transport failure opens the explicitly labelled
+demo with an explanation. A failure after a real vote preserves progress and
+offers retry rather than silently mixing real and fictional pairs. Completion
+reports only how many new votes entered the evidence set; the demo Taste Graph
+and recommendations are never attributed to real choices. With the current
+zero-supply development database, the public path still resolves to the demo.
+
 `POST /api/nabz/votes` now defines the production persistence boundary for the
 next slice. It accepts only same-origin JSON no larger than 4 KiB, validates the
 Rasht scenario and two distinct UUID business IDs, caps optional reasons at 120

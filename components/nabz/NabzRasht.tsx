@@ -13,6 +13,7 @@ import {
   type TasteProfileLoadStatus,
 } from "./SavedTasteProfileCard";
 import { TasteEvidencePanel } from "./TasteEvidencePanel";
+import { LiveDuelFlow } from "./LiveDuelFlow";
 import { loadTasteProfile, saveTasteProfile } from "./actions";
 import {
   chooseFreshTasteProfile,
@@ -318,6 +319,9 @@ export function NabzRasht({
   dataReadiness: NabzDataReadinessStatus;
 }) {
   const [scenarioId, setScenarioId] = useState<NabzScenarioId | null>(null);
+  const [liveScenarioId, setLiveScenarioId] = useState<NabzScenarioId | null>(
+    null,
+  );
   const [session, setSession] = useState<NabzSession | null>(null);
   const [reason, setReason] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -338,6 +342,11 @@ export function NabzRasht({
   const scenario = useMemo(
     () => NABZ_SCENARIOS.find((candidate) => candidate.id === scenarioId) ?? null,
     [scenarioId],
+  );
+  const liveScenario = useMemo(
+    () =>
+      NABZ_SCENARIOS.find((candidate) => candidate.id === liveScenarioId) ?? null,
+    [liveScenarioId],
   );
 
   useEffect(() => {
@@ -468,9 +477,24 @@ export function NabzRasht({
     }
   }, [queueProfileSave, session, sessionStatus?.loggedIn]);
 
+  const startDemoScenario = useCallback(
+    (nextScenarioId: NabzScenarioId, message: string | null = null) => {
+      setLiveScenarioId(null);
+      setScenarioId(nextScenarioId);
+      setSession(createEmptyNabzSession(nextScenarioId));
+      setReason("");
+      setFeedback(message);
+      setError(null);
+      setProfileSaveStatus("idle");
+      lastQueuedProfileRef.current = null;
+    },
+    [],
+  );
+
   const startScenario = (nextScenarioId: NabzScenarioId) => {
-    setScenarioId(nextScenarioId);
-    setSession(createEmptyNabzSession(nextScenarioId));
+    setLiveScenarioId(nextScenarioId);
+    setScenarioId(null);
+    setSession(null);
     setReason("");
     setFeedback(null);
     setError(null);
@@ -478,12 +502,20 @@ export function NabzRasht({
     lastQueuedProfileRef.current = null;
   };
 
+  const useDemoAfterLiveCheck = useCallback(
+    (message: string) => {
+      if (liveScenarioId) startDemoScenario(liveScenarioId, message);
+    },
+    [liveScenarioId, startDemoScenario],
+  );
+
   const reset = () => {
     try {
       window.localStorage.removeItem(ANONYMOUS_TASTE_STORAGE_KEY);
     } catch {
       // Best-effort cleanup only.
     }
+    setLiveScenarioId(null);
     setScenarioId(null);
     setSession(null);
     setReason("");
@@ -546,9 +578,15 @@ export function NabzRasht({
                 <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-mint shadow-[0_0_12px_rgba(91,230,178,0.9)]" />
                 نبض رشت
               </span>
-              <span className="rounded-full border border-saffron/25 bg-saffron/[0.07] px-3 py-1.5 text-[11px] font-bold text-saffron">
-                نسخه نمایشی · نام‌ها ساختگی‌اند
-              </span>
+              {liveScenario ? (
+                <span className="rounded-full border border-mint/25 bg-mint/[0.07] px-3 py-1.5 text-[11px] font-bold text-mint">
+                  در حال بررسی داده واقعی
+                </span>
+              ) : (
+                <span className="rounded-full border border-saffron/25 bg-saffron/[0.07] px-3 py-1.5 text-[11px] font-bold text-saffron">
+                  نسخه نمایشی · نام‌ها ساختگی‌اند
+                </span>
+              )}
             </div>
 
             <h1 id="nabz-title" className="max-w-[620px] text-[2.55rem] font-black leading-[1.2] -tracking-[0.035em] text-strong sm:text-5xl lg:text-[3.65rem]">
@@ -578,7 +616,7 @@ export function NabzRasht({
 
             <NabzDataReadiness status={dataReadiness} />
 
-            {sessionStatus?.loggedIn ? (
+            {sessionStatus?.loggedIn && !liveScenario ? (
               <SavedTasteProfileCard
                 status={profileLoadStatus}
                 profile={storedProfile}
@@ -587,7 +625,9 @@ export function NabzRasht({
 
             <p className="mt-5 flex max-w-[500px] items-start gap-2 text-xs leading-6 text-muted">
               <span aria-hidden className="mt-1 text-saffron">✦</span>
-              نام‌ها و نتیجه‌های داخل بازی هنوز ساختگی‌اند؛ داده واقعی فقط بعد از عبور از دروازه منبع و اتصال دوئل وارد بازی می‌شود.
+              {liveScenario
+                ? "حالت واقعی فقط نام و فیلدهای factual تأییدشده را نشان می‌دهد؛ نتیجه‌سازی تا رسیدن شواهد کافی بسته می‌ماند."
+                : "نام‌ها و نتیجه‌های این حالت ساختگی‌اند؛ رأی واقعی فقط در حالت پایلوت واقعی ثبت می‌شود."}
             </p>
           </div>
 
@@ -595,7 +635,16 @@ export function NabzRasht({
             <div aria-hidden className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-lapis/[0.12] blur-3xl" />
             <div aria-hidden className="absolute -bottom-24 -right-16 h-64 w-64 rounded-full bg-mint/[0.08] blur-3xl" />
             <div className="relative min-h-[520px]">
-              {!scenario || !session ? <ScenarioPicker onSelect={startScenario} /> : null}
+              {!liveScenario && (!scenario || !session) ? (
+                <ScenarioPicker onSelect={startScenario} />
+              ) : null}
+              {liveScenario ? (
+                <LiveDuelFlow
+                  scenario={liveScenario}
+                  onBack={reset}
+                  onUseDemo={useDemoAfterLiveCheck}
+                />
+              ) : null}
               {scenario && session && !isComplete ? (
                 <DuelStage
                   scenario={scenario}

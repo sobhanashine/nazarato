@@ -1,6 +1,108 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Nabz Rasht demo loop", () => {
+  test("uses five real pairs and retries a failed vote without losing the round", async ({ page }) => {
+    const votes: unknown[] = [];
+    let roundOneLoads = 0;
+    const ids = Array.from(
+      { length: 10 },
+      (_, index) => `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+    );
+
+    await page.route("**/api/nabz/duel?**", async (route) => {
+      const url = new URL(route.request().url());
+      const round = Number(url.searchParams.get("round"));
+      if (round === 1 && roundOneLoads++ === 0) {
+        await route.fulfill({
+          status: 503,
+          contentType: "application/json",
+          body: JSON.stringify({ ok: false }),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ok: true,
+          status: "ready",
+          scenario: "date",
+          round,
+          availablePairCount: 5,
+          pair: {
+            prompt: `دوئل واقعی ${round + 1}`,
+            options: [
+              {
+                id: ids[round * 2],
+                slug: `real-${round * 2 + 1}`,
+                name: `کافه واقعی ${round * 2 + 1}`,
+                kind: "کافه",
+                neighborhoodSlug: "golsar",
+                priceBand: 2,
+              },
+              {
+                id: ids[round * 2 + 1],
+                slug: `real-${round * 2 + 2}`,
+                name: `رستوران واقعی ${round * 2 + 2}`,
+                kind: "رستوران",
+                neighborhoodSlug: "sabze-meydan",
+                priceBand: 3,
+              },
+            ],
+          },
+        }),
+      });
+    });
+    await page.route("**/api/nabz/votes", async (route) => {
+      votes.push(route.request().postDataJSON() as unknown);
+      if (votes.length === 1) {
+        await route.fulfill({
+          status: 503,
+          contentType: "application/json",
+          body: JSON.stringify({ ok: false }),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true, stored: true, duplicate: false }),
+      });
+    });
+
+    await page.goto("/");
+    await page.getByRole("button", { name: /قرار دونفره/ }).click();
+    await expect(page.getByText("پایلوت واقعی", { exact: true })).toBeVisible();
+    await page.getByLabel(/اگر دلیل کوتاهی داری بنویس/).fill("فضای آرام‌تر");
+    await expect(page.getByRole("heading", { name: "دوئل واقعی 1" })).toBeVisible();
+    await page.getByTestId("duel-option").first().click();
+    await expect(page.getByText(/رأی ثبت نشد/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "دوئل واقعی 1" })).toBeVisible();
+    await page.getByTestId("duel-option").first().click();
+    await expect(page.getByText(/رأی قبلی محفوظ است/)).toBeVisible();
+    await page.getByRole("button", { name: "تلاش دوباره" }).click();
+
+    for (let round = 1; round < 5; round += 1) {
+      await expect(
+        page.getByRole("heading", { name: `دوئل واقعی ${round + 1}` }),
+      ).toBeVisible();
+      await page.getByTestId("duel-option").first().click();
+    }
+
+    await expect(
+      page.getByRole("heading", { name: "پنج انتخاب واقعی ثبت شد" }),
+    ).toBeVisible();
+    expect(votes).toHaveLength(6);
+    expect(votes[0]).toEqual(
+      expect.objectContaining({
+        citySlug: "rasht",
+        scenarioSlug: "date",
+        reasonText: "فضای آرام‌تر",
+      }),
+    );
+    await expect(page.getByText("سلیقه‌ات لو رفت!")).toHaveCount(0);
+  });
+
   test("turns five anonymous duel choices into an explained result", async ({ page }) => {
     await page.goto("/");
 
