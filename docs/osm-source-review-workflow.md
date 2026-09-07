@@ -126,3 +126,13 @@ Verification on 2026-09-05 appended one explicit `unreviewed` QA event. A
 repeated identical action was a no-op, the immutable trigger blocked an update,
 the public client could read zero events, and the linked source/business remained
 `quarantined`/`pending`.
+
+On 2026-09-08 the founder authorized only the limited OSM payload for
+`رستوران گیله مرد اصیل` to enter internal review. The authenticated admin path
+appended event `41d39a96-157a-455a-b7c2-2f4d5a31ab37` with decision
+`ready_for_approval`, the current versioned pre-screen snapshot, and an explicit
+note excluding street-address enrichment and third-party reviews, ratings,
+images, or copied text. A post-write read confirmed that the source is still
+`quarantined`, the business is still `pending`, and approved OSM source, active
+Rasht business, and publication-event counts are all zero. This event is not a
+publication authorization.

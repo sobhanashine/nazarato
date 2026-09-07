@@ -162,8 +162,11 @@ Set globally in `next.config.ts:31-40`:
   domain serves a live branded ordering app, its OSM identity fields match, and
   the Neshan destination is approximately 2.9 metres from the OSM point. The
   safe first payload therefore omits a street address and uses only exact OSM
-  facts. The founder need only make the policy decision to advance that limited
-  payload to human review, not personally attest to the business identity.
+  facts. The founder authorized that limited payload for internal review on
+  2026-09-08, and append-only event `41d39a96-157a-455a-b7c2-2f4d5a31ab37`
+  records `ready_for_approval` with the authenticated admin as reviewer. The
+  source remains quarantined and the business remains pending; publication is a
+  separate founder decision and was not authorized by that review instruction.
 - Shared Drive research is converted only through
   `scripts/prepare-rasht-drive-businesses.mts`. Real exports and prepared output
   stay under gitignored `data/private/` because this repository is public and the
@@ -296,8 +299,13 @@ Set globally in `next.config.ts:31-40`:
   completion rows; its authenticated QA proposal remained quarantined against a
   pending business, survived refresh without changing score, and was deleted by
   exact ID afterward. No manual completion or public QA row remains.
-  Complete the founder policy decision and real per-record review before using
-  the implemented one-record publication gate or enabling real-data mode.
+  The first exact candidate, `رستوران گیله مرد اصیل`, now has an authenticated
+  `ready_for_approval` event whose note limits the payload to exact OSM facts and
+  explicitly excludes a street address and third-party content. Independent
+  post-write checks still report zero approved OSM sources, zero active Rasht
+  businesses, and zero publication events. A separate founder publication
+  authorization is required before using the implemented one-record publication
+  gate or enabling real-data mode.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
   `npm audit --omit=dev` on 2026-09-05 reports zero production findings. The full
@@ -328,6 +336,16 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-08** — Recorded the founder-authorized internal review decision for
+  `رستوران گیله مرد اصیل` through the authenticated admin workflow. Append-only
+  event `41d39a96-157a-455a-b7c2-2f4d5a31ab37` marks the exact limited OSM
+  payload `ready_for_approval`, snapshots
+  `nazarato-osm-prescreen/0.1.0` at 85, and explicitly excludes street-address
+  enrichment plus third-party reviews, ratings, images, and copied text. The
+  source remains `quarantined`, its business remains `pending`, and independent
+  checks report zero approved OSM sources, zero active Rasht businesses, and
+  zero publication events. Publication remains a separate explicit decision.
+  Files: `docs/{PROJECT,osm-source-review-workflow}.md`.
 - **2026-09-08** — Prepared the first source-backed OSM publication shortlist
   without publishing any record. The analysis profiles all 50 quarantined rows,
   confirms 50 unique source references and normalized names, checks five ranked
