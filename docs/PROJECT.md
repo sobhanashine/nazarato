@@ -152,6 +152,14 @@ Set globally in `next.config.ts:31-40`:
   `approved/active`. It is applied to development; remote parity, DB lint,
   public-access denial, and an unreviewed-row rollback check pass. Zero records
   are public.
+- The first publication shortlist is captured as a validated portable report in
+  `docs/reports/osm-publication-shortlist/`. It profiles all 50 quarantined rows,
+  rechecks five candidates against live OSM and current public identity evidence,
+  and recommends `رستوران گیله مرد اصیل` for founder review. Its transparent
+  100-point score is triage only; it cannot change database state. `رستوران بی
+  بی کیو`, `کافه نُت`, and `ایجیگا` remain excluded due to contradictory, stale,
+  or ambiguous identity evidence. The founder must confirm the recommended
+  branch identity and final address before any human review or approval action.
 - Shared Drive research is converted only through
   `scripts/prepare-rasht-drive-businesses.mts`. Real exports and prepared output
   stay under gitignored `data/private/` because this repository is public and the
@@ -284,8 +292,9 @@ Set globally in `next.config.ts:31-40`:
   completion rows; its authenticated QA proposal remained quarantined against a
   pending business, survived refresh without changing score, and was deleted by
   exact ID afterward. No manual completion or public QA row remains.
-  Complete the real per-record review and a separate publication approval design
-  before changing source status or enabling real-data mode.
+  Complete the founder identity/address confirmation and real per-record review
+  before using the implemented one-record publication gate or enabling
+  real-data mode.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
   `npm audit --omit=dev` on 2026-09-05 reports zero production findings. The full
@@ -316,6 +325,16 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-08** — Prepared the first source-backed OSM publication shortlist
+  without publishing any record. The analysis profiles all 50 quarantined rows,
+  confirms 50 unique source references and normalized names, checks five ranked
+  candidates against live OSM metadata and current public identity evidence,
+  and recommends `رستوران گیله مرد اصیل` for founder review. The canonical
+  artifact and portable HTML report pass source-dialog, keyboard interaction,
+  and 390/1440 px verification. The report-only triage score cannot invoke the
+  database approval RPC; founder confirmation of the branch and address remains
+  required. Files: `docs/reports/osm-publication-shortlist/{artifact.json,report.html}`
+  and `docs/PROJECT.md`.
 - **2026-09-07** — Implemented the explicit one-record OSM publication gate.
   Admin UI requires three confirmations and the exact source-derived slug; the
   server repeats input/admin validation and an additive reversible migration

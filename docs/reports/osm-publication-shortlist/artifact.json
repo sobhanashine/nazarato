@@ -1,0 +1,359 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "First OSM Publication Shortlist",
+    "description": "A source-backed, publication-safe shortlist for the first Rasht business profile. No record was published.",
+    "generatedAt": "2026-09-07T11:52:55Z",
+    "cards": [
+      {
+        "id": "inventory_card",
+        "description": "Completeness and uniqueness profile of the quarantined Rasht OSM snapshot.",
+        "dataset": "inventory_summary",
+        "sourceId": "osm_snapshot",
+        "metrics": [
+          { "label": "Selected records", "field": "records", "format": "number" },
+          { "label": "Phone present", "field": "phone_present", "format": "number" },
+          { "label": "Address present", "field": "address_present", "format": "number" },
+          { "label": "Publicly approved", "field": "publication_approved", "format": "number" }
+        ]
+      },
+      {
+        "id": "shortlist_card",
+        "description": "Current shortlist outcome. Readiness is a report-only triage score, not the production approval gate.",
+        "dataset": "shortlist_summary",
+        "sourceId": "triage_method",
+        "metrics": [
+          { "label": "Shortlisted", "field": "shortlisted", "format": "number" },
+          { "label": "Recommended score", "field": "recommended_score", "format": "number" },
+          { "label": "Published now", "field": "published_now", "format": "number" }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "readiness_chart",
+        "title": "Publication-readiness triage",
+        "subtitle": "Higher is stronger, but founder review and the database approval gate remain mandatory.",
+        "headerMarkdown": "The 100-point score combines live OSM identity, snapshot contact completeness, OSM recency, and current corroboration.",
+        "type": "bar",
+        "dataset": "candidate_scores",
+        "sourceId": "triage_method",
+        "valueFormat": "number",
+        "encodings": {
+          "x": { "field": "candidate", "type": "nominal", "label": "Candidate" },
+          "y": { "field": "score", "type": "quantitative", "label": "Score" },
+          "tooltip": [
+            { "field": "risk", "type": "nominal", "label": "Residual risk" },
+            { "field": "osm_updated", "type": "nominal", "label": "OSM updated" },
+            { "field": "verification", "type": "nominal", "label": "Current corroboration" }
+          ]
+        }
+      }
+    ],
+    "tables": [
+      {
+        "id": "shortlist_table",
+        "title": "Decision table",
+        "subtitle": "Exact candidates, scores, strengths, and required pre-publication checks.",
+        "dataset": "candidate_scores",
+        "sourceId": "triage_method",
+        "defaultSort": { "field": "rank", "direction": "asc" },
+        "density": "spacious",
+        "columns": [
+          { "field": "rank", "label": "Rank", "format": "number" },
+          { "field": "candidate", "label": "Business", "type": "text" },
+          { "field": "category", "label": "Category", "type": "text" },
+          { "field": "score", "label": "Score", "format": "number" },
+          { "field": "osm_updated", "label": "OSM updated", "type": "date" },
+          { "field": "verification", "label": "Current corroboration", "type": "text" },
+          { "field": "risk", "label": "Residual risk", "type": "text" },
+          { "field": "next_check", "label": "Before approval", "type": "text" }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "osm_snapshot",
+        "label": "Quarantined Rasht OSM snapshot",
+        "path": "data/rasht-osm-businesses.json",
+        "query": {
+          "engine": "duckdb",
+          "language": "sql",
+          "sql": "WITH records AS (SELECT UNNEST(imports) AS item FROM read_json_auto('data/rasht-osm-businesses.json')) SELECT COUNT(*) AS records, COUNT(*) FILTER (WHERE item.business.categorySlug = 'cafe') AS cafes, COUNT(*) FILTER (WHERE item.business.categorySlug = 'restaurant') AS restaurants, COUNT(*) FILTER (WHERE item.business.contact.phone IS NOT NULL) AS phone_present, COUNT(*) FILTER (WHERE item.business.contact.address IS NOT NULL) AS address_present, COUNT(*) FILTER (WHERE item.business.contact.website IS NOT NULL) AS website_present, COUNT(*) FILTER (WHERE item.business.contact.instagram IS NOT NULL) AS instagram_present, COUNT(*) FILTER (WHERE item.source.publicationApproved = TRUE) AS publication_approved FROM records",
+          "description": "Profiles every selected record in the local, quarantined snapshot without publishing it.",
+          "executed_at": "2026-09-07T11:52:55Z",
+          "tables_used": ["data/rasht-osm-businesses.json"],
+          "filters": ["All 50 selected records"],
+          "metric_definitions": [
+            "Phone/address/website/Instagram present means a non-empty snapshot field.",
+            "Uniqueness was checked on sourceRef and normalized business name.",
+            "publicationApproved is counted only when explicitly true."
+          ]
+        }
+      },
+      {
+        "id": "triage_method",
+        "label": "Publication shortlist triage",
+        "path": "docs/reports/osm-publication-shortlist/artifact.json",
+        "query": {
+          "engine": "duckdb",
+          "language": "sql",
+          "sql": "SELECT * FROM (VALUES (1, 'رستوران گیله مرد اصیل', 80, 35, 20, 5, 20), (2, 'شورِ کولی', 75, 35, 15, 5, 20), (3, 'کافه دوری', 75, 35, 20, 20, 0), (4, 'کافه ریرا', 75, 35, 15, 5, 20), (5, 'باکا کافه', 70, 35, 20, 5, 10)) AS shortlist(rank, candidate, score, live_osm_identity_points, contact_completeness_points, osm_recency_points, corroboration_points) ORDER BY rank",
+          "description": "A transparent report-only triage formula. It does not change publicationApproved and cannot call the approval RPC.",
+          "executed_at": "2026-09-07T11:52:55Z",
+          "tables_used": ["data/rasht-osm-businesses.json", "OpenStreetMap live element API", "public web evidence"],
+          "filters": ["Rasht", "cafe or restaurant", "live OSM object still matches snapshot identity"],
+          "metric_definitions": [
+            "Live OSM identity requires the OSM element to resolve and its name/contact identity to match the snapshot.",
+            "Recency uses the live OSM element timestamp relative to 2026-09-07.",
+            "Current corroboration is evidence only; no third-party reviews, ratings, or descriptions are imported."
+          ]
+        }
+      },
+      {
+        "id": "osm_live",
+        "label": "OpenStreetMap live element API",
+        "href": "https://api.openstreetmap.org/api/0.6/"
+      },
+      {
+        "id": "gile_mard_official",
+        "label": "Gile Mard Asil official site",
+        "href": "https://gilemardasil.ir/"
+      },
+      {
+        "id": "gile_mard_directory",
+        "label": "Current Gile Mard Asil contact listing",
+        "href": "https://www.irangaah.ir/websites/fun/gilemardasil.ir"
+      },
+      {
+        "id": "shore_cooli_official",
+        "label": "Shoore Cooli official site",
+        "href": "https://shoorecooli.com/"
+      },
+      {
+        "id": "shore_cooli_directory",
+        "label": "Current Shoore Cooli contact listing",
+        "href": "https://shahrzi.com/%D9%84%D8%A7%DA%A9%DA%86%D8%B1%DB%8C-%D8%AA%D8%B1%DB%8C%D9%86-%D8%B1%D8%B3%D8%AA%D9%88%D8%B1%D8%A7%D9%86-%D9%87%D8%A7%DB%8C-%D8%B1%D8%B4%D8%AA-5-%D8%B1%D8%B3%D8%AA%D9%88%D8%B1%D8%A7%D9%86-%D8%A8/"
+      },
+      {
+        "id": "ryra_store",
+        "label": "Ryra Cafe live branded store",
+        "href": "https://RyraCafe.snapp-store.com/"
+      },
+      {
+        "id": "baka_directory",
+        "label": "Current Baka Cafe listing",
+        "href": "https://restaurantguru.com/Baka-Cafe-Rasht"
+      }
+    ],
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "body": "# First OSM Publication Shortlist\n\n<div dir=\"rtl\" lang=\"fa\">فهرست کوتاه اولین کسب‌وکار رشتی برای بررسی انتشار در نظراتو — بدون انتشار هیچ رکوردی.</div>"
+      },
+      {
+        "id": "executive_summary",
+        "type": "markdown",
+        "body": "## Executive Summary\n\n<div dir=\"rtl\" lang=\"fa\">\n<p><strong>پیشنهاد اول: رستوران گیله‌مرد اصیل.</strong> این گزینه بالاترین امتیاز را گرفته چون شیء زنده OSM با snapshot هم‌خوان است، شماره و کانال‌های تماس کامل دارد، وب‌سایت رسمی اکنون فعال است و یک منبع تازه نیز همان شماره و شهر را تأیید می‌کند.</p>\n<p><strong>اقدام موردنیاز از بنیان‌گذار:</strong> فقط هویت همین شعبه و آدرس نهایی را تأیید یا رد کند. پس از آن، رکورد می‌تواند وارد review انسانی و سپس دروازه صریح publication approval شود.</p>\n<p><strong>وضعیت انتشار:</strong> صفر رکورد منتشر شده؛ هر ۵۰ رکورد همچنان quarantined و publicationApproved=false هستند.</p>\n</div>"
+      },
+      {
+        "id": "inventory_heading",
+        "type": "markdown",
+        "sourceId": "osm_snapshot",
+        "body": "## Snapshot quality\n\n<div dir=\"rtl\" lang=\"fa\">از ۵۰ رکورد منتخب، ۴۹ شماره تلفن، ۲۴ آدرس، ۴ وب‌سایت و ۱۱ شناسه اینستاگرام دارند. هر ۵۰ sourceRef و هر ۵۰ نام نرمال‌شده یکتا هستند. این نتیجه کیفیت مناسب برای review را نشان می‌دهد، نه مجوز انتشار عمومی.</div>"
+      },
+      { "id": "inventory_metrics", "type": "metric-strip", "cardIds": ["inventory_card"] },
+      {
+        "id": "method",
+        "type": "markdown",
+        "sourceId": "triage_method",
+        "body": "## Scoring method\n\n<div dir=\"rtl\" lang=\"fa\">امتیاز ۱۰۰‌نقطه‌ای فقط برای اولویت‌بندی review است: ۳۵ امتیاز تطابق هویت OSM زنده، ۲۵ امتیاز کامل‌بودن تماس در snapshot، ۲۰ امتیاز تازگی ویرایش OSM و ۲۰ امتیاز شواهد جاری بیرونی. این امتیاز جایگزین تأیید انسانی، حقوق انتشار یا RPC محافظت‌شده دیتابیس نیست.</div>"
+      },
+      { "id": "shortlist_metrics", "type": "metric-strip", "cardIds": ["shortlist_card"] },
+      { "id": "readiness_chart_block", "type": "chart", "chartId": "readiness_chart" },
+      {
+        "id": "findings",
+        "type": "markdown",
+        "body": "## Key findings\n\n<div dir=\"rtl\" lang=\"fa\">\n<ul>\n<li><strong>گیله‌مرد اصیل:</strong> وب‌سایت رسمی فعال، شماره مطابق OSM و تأیید تازه از یک فهرست عمومی؛ تنها خلأ snapshot آدرس است.</li>\n<li><strong>شورِ کولی:</strong> وب‌سایت رسمی فعال و شواهد تازه برای شماره‌ها و Instagram؛ OSM از ۲۰۲۳ و آدرس در snapshot خالی است.</li>\n<li><strong>کافه دوری:</strong> تازه‌ترین OSM shortlist (فوریه ۲۰۲۶) و تماس مناسب؛ منبع جاری مستقل قابل اتکا پیدا نشد.</li>\n<li><strong>کافه ریرا:</strong> لینک snapshot اکنون به فروشگاه برندشده Snapp Store هدایت می‌شود؛ آدرس snapshot خالی و OSM قدیمی‌تر است.</li>\n<li><strong>باکا کافه:</strong> تماس snapshot کامل و فهرست جدید هم‌خوان دارد؛ OSM از ۲۰۲۳ به‌روزرسانی نشده است.</li>\n</ul>\n</div>"
+      },
+      { "id": "decision_table_block", "type": "table", "tableId": "shortlist_table" },
+      {
+        "id": "exclusions",
+        "type": "markdown",
+        "body": "## Material exclusions\n\n<div dir=\"rtl\" lang=\"fa\">\n<ul>\n<li><strong>رستوران بی‌بی‌کیو:</strong> دامنه ثبت‌شده در snapshot اکنون DNS ندارد و یک فهرست تازه شماره‌ای متفاوت از OSM نشان می‌دهد؛ تا رفع تعارض نباید منتشر شود.</li>\n<li><strong>کافه نُت:</strong> شماره در یک فهرست تازه تطابق دارد، اما نشانی آن با snapshot یکسان نیست؛ نیازمند بررسی شعبه/جابجایی است.</li>\n<li><strong>ایجیگا:</strong> شناسه اجتماعی snapshot با حوزه خودرو هم‌نام است و ابهام هویتی دارد؛ از shortlist حذف شد.</li>\n</ul>\n</div>"
+      },
+      {
+        "id": "recommendation",
+        "type": "markdown",
+        "body": "## Recommendation\n\n<div dir=\"rtl\" lang=\"fa\">\n<ol>\n<li>بنیان‌گذار مشخص کند «گیله‌مرد اصیل، رشت، شماره ۰۱۳۳۳۲۲۲۵۳۳» همان کسب‌وکار موردنظر است.</li>\n<li>آدرس جاری از منبع رسمی/مالک تأیید و به‌عنوان اصلاح پیشنهادی ثبت شود؛ داده ثالث بدون مبنای انتشار مستقیماً وارد نشود.</li>\n<li>اپراتور review را ثبت کند و سپس، در یک اقدام جداگانه و audit‌شده، publication approval را اجرا کند.</li>\n<li>پس از انتشار، صفحه عمومی و provenance در موبایل و دسکتاپ smoke-test شود.</li>\n</ol>\n</div>"
+      },
+      {
+        "id": "questions",
+        "type": "markdown",
+        "body": "## Further questions\n\n<div dir=\"rtl\" lang=\"fa\">\n<ul>\n<li>آیا نسخه موردنظر برای انتشار، شعبه/مکان خیابان امام خمینی و گذر حاج‌آقابزرگ است؟</li>\n<li>آیا در نسخه اول فقط نام، دسته‌بندی، موقعیت و تماس OSM منتشر شود، یا آدرس تأییدشده جدید هم اضافه شود؟</li>\n<li>آیا قبل از انتشار عمومی، تماس کوتاه با مالک را به‌عنوان کنترل اضافی انجام می‌دهیم؟</li>\n</ul>\n</div>"
+      },
+      {
+        "id": "caveats",
+        "type": "markdown",
+        "body": "## Caveats and assumptions\n\n<div dir=\"rtl\" lang=\"fa\">این گزارش در ۱۶ شهریور ۱۴۰۵/۷ سپتامبر ۲۰۲۶ تهیه شده است. نتیجه جست‌وجوی وب نبودن یک کسب‌وکار را اثبات نمی‌کند. شواهد بیرونی فقط برای راستی‌آزمایی هویت به‌کار رفته‌اند و هیچ متن نظر، رتبه، امتیاز یا محتوای توصیفی از سایت‌های ثالث وارد محصول نشده است. امتیازها تصمیم حقوقی یا تضمین پذیرش دانش‌بنیان نیستند.</div>"
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-09-07T11:52:55Z",
+    "status": "ready",
+    "datasets": {
+      "inventory_summary": [
+        {
+          "records": 50,
+          "cafes": 25,
+          "restaurants": 25,
+          "phone_present": 49,
+          "address_present": 24,
+          "website_present": 4,
+          "instagram_present": 11,
+          "unique_source_refs": 50,
+          "unique_normalized_names": 50,
+          "publication_approved": 0
+        }
+      ],
+      "shortlist_summary": [
+        { "shortlisted": 5, "recommended_score": 80, "published_now": 0 }
+      ],
+      "candidate_scores": [
+        {
+          "rank": 1,
+          "candidate": "رستوران گیله مرد اصیل",
+          "category": "restaurant",
+          "score": 80,
+          "osm_updated": "2023-10-15",
+          "verification": "Live official site + current exact phone/city listing",
+          "risk": "Low-medium: address absent from snapshot",
+          "next_check": "Confirm branch identity and final address",
+          "osm_ref": "node/11257603865",
+          "phone": "+981333222533",
+          "website": "https://gilemardasil.ir/",
+          "instagram": "gilemardasil_restaurant",
+          "live_osm_identity_points": 35,
+          "contact_completeness_points": 20,
+          "osm_recency_points": 5,
+          "corroboration_points": 20
+        },
+        {
+          "rank": 2,
+          "candidate": "شورِ کولی",
+          "category": "restaurant",
+          "score": 75,
+          "osm_updated": "2023-12-22",
+          "verification": "Live official site + current exact phones/Instagram listing",
+          "risk": "Medium: address and website absent from snapshot",
+          "next_check": "Confirm address and whether to enrich before publication",
+          "osm_ref": "node/4815102922",
+          "phone": "+981332121749;+981332121805;+981332111296",
+          "website": "",
+          "instagram": "shoore.cooli",
+          "live_osm_identity_points": 35,
+          "contact_completeness_points": 15,
+          "osm_recency_points": 5,
+          "corroboration_points": 20
+        },
+        {
+          "rank": 3,
+          "candidate": "کافه دوری",
+          "category": "cafe",
+          "score": 75,
+          "osm_updated": "2026-02-11",
+          "verification": "No reliable independent current result found",
+          "risk": "Medium: corroboration gap",
+          "next_check": "Confirm current operation from owner or first-party channel",
+          "osm_ref": "node/13534569719",
+          "phone": "+989357851212",
+          "website": "",
+          "instagram": "cafedorii",
+          "live_osm_identity_points": 35,
+          "contact_completeness_points": 20,
+          "osm_recency_points": 20,
+          "corroboration_points": 0
+        },
+        {
+          "rank": 4,
+          "candidate": "کافه ریرا",
+          "category": "cafe",
+          "score": 75,
+          "osm_updated": "2023-11-18",
+          "verification": "Snapshot URL redirects to a live branded Snapp Store",
+          "risk": "Medium: address absent from snapshot",
+          "next_check": "Confirm current address and store ownership",
+          "osm_ref": "node/11337955261",
+          "phone": "+981333727677",
+          "website": "https://qbar.ir/RyraCafe",
+          "instagram": "",
+          "live_osm_identity_points": 35,
+          "contact_completeness_points": 15,
+          "osm_recency_points": 5,
+          "corroboration_points": 20
+        },
+        {
+          "rank": 5,
+          "candidate": "باکا کافه",
+          "category": "cafe",
+          "score": 70,
+          "osm_updated": "2023-03-28",
+          "verification": "Current listing matches phone and business identity",
+          "risk": "Medium: OSM record is stale",
+          "next_check": "Confirm current operation and address",
+          "osm_ref": "way/512821414",
+          "phone": "+989362181804",
+          "website": "",
+          "instagram": "bakacafe",
+          "live_osm_identity_points": 35,
+          "contact_completeness_points": 20,
+          "osm_recency_points": 5,
+          "corroboration_points": 10
+        }
+      ]
+    },
+    "accessIssues": []
+  },
+  "sources": [
+    {
+      "id": "osm_snapshot",
+      "label": "Quarantined Rasht OSM snapshot",
+      "path": "data/rasht-osm-businesses.json",
+      "query": {
+        "engine": "duckdb",
+        "language": "sql",
+        "sql": "WITH records AS (SELECT UNNEST(imports) AS item FROM read_json_auto('data/rasht-osm-businesses.json')) SELECT COUNT(*) AS records, COUNT(*) FILTER (WHERE item.business.contact.phone IS NOT NULL) AS phone_present, COUNT(*) FILTER (WHERE item.business.contact.address IS NOT NULL) AS address_present, COUNT(*) FILTER (WHERE item.source.publicationApproved = TRUE) AS publication_approved FROM records",
+        "description": "Local snapshot completeness and publication state.",
+        "executed_at": "2026-09-07T11:52:55Z"
+      }
+    },
+    {
+      "id": "triage_method",
+      "label": "Publication shortlist triage",
+      "path": "docs/reports/osm-publication-shortlist/artifact.json",
+      "query": {
+        "engine": "duckdb",
+        "language": "sql",
+        "sql": "SELECT * FROM (VALUES (1, 'رستوران گیله مرد اصیل', 80, 35, 20, 5, 20), (2, 'شورِ کولی', 75, 35, 15, 5, 20), (3, 'کافه دوری', 75, 35, 20, 20, 0), (4, 'کافه ریرا', 75, 35, 15, 5, 20), (5, 'باکا کافه', 70, 35, 20, 5, 10)) AS shortlist(rank, candidate, score, live_osm_identity_points, contact_completeness_points, osm_recency_points, corroboration_points) ORDER BY rank",
+        "description": "Reviewed evidence triage only; it cannot approve or publish a business.",
+        "executed_at": "2026-09-07T11:52:55Z"
+      }
+    },
+    { "id": "osm_live", "label": "OpenStreetMap live element API", "href": "https://api.openstreetmap.org/api/0.6/" },
+    { "id": "gile_mard_official", "label": "Gile Mard Asil official site", "href": "https://gilemardasil.ir/" },
+    { "id": "gile_mard_directory", "label": "Current Gile Mard Asil contact listing", "href": "https://www.irangaah.ir/websites/fun/gilemardasil.ir" },
+    { "id": "shore_cooli_official", "label": "Shoore Cooli official site", "href": "https://shoorecooli.com/" },
+    { "id": "shore_cooli_directory", "label": "Current Shoore Cooli contact listing", "href": "https://shahrzi.com/%D9%84%D8%A7%DA%A9%DA%86%D8%B1%DB%8C-%D8%AA%D8%B1%DB%8C%D9%86-%D8%B1%D8%B3%D8%AA%D9%88%D8%B1%D8%A7%D9%86-%D9%87%D8%A7%DB%8C-%D8%B1%D8%B4%D8%AA-5-%D8%B1%D8%B3%D8%AA%D9%88%D8%B1%D8%A7%D9%86-%D8%A8/" },
+    { "id": "ryra_store", "label": "Ryra Cafe live branded store", "href": "https://RyraCafe.snapp-store.com/" },
+    { "id": "baka_directory", "label": "Current Baka Cafe listing", "href": "https://restaurantguru.com/Baka-Cafe-Rasht" }
+  ],
+  "package_info": {
+    "originUrl": "artifact://nazarato-osm-first-publication-shortlist",
+    "controls": { "edit": true, "refresh": true }
+  }
+}
