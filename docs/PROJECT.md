@@ -158,8 +158,12 @@ Set globally in `next.config.ts:31-40`:
   and recommends `رستوران گیله مرد اصیل` for founder review. Its transparent
   100-point score is triage only; it cannot change database state. `رستوران بی
   بی کیو`, `کافه نُت`, and `ایجیگا` remain excluded due to contradictory, stale,
-  or ambiguous identity evidence. The founder must confirm the recommended
-  branch identity and final address before any human review or approval action.
+  or ambiguous identity evidence. Follow-up verification found that the official
+  domain serves a live branded ordering app, its OSM identity fields match, and
+  the Neshan destination is approximately 2.9 metres from the OSM point. The
+  safe first payload therefore omits a street address and uses only exact OSM
+  facts. The founder need only make the policy decision to advance that limited
+  payload to human review, not personally attest to the business identity.
 - Shared Drive research is converted only through
   `scripts/prepare-rasht-drive-businesses.mts`. Real exports and prepared output
   stay under gitignored `data/private/` because this repository is public and the
@@ -292,9 +296,8 @@ Set globally in `next.config.ts:31-40`:
   completion rows; its authenticated QA proposal remained quarantined against a
   pending business, survived refresh without changing score, and was deleted by
   exact ID afterward. No manual completion or public QA row remains.
-  Complete the founder identity/address confirmation and real per-record review
-  before using the implemented one-record publication gate or enabling
-  real-data mode.
+  Complete the founder policy decision and real per-record review before using
+  the implemented one-record publication gate or enabling real-data mode.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
   `npm audit --omit=dev` on 2026-09-05 reports zero production findings. The full
@@ -331,10 +334,14 @@ task: what shipped, where to look, and any new decision worth remembering.
   candidates against live OSM metadata and current public identity evidence,
   and recommends `رستوران گیله مرد اصیل` for founder review. The canonical
   artifact and portable HTML report pass source-dialog, keyboard interaction,
-  and 390/1440 px verification. The report-only triage score cannot invoke the
-  database approval RPC; founder confirmation of the branch and address remains
-  required. Files: `docs/reports/osm-publication-shortlist/{artifact.json,report.html}`
-  and `docs/PROJECT.md`.
+  and 390/1440 px verification. Follow-up research confirmed a live branded
+  ordering app and near-exact OSM/Neshan coordinate agreement, while treating a
+  broken eNamad link and one conflicting directory address as non-supporting
+  evidence. The safe proposed payload now uses only exact OSM facts and omits a
+  street address. The report-only triage score cannot invoke the database
+  approval RPC; a founder policy decision to enter human review remains open.
+  Files: `docs/reports/osm-publication-shortlist/{artifact.json,report.html}` and
+  `docs/PROJECT.md`.
 - **2026-09-07** — Implemented the explicit one-record OSM publication gate.
   Admin UI requires three confirmations and the exact source-derived slug; the
   server repeats input/admin validation and an additive reversible migration

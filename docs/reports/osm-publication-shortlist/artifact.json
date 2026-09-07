@@ -5,7 +5,7 @@
     "surface": "report",
     "title": "First OSM Publication Shortlist",
     "description": "A source-backed, publication-safe shortlist for the first Rasht business profile. No record was published.",
-    "generatedAt": "2026-09-07T11:52:55Z",
+    "generatedAt": "2026-09-07T22:17:28Z",
     "cards": [
       {
         "id": "inventory_card",
@@ -83,7 +83,7 @@
           "language": "sql",
           "sql": "WITH records AS (SELECT UNNEST(imports) AS item FROM read_json_auto('data/rasht-osm-businesses.json')) SELECT COUNT(*) AS records, COUNT(*) FILTER (WHERE item.business.categorySlug = 'cafe') AS cafes, COUNT(*) FILTER (WHERE item.business.categorySlug = 'restaurant') AS restaurants, COUNT(*) FILTER (WHERE item.business.contact.phone IS NOT NULL) AS phone_present, COUNT(*) FILTER (WHERE item.business.contact.address IS NOT NULL) AS address_present, COUNT(*) FILTER (WHERE item.business.contact.website IS NOT NULL) AS website_present, COUNT(*) FILTER (WHERE item.business.contact.instagram IS NOT NULL) AS instagram_present, COUNT(*) FILTER (WHERE item.source.publicationApproved = TRUE) AS publication_approved FROM records",
           "description": "Profiles every selected record in the local, quarantined snapshot without publishing it.",
-          "executed_at": "2026-09-07T11:52:55Z",
+          "executed_at": "2026-09-07T22:17:28Z",
           "tables_used": ["data/rasht-osm-businesses.json"],
           "filters": ["All 50 selected records"],
           "metric_definitions": [
@@ -102,7 +102,7 @@
           "language": "sql",
           "sql": "SELECT * FROM (VALUES (1, 'رستوران گیله مرد اصیل', 80, 35, 20, 5, 20), (2, 'شورِ کولی', 75, 35, 15, 5, 20), (3, 'کافه دوری', 75, 35, 20, 20, 0), (4, 'کافه ریرا', 75, 35, 15, 5, 20), (5, 'باکا کافه', 70, 35, 20, 5, 10)) AS shortlist(rank, candidate, score, live_osm_identity_points, contact_completeness_points, osm_recency_points, corroboration_points) ORDER BY rank",
           "description": "A transparent report-only triage formula. It does not change publicationApproved and cannot call the approval RPC.",
-          "executed_at": "2026-09-07T11:52:55Z",
+          "executed_at": "2026-09-07T22:17:28Z",
           "tables_used": ["data/rasht-osm-businesses.json", "OpenStreetMap live element API", "public web evidence"],
           "filters": ["Rasht", "cafe or restaurant", "live OSM object still matches snapshot identity"],
           "metric_definitions": [
@@ -126,6 +126,26 @@
         "id": "gile_mard_directory",
         "label": "Current Gile Mard Asil contact listing",
         "href": "https://www.irangaah.ir/websites/fun/gilemardasil.ir"
+      },
+      {
+        "id": "gile_mard_ordering",
+        "label": "Gile Mard Asil live ordering service",
+        "href": "https://app.gilemardasil.ir/"
+      },
+      {
+        "id": "gile_mard_neshan",
+        "label": "Current Neshan location linked by the business listing",
+        "href": "https://neshan.org/maps/@37.27731985,49.58544016,16z"
+      },
+      {
+        "id": "gile_mard_rivan",
+        "label": "Current Gile Mard Asil address and phone listing",
+        "href": "https://myrivan.com/73686"
+      },
+      {
+        "id": "osm_license",
+        "label": "OpenStreetMap copyright and ODbL requirements",
+        "href": "https://www.openstreetmap.org/copyright"
       },
       {
         "id": "shore_cooli_official",
@@ -157,7 +177,7 @@
       {
         "id": "executive_summary",
         "type": "markdown",
-        "body": "## Executive Summary\n\n<div dir=\"rtl\" lang=\"fa\">\n<p><strong>پیشنهاد اول: رستوران گیله‌مرد اصیل.</strong> این گزینه بالاترین امتیاز را گرفته چون شیء زنده OSM با snapshot هم‌خوان است، شماره و کانال‌های تماس کامل دارد، وب‌سایت رسمی اکنون فعال است و یک منبع تازه نیز همان شماره و شهر را تأیید می‌کند.</p>\n<p><strong>اقدام موردنیاز از بنیان‌گذار:</strong> فقط هویت همین شعبه و آدرس نهایی را تأیید یا رد کند. پس از آن، رکورد می‌تواند وارد review انسانی و سپس دروازه صریح publication approval شود.</p>\n<p><strong>وضعیت انتشار:</strong> صفر رکورد منتشر شده؛ هر ۵۰ رکورد همچنان quarantined و publicationApproved=false هستند.</p>\n</div>"
+        "body": "## Executive Summary\n\n<div dir=\"rtl\" lang=\"fa\">\n<p><strong>پیشنهاد اول همچنان رستوران گیله‌مرد اصیل است.</strong> بررسی تکمیلی نشان می‌دهد شناخت شخصی بنیان‌گذار برای احراز اولیه لازم نیست: شیء زنده OSM، دامنه رسمی، سامانه سفارش فعال، شماره و شناسه اجتماعی یک هویت را نشان می‌دهند؛ مختصات نشان نیز فقط حدود ۲٫۹ متر با نقطه OSM فاصله دارد.</p>\n<p><strong>راه امن:</strong> نسخه اول فقط از فکت‌های خود OSM شامل نام، دسته، شهر، مختصات، تلفن، وب‌سایت و Instagram استفاده کند و هیچ آدرس خیابانی از دایرکتوری‌ها وارد نشود. این payload با attribution و لینک ODbL وارد review انسانی می‌شود.</p>\n<p><strong>اقدام موردنیاز از بنیان‌گذار:</strong> یک انتخاب سیاستی، نه تأیید شخصیِ واقعیت: اجازه بدهد همین payload محدود OSM وارد review نهایی شود یا گزینه دیگری انتخاب شود.</p>\n<p><strong>وضعیت انتشار:</strong> صفر رکورد منتشر شده؛ هر ۵۰ رکورد همچنان quarantined و publicationApproved=false هستند.</p>\n</div>"
       },
       {
         "id": "inventory_heading",
@@ -177,7 +197,12 @@
       {
         "id": "findings",
         "type": "markdown",
-        "body": "## Key findings\n\n<div dir=\"rtl\" lang=\"fa\">\n<ul>\n<li><strong>گیله‌مرد اصیل:</strong> وب‌سایت رسمی فعال، شماره مطابق OSM و تأیید تازه از یک فهرست عمومی؛ تنها خلأ snapshot آدرس است.</li>\n<li><strong>شورِ کولی:</strong> وب‌سایت رسمی فعال و شواهد تازه برای شماره‌ها و Instagram؛ OSM از ۲۰۲۳ و آدرس در snapshot خالی است.</li>\n<li><strong>کافه دوری:</strong> تازه‌ترین OSM shortlist (فوریه ۲۰۲۶) و تماس مناسب؛ منبع جاری مستقل قابل اتکا پیدا نشد.</li>\n<li><strong>کافه ریرا:</strong> لینک snapshot اکنون به فروشگاه برندشده Snapp Store هدایت می‌شود؛ آدرس snapshot خالی و OSM قدیمی‌تر است.</li>\n<li><strong>باکا کافه:</strong> تماس snapshot کامل و فهرست جدید هم‌خوان دارد؛ OSM از ۲۰۲۳ به‌روزرسانی نشده است.</li>\n</ul>\n</div>"
+        "body": "## Key findings\n\n<div dir=\"rtl\" lang=\"fa\">\n<ul>\n<li><strong>گیله‌مرد اصیل:</strong> دامنه رسمی، سامانه سفارش فعال و منوی جاری؛ نام، تلفن، وب‌سایت و Instagram با OSM تطابق دارند. چند منبع تازه آدرس محدوده شهرداری/گذر حاج‌آقابزرگ را نشان می‌دهند و لینک نشان تقریباً روی همان نقطه OSM است.</li>\n<li><strong>شورِ کولی:</strong> وب‌سایت رسمی فعال و شواهد تازه برای شماره‌ها و Instagram؛ OSM از ۲۰۲۳ و آدرس در snapshot خالی است.</li>\n<li><strong>کافه دوری:</strong> تازه‌ترین OSM shortlist (فوریه ۲۰۲۶) و تماس مناسب؛ منبع جاری مستقل قابل اتکا پیدا نشد.</li>\n<li><strong>کافه ریرا:</strong> لینک snapshot اکنون به فروشگاه برندشده Snapp Store هدایت می‌شود؛ آدرس snapshot خالی و OSM قدیمی‌تر است.</li>\n<li><strong>باکا کافه:</strong> تماس snapshot کامل و فهرست جدید هم‌خوان دارد؛ OSM از ۲۰۲۳ به‌روزرسانی نشده است.</li>\n</ul>\n</div>"
+      },
+      {
+        "id": "verification_update",
+        "type": "markdown",
+        "body": "## Verification update\n\n<div dir=\"rtl\" lang=\"fa\">\n<ul>\n<li><strong>هویت دیجیتال:</strong> gilemardasil.ir به app.gilemardasil.ir وصل است؛ سامانه سفارش اکنون منو، سبد خرید و محصولات برندشده را ارائه می‌کند.</li>\n<li><strong>هویت OSM:</strong> node/11257603865 نام، تلفن +98 13 3322 2533، وب‌سایت و Instagram یکسان دارد.</li>\n<li><strong>تطابق مکان:</strong> نقطه نشان 37.27731985,49.58544016 و نقطه OSM 37.2773424,49.5854564 حدود ۲٫۹ متر فاصله دارند.</li>\n<li><strong>کنترل تعارض:</strong> یک سایت تجمیعی آدرس دیگری نمایش می‌دهد؛ بنابراین هیچ آدرس خیابانی غیر-OSM در انتشار اول استفاده نمی‌شود.</li>\n<li><strong>کنترل مجوز:</strong> صفحه رسمی OSM بازنشر و اقتباس را با attribution و رعایت ODbL مجاز می‌داند. لینک نماد اعتماد روی سایت در زمان بررسی صفحه خطا برگرداند و مدرک مثبت محسوب نشد.</li>\n</ul>\n</div>"
       },
       { "id": "decision_table_block", "type": "table", "tableId": "shortlist_table" },
       {
@@ -188,23 +213,23 @@
       {
         "id": "recommendation",
         "type": "markdown",
-        "body": "## Recommendation\n\n<div dir=\"rtl\" lang=\"fa\">\n<ol>\n<li>بنیان‌گذار مشخص کند «گیله‌مرد اصیل، رشت، شماره ۰۱۳۳۳۲۲۲۵۳۳» همان کسب‌وکار موردنظر است.</li>\n<li>آدرس جاری از منبع رسمی/مالک تأیید و به‌عنوان اصلاح پیشنهادی ثبت شود؛ داده ثالث بدون مبنای انتشار مستقیماً وارد نشود.</li>\n<li>اپراتور review را ثبت کند و سپس، در یک اقدام جداگانه و audit‌شده، publication approval را اجرا کند.</li>\n<li>پس از انتشار، صفحه عمومی و provenance در موبایل و دسکتاپ smoke-test شود.</li>\n</ol>\n</div>"
+        "body": "## Recommendation\n\n<div dir=\"rtl\" lang=\"fa\">\n<ol>\n<li>گزینه اول بدون نیاز به شناخت شخصی بنیان‌گذار حفظ شود.</li>\n<li>payload انتشار فقط از فکت‌های همان رکورد OSM استفاده کند؛ آدرس خیابانی خالی بماند و attribution/ODbL نمایش داده شود.</li>\n<li>بنیان‌گذار فقط درباره ورود این payload محدود به review تصمیم بگیرد؛ این تصمیم، ادعای تأیید مالکیت یا صحت شخصی نیست.</li>\n<li>پس از ثبت review انسانی، publication approval در یک اقدام جداگانه و audit‌شده اجرا و سپس صفحه عمومی در موبایل و دسکتاپ smoke-test شود.</li>\n</ol>\n</div>"
       },
       {
         "id": "questions",
         "type": "markdown",
-        "body": "## Further questions\n\n<div dir=\"rtl\" lang=\"fa\">\n<ul>\n<li>آیا نسخه موردنظر برای انتشار، شعبه/مکان خیابان امام خمینی و گذر حاج‌آقابزرگ است؟</li>\n<li>آیا در نسخه اول فقط نام، دسته‌بندی، موقعیت و تماس OSM منتشر شود، یا آدرس تأییدشده جدید هم اضافه شود؟</li>\n<li>آیا قبل از انتشار عمومی، تماس کوتاه با مالک را به‌عنوان کنترل اضافی انجام می‌دهیم؟</li>\n</ul>\n</div>"
+        "body": "## Further questions\n\n<div dir=\"rtl\" lang=\"fa\">\n<ul>\n<li>آیا اجازه می‌دهید payload محدود OSM برای گیله‌مرد اصیل، بدون آدرس خیابانی، وارد review نهایی شود؟</li>\n<li>آیا تماس با مالک را پیش‌شرط انتشار می‌کنیم یا طبق مدل claim-after-publication، پس از ایجاد پروفایل انجام می‌دهیم؟ پیشنهاد MVP: تماس پیش‌شرط نباشد و claim بعداً انجام شود.</li>\n</ul>\n</div>"
       },
       {
         "id": "caveats",
         "type": "markdown",
-        "body": "## Caveats and assumptions\n\n<div dir=\"rtl\" lang=\"fa\">این گزارش در ۱۶ شهریور ۱۴۰۵/۷ سپتامبر ۲۰۲۶ تهیه شده است. نتیجه جست‌وجوی وب نبودن یک کسب‌وکار را اثبات نمی‌کند. شواهد بیرونی فقط برای راستی‌آزمایی هویت به‌کار رفته‌اند و هیچ متن نظر، رتبه، امتیاز یا محتوای توصیفی از سایت‌های ثالث وارد محصول نشده است. امتیازها تصمیم حقوقی یا تضمین پذیرش دانش‌بنیان نیستند.</div>"
+        "body": "## Caveats and assumptions\n\n<div dir=\"rtl\" lang=\"fa\">این گزارش در ۱۷ شهریور ۱۴۰۵/۸ سپتامبر ۲۰۲۶ به‌روزرسانی شده است. نتیجه جست‌وجوی وب نبودن یک کسب‌وکار را اثبات نمی‌کند. شواهد بیرونی فقط برای راستی‌آزمایی هویت به‌کار رفته‌اند و هیچ متن نظر، رتبه، امتیاز یا محتوای توصیفی از سایت‌های ثالث وارد محصول نشده است. لینک نماد اعتماد فعلی خطا می‌دهد و در امتیاز لحاظ نشده است. ODbL مجوز استفاده از داده OSM را با تعهدات attribution/share-alike بیان می‌کند؛ این گزارش مشاوره حقوقی ایران یا تضمین پذیرش دانش‌بنیان نیست.</div>"
       }
     ]
   },
   "snapshot": {
     "version": 1,
-    "generatedAt": "2026-09-07T11:52:55Z",
+    "generatedAt": "2026-09-07T22:17:28Z",
     "status": "ready",
     "datasets": {
       "inventory_summary": [
@@ -232,8 +257,8 @@
           "score": 80,
           "osm_updated": "2023-10-15",
           "verification": "Live official site + current exact phone/city listing",
-          "risk": "Low-medium: address absent from snapshot",
-          "next_check": "Confirm branch identity and final address",
+          "risk": "Low: external address conflict; omit street address",
+          "next_check": "Human policy approval for exact OSM facts only",
           "osm_ref": "node/11257603865",
           "phone": "+981333222533",
           "website": "https://gilemardasil.ir/",
@@ -329,7 +354,7 @@
         "language": "sql",
         "sql": "WITH records AS (SELECT UNNEST(imports) AS item FROM read_json_auto('data/rasht-osm-businesses.json')) SELECT COUNT(*) AS records, COUNT(*) FILTER (WHERE item.business.contact.phone IS NOT NULL) AS phone_present, COUNT(*) FILTER (WHERE item.business.contact.address IS NOT NULL) AS address_present, COUNT(*) FILTER (WHERE item.source.publicationApproved = TRUE) AS publication_approved FROM records",
         "description": "Local snapshot completeness and publication state.",
-        "executed_at": "2026-09-07T11:52:55Z"
+        "executed_at": "2026-09-07T22:17:28Z"
       }
     },
     {
@@ -341,12 +366,16 @@
         "language": "sql",
         "sql": "SELECT * FROM (VALUES (1, 'رستوران گیله مرد اصیل', 80, 35, 20, 5, 20), (2, 'شورِ کولی', 75, 35, 15, 5, 20), (3, 'کافه دوری', 75, 35, 20, 20, 0), (4, 'کافه ریرا', 75, 35, 15, 5, 20), (5, 'باکا کافه', 70, 35, 20, 5, 10)) AS shortlist(rank, candidate, score, live_osm_identity_points, contact_completeness_points, osm_recency_points, corroboration_points) ORDER BY rank",
         "description": "Reviewed evidence triage only; it cannot approve or publish a business.",
-        "executed_at": "2026-09-07T11:52:55Z"
+        "executed_at": "2026-09-07T22:17:28Z"
       }
     },
     { "id": "osm_live", "label": "OpenStreetMap live element API", "href": "https://api.openstreetmap.org/api/0.6/" },
     { "id": "gile_mard_official", "label": "Gile Mard Asil official site", "href": "https://gilemardasil.ir/" },
     { "id": "gile_mard_directory", "label": "Current Gile Mard Asil contact listing", "href": "https://www.irangaah.ir/websites/fun/gilemardasil.ir" },
+    { "id": "gile_mard_ordering", "label": "Gile Mard Asil live ordering service", "href": "https://app.gilemardasil.ir/" },
+    { "id": "gile_mard_neshan", "label": "Current Neshan location linked by the business listing", "href": "https://neshan.org/maps/@37.27731985,49.58544016,16z" },
+    { "id": "gile_mard_rivan", "label": "Current Gile Mard Asil address and phone listing", "href": "https://myrivan.com/73686" },
+    { "id": "osm_license", "label": "OpenStreetMap copyright and ODbL requirements", "href": "https://www.openstreetmap.org/copyright" },
     { "id": "shore_cooli_official", "label": "Shoore Cooli official site", "href": "https://shoorecooli.com/" },
     { "id": "shore_cooli_directory", "label": "Current Shoore Cooli contact listing", "href": "https://shahrzi.com/%D9%84%D8%A7%DA%A9%DA%86%D8%B1%DB%8C-%D8%AA%D8%B1%DB%8C%D9%86-%D8%B1%D8%B3%D8%AA%D9%88%D8%B1%D8%A7%D9%86-%D9%87%D8%A7%DB%8C-%D8%B1%D8%B4%D8%AA-5-%D8%B1%D8%B3%D8%AA%D9%88%D8%B1%D8%A7%D9%86-%D8%A8/" },
     { "id": "ryra_store", "label": "Ryra Cafe live branded store", "href": "https://RyraCafe.snapp-store.com/" },
