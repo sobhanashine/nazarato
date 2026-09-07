@@ -22,7 +22,9 @@ import type {
   OsmCompletionContact,
   OsmCompletionPermissionBasis,
 } from "@/lib/admin/osm-completion";
+import { canApproveOsmPublication } from "@/lib/admin/osm-publication";
 import {
+  approveOsmSourcePublication,
   recordOsmCompletionProposal,
   recordOsmSourceReviewDecision,
 } from "./actions";
@@ -605,6 +607,176 @@ function ReviewDecisionPanel({ candidate }: { candidate: OsmReviewCandidate }) {
   );
 }
 
+function PublicationApprovalPanel({
+  candidate,
+}: {
+  candidate: OsmReviewCandidate;
+}) {
+  const router = useRouter();
+  const [confirmationSlug, setConfirmationSlug] = useState("");
+  const [identityConfirmed, setIdentityConfirmed] = useState(false);
+  const [scopeConfirmed, setScopeConfirmed] = useState(false);
+  const [attributionConfirmed, setAttributionConfirmed] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const eligible = canApproveOsmPublication(candidate);
+  const checklistComplete =
+    identityConfirmed && scopeConfirmed && attributionConfirmed;
+  const slugMatches =
+    confirmationSlug.trim().toLocaleLowerCase("en-US") === candidate.slug;
+
+  if (!eligible) {
+    return (
+      <section className="mt-4 rounded-2xl border border-pomegr/25 bg-pomegr/[0.055] p-3 sm:p-4">
+        <h3 className="text-[0.72rem] font-black text-pomegr">
+          انتشار این رکورد مسدود است
+        </h3>
+        <p className="mt-1 text-[0.64rem] leading-5 text-muted">
+          «آماده بررسی انتشار» به‌تنهایی کافی نیست. نسخه فعلی پیش‌غربالگری باید
+          کم‌ریسک، امتیاز حداقل ۷۵، مختصات معتبر و لینک‌های دقیق OSM/ODbL داشته
+          باشد. ابتدا تصمیم داخلی یا منبع را اصلاح کن.
+        </p>
+      </section>
+    );
+  }
+
+  const confirmations = [
+    {
+      label: "نام، دسته، شهر و مختصات با همان کسب‌وکار تطابق دارد.",
+      checked: identityConfirmed,
+      setChecked: setIdentityConfirmed,
+    },
+    {
+      label:
+        "فقط داده‌های factual منتشر می‌شود؛ نظر، امتیاز، تصویر یا توضیح کپی نشده است.",
+      checked: scopeConfirmed,
+      setChecked: setScopeConfirmed,
+    },
+    {
+      label:
+        "نمایش انتساب © OpenStreetMap contributors و لینک ODbL در محصول آماده است.",
+      checked: attributionConfirmed,
+      setChecked: setAttributionConfirmed,
+    },
+  ];
+
+  return (
+    <section className="mt-4 overflow-hidden rounded-2xl border border-mint/30 bg-mint/[0.055]">
+      <div className="border-b border-mint/20 px-3 py-3 sm:px-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 className="text-[0.76rem] font-black text-mint">
+              دروازه انتشار واقعی
+            </h3>
+            <p className="mt-1 text-[0.62rem] leading-5 text-muted">
+              این عملیات فقط همین منبع را تأیید و کسب‌وکار متناظر را فعال
+              می‌کند؛ همه رکوردهای دیگر خصوصی می‌مانند.
+            </p>
+          </div>
+          <span className="rounded-full border border-mint/30 bg-mint/[0.08] px-2.5 py-1 text-[0.58rem] font-black text-mint">
+            تک‌به‌تک · قابل ممیزی
+          </span>
+        </div>
+      </div>
+
+      <form
+        className="space-y-3 p-3 sm:p-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setFeedback(null);
+          startTransition(async () => {
+            const result = await approveOsmSourcePublication({
+              sourceId: candidate.sourceId,
+              confirmationSlug,
+              identityConfirmed,
+              scopeConfirmed,
+              attributionConfirmed,
+            });
+            if (!result.ok) {
+              setFeedback(result.error);
+              return;
+            }
+            setFeedback(
+              result.noAction
+                ? "این رکورد قبلاً با مدرک ممیزی منتشر شده است."
+                : "منبع تأیید و کسب‌وکار فعال شد؛ رکورد از صف خصوصی خارج می‌شود.",
+            );
+            if (!result.noAction) router.refresh();
+          });
+        }}
+      >
+        <fieldset className="space-y-2" disabled={isPending}>
+          <legend className="mb-2 text-[0.62rem] font-black text-strong">
+            تأییدهای اجباری
+          </legend>
+          {confirmations.map((item) => (
+            <label
+              key={item.label}
+              className="flex min-h-11 cursor-pointer items-start gap-2.5 rounded-xl border border-white/[0.08] bg-black/20 p-2.5 text-[0.63rem] leading-5 text-muted"
+            >
+              <input
+                type="checkbox"
+                checked={item.checked}
+                onChange={(event) => item.setChecked(event.target.checked)}
+                className="mt-0.5 h-5 w-5 shrink-0 accent-[#6ee7b7]"
+              />
+              <span>{item.label}</span>
+            </label>
+          ))}
+        </fieldset>
+
+        <label className="block">
+          <span className="mb-1.5 block text-[0.62rem] font-bold text-muted">
+            برای تأیید نهایی این شناسه را تایپ کن
+          </span>
+          <span
+            className="mb-2 block break-all rounded-lg border border-white/[0.08] bg-black/20 px-2.5 py-2 font-mono text-[0.62rem] text-mint"
+            dir="ltr"
+          >
+            {candidate.slug}
+          </span>
+          <input
+            type="text"
+            value={confirmationSlug}
+            disabled={isPending}
+            dir="ltr"
+            autoComplete="off"
+            spellCheck={false}
+            onChange={(event) => setConfirmationSlug(event.target.value)}
+            placeholder={candidate.slug}
+            className="min-h-11 w-full rounded-xl border border-glass-border bg-[#0a0e18] px-3 font-mono text-[0.68rem] text-strong outline-none placeholder:text-white/20 focus:border-mint disabled:opacity-60"
+          />
+        </label>
+
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[0.58rem] leading-5 text-white/35">
+            سرور قبل از تراکنش، مجوز، هویت و آخرین تصمیم را دوباره می‌خواند.
+          </span>
+          <button
+            type="submit"
+            disabled={isPending || !checklistComplete || !slugMatches}
+            className="min-h-11 rounded-full border border-mint/40 bg-mint/15 px-4 text-[0.68rem] font-black text-mint transition-colors hover:bg-mint/20 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isPending ? "در حال ثبت تراکنش…" : "تأیید و انتشار همین رکورد"}
+          </button>
+        </div>
+        {feedback && (
+          <p
+            className={`rounded-xl border p-2.5 text-[0.64rem] leading-5 ${
+              feedback.includes("فعال شد") || feedback.includes("قبلاً")
+                ? "border-mint/25 bg-mint/[0.07] text-mint"
+                : "border-pomegr/25 bg-pomegr/[0.07] text-pomegr"
+            }`}
+            role="status"
+          >
+            {feedback}
+          </p>
+        )}
+      </form>
+    </section>
+  );
+}
+
 function CandidateCard({ candidate }: { candidate: OsmReviewCandidate }) {
   return (
     <article
@@ -724,6 +896,9 @@ function CandidateCard({ candidate }: { candidate: OsmReviewCandidate }) {
           )}
           <CompletionProposalPanel candidate={candidate} />
           <ReviewDecisionPanel candidate={candidate} />
+          {candidate.reviewState === "ready_for_approval" && (
+            <PublicationApprovalPanel candidate={candidate} />
+          )}
         </div>
       </details>
     </article>
@@ -732,8 +907,10 @@ function CandidateCard({ candidate }: { candidate: OsmReviewCandidate }) {
 
 export function OsmReviewQueue({
   initialCandidates,
+  publishedCount,
 }: {
   initialCandidates: OsmReviewCandidate[];
+  publishedCount: number;
 }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"all" | OsmReviewCategory>("all");
@@ -794,7 +971,7 @@ export function OsmReviewQueue({
                   <rect x="3" y="11" width="18" height="10" rx="2" />
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
-                انتشار عمومی: صفر
+                انتشار عمومی: {faNum(publishedCount)}
               </div>
             </div>
           </header>
@@ -940,7 +1117,8 @@ export function OsmReviewQueue({
             صف را مرتب می‌کند و هیچ تصمیم انسانی، تأیید منبع یا انتشار ایجاد
             نمی‌کند. اطلاعات پایه
             از OpenStreetMap تحت ODbL آمده است. امتیاز، نظر، تصویر، منو یا توضیح
-            تجاری از منبع دیگری وارد نشده و این صفحه هیچ رکوردی را منتشر نمی‌کند.
+            تجاری از منبع دیگری وارد نشده است. انتشار فقط داخل دروازه سبز، برای
+            یک رکورد آماده و پس از تأییدهای صریح انجام می‌شود.
           </aside>
         </main>
       </Container>

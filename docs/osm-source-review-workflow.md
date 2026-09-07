@@ -1,7 +1,8 @@
 # Spec: OSM source review workflow
 
-Status: **implemented; review storage applied to development Supabase**
-Decision date: 2026-09-05
+Status: **implemented; review and publication storage applied to development
+Supabase; no source published**
+Decision dates: 2026-09-05 (review), 2026-09-07 (publication gate)
 
 ## Problem
 
@@ -23,6 +24,30 @@ erase the reasoning behind later changes.
    enforce the limit.
 5. Submitting appends one review event and refreshes the row. The source remains
    quarantined and the business remains pending regardless of the chosen state.
+
+## Explicit publication extension
+
+A latest `ready_for_approval` decision only reveals the separate green
+publication gate; it never publishes by itself. The gate is enabled only when
+the current deterministic pre-screen is `low_risk_review` at 75 or higher and
+the source still has an identity-matching OSM URL, exact ODbL metadata and
+attribution, bounded Rasht coordinates, a valid Iranian phone, and an address or
+digital channel. The admin must confirm identity, factual-only scope, and visible
+attribution, then type the exact business slug.
+
+The server requires all three confirmations and validates the slug before
+opening the privileged database path. One security-definer RPC then locks only
+that source and business, rechecks the admin plus every current invariant,
+appends an immutable publication event, changes the source to `approved`, and
+changes the business to `active` in one transaction. Failure rolls back all
+three writes. Repeating an already audited approval is an explicit no-op.
+
+Migration `20260907150000_create_osm_publication_approval.sql` and its rollback
+are applied to the linked development project. Remote migration parity and
+database lint pass. A deliberate call against an unreviewed row was rejected,
+public audit-table access was denied, no audit event was created, and the source
+and business remained `quarantined`/`pending`. All 50 OSM candidates remain
+private until a human explicitly selects and approves a qualifying row.
 
 ## Explainable pre-screening
 
@@ -65,8 +90,11 @@ field remain readable.
 - RLS is enabled with no browser policy; all reads and writes go through an
   admin-authorized server data layer using parameterized Supabase queries.
 - The existing `business_sources.status`, `reviewed_by`, and `reviewed_at`
-  columns are not written by this workflow. Publication remains a later,
-  explicit operation.
+  columns are not written by a review decision. They are written only by the
+  separate atomic publication RPC after all publication checks pass.
+- `business_source_publication_events`: additive, private, one immutable event
+  per approved source, including the exact review event and source/provenance
+  snapshot used for the decision.
 
 ## Failure modes
 
@@ -82,9 +110,9 @@ field remain readable.
 
 ## Out of scope
 
-Publishing or approving a source, editing imported factual fields, bulk review,
-automatic decisions, learned/AI ranking, owner access, and changing the business
-status.
+Editing imported factual fields, merging completion proposals, bulk publication,
+automatic decisions, learned/AI ranking, owner access, and publishing any row
+without a fresh explicit admin action.
 
 ## Done when
 

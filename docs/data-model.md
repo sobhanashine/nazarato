@@ -159,11 +159,16 @@ separate append-only review history and was applied to development Supabase on
 Migration `20260905010000_add_business_source_created_by.sql` adds nullable
 creator attribution to source evidence and was applied on 2026-09-05. It has no
 backfill and never changes source or business status.
+Migration `20260907150000_create_osm_publication_approval.sql` adds the private
+append-only publication audit and one-record transactional approval RPC. It is
+applied to development Supabase; remote migration parity and database lint pass,
+but no OSM row has been approved through it.
 
 | Table | Minimum columns | Key constraints | Phase |
 |---|---|---|---|
 | `business_sources` | `id`, `business_id`, `source_type`, `source_ref`, `permission_basis`, `license_name`, `license_url`, `attribution_text`, `field_payload`, `payload_hash`, `captured_at`, `status`, `created_by` | `UNIQUE (business_id, payload_hash)`; unknown permission stays `quarantined`; open data requires attribution metadata; creator is nullable for legacy imports | MVP-NABZ |
 | `business_source_review_events` | `id`, `source_id`, `reviewer_id`, `decision`, `note`, `criteria_snapshot`, `created_at` | Append-only trigger; correction/rejection requires a note; review state never changes publication state | MVP-NABZ |
+| `business_source_publication_events` | `id`, `source_id`, `business_id`, `reviewer_id`, `decision`, `publication_snapshot`, `created_at` | Private and append-only; one event per source; written in the same transaction that approves the source and activates the pending business | MVP-NABZ |
 | `comparison_votes` | `id`, `user_id`, `anonymous_session_id`, `city_slug`, `scenario_slug`, `winner_business_id`, `loser_business_id`, `reason_text`, `created_at` | winner ≠ loser; one vote per normalized pair/scenario/session window | MVP-NABZ |
 | `review_analyses` | `review_id`, `normalized_text`, `aspect_scores`, `sentiment`, `evidence_spans`, `issue_cluster`, `suspicious_score`, `model_id`, `model_version`, `confidence`, `human_status`, `analyzed_at` | one active result per review/model version; original review is immutable input evidence | MVP-NABZ |
 | `review_analysis_corrections` | `review_id`, `model_id`, `model_version`, `reviewer_id`, `model_output`, `human_label`, `note`, `corrected_at` | each event references the exact analysis version it corrected; private under RLS | MVP-NABZ |
@@ -227,6 +232,13 @@ backfill and never changes source or business status.
   is computed on read and never writes `business_sources.status` or
   `businesses.status`. RLS has no browser policy and only an admin-authorized
   server path may append events.
+- Publication is deliberately a second action. The server requires an admin,
+  three explicit confirmations, and the exact source-derived slug. The database
+  locks one source/business pair and revalidates the current OSM identity, exact
+  ODbL attribution, Rasht bounds, factual payload match, valid phone/context,
+  and latest current-version low-risk human review before atomically writing the
+  audit event and switching `quarantined/pending` to `approved/active`. There is
+  no bulk or browser-direct database permission.
 
 ### Private legacy Drive staging
 

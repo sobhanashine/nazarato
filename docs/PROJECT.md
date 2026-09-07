@@ -142,6 +142,16 @@ Set globally in `next.config.ts:31-40`:
   preserves the original OSM payload and machine score, and treats map,
   directory, and marketplace pages as unknown-permission leads rather than
   reusable content.
+- That queue now owns a second, explicit per-record publication gate. A latest
+  human `ready_for_approval` decision only reveals the gate; the server also
+  requires three confirmations and the exact OSM-derived slug. Migration
+  `20260907150000_create_osm_publication_approval.sql` defines the private
+  append-only audit plus an atomic RPC that locks one source/business pair and
+  rechecks current admin, OSM/ODbL, identity, Rasht-bound, factual-context, and
+  versioned pre-screen invariants before `quarantined/pending` can become
+  `approved/active`. It is applied to development; remote parity, DB lint,
+  public-access denial, and an unreviewed-row rollback check pass. Zero records
+  are public.
 - Shared Drive research is converted only through
   `scripts/prepare-rasht-drive-businesses.mts`. Real exports and prepared output
   stay under gitignored `data/private/` because this repository is public and the
@@ -306,6 +316,19 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-07** — Implemented the explicit one-record OSM publication gate.
+  Admin UI requires three confirmations and the exact source-derived slug; the
+  server repeats input/admin validation and an additive reversible migration
+  defines one locked transaction for current provenance/identity/pre-screen
+  checks, immutable audit insertion, source approval, and business activation.
+  Direct UI bypass, stale data, partial writes, bulk approval, and automatic
+  publication fail closed. Strict TypeScript, 268 tests, lint, production build,
+  focused security review, diff checks, and authenticated 390/1280 px real-queue
+  browser checks pass. The migration is applied to development; its negative
+  remote RPC and public-access checks pass, and no record was published.
+  Files: `lib/admin/osm-publication*`, `lib/data/admin-osm-publication*`,
+  `app/(admin)/admin/businesses/osm-review/*`,
+  `supabase/{migrations,rollbacks}/20260907150000*`, and related docs.
 - **2026-09-07** — Connected the Nabz homepage to the real Duel read/vote
   boundaries with a five-unique-pair activation gate, runtime response
   validation, idempotent vote handling, retry-safe progression, and an explicit

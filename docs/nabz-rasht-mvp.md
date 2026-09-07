@@ -203,6 +203,19 @@ The schema migration is applied to the linked development project. The OSM
 snapshot is now staged remotely, but remains fully quarantined: verification
 found zero active businesses, zero approved sources, and zero public records.
 
+Current explicit-approval status (2026-09-07): the admin queue now contains a
+separate per-record publication gate for a latest human `ready_for_approval`
+decision. The UI requires three confirmations plus the exact source-derived
+slug; the server repeats those requirements, and a single database transaction
+rechecks current OSM/ODbL provenance, source/profile identity, Rasht bounds,
+phone/context, review version/recommendation/score, and admin role before it can
+append an immutable audit event and change `quarantined/pending` to
+`approved/active`. There is no bulk or automatic path. The migration is authored
+and applied to development Supabase. A negative remote RPC check rejected the
+only reviewed row because its latest decision is `unreviewed`, wrote no audit
+event, and left its states unchanged. The development database still has zero
+published OSM records.
+
 Current consumer-loop status (2026-09-03): `/` now leads with an interactive
 `نبض رشت` demo containing four scenarios, five deterministic Duels per scenario,
 an optional 120-character contextual reason, immediate signal feedback, a Taste

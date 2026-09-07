@@ -143,6 +143,7 @@ acceptance path is defined but not complete.
 | Provenance-aware import | `lib/import/business-import.ts`, `lib/import/osm-quarantine-batch.ts`, `scripts/import-rasht-osm-quarantine.mts`, `data/rasht-osm-businesses.json` | Validation, collision guard, idempotency, snapshot, migration, and remote postflight checks | 50 pending businesses + 50 quarantined sources remotely; zero public records |
 | Explainable supply pre-screen | `lib/admin/osm-prescreen.ts`, `lib/admin/osm-review.ts`, admin OSM queue | Versioned rule tests, real 50-row distribution, filters, reason display, and 390/1280 px authenticated browser checks | 30 low-risk review, 20 completion, 0 exception; recommendation only, no auto-decision |
 | Source-backed completion evidence | `lib/admin/osm-completion.ts`, `lib/data/admin-osm-completion.ts`, admin OSM queue, creator migration | Boundary, duplicate, stale-target, permission, history, migration, and authenticated browser checks | Restricted to 20 completion rows; proposals remain separate and quarantined; exact QA row removed |
+| Explicit OSM publication approval | `lib/admin/osm-publication.ts`, `lib/data/admin-osm-publication.ts`, admin OSM queue, migration `20260907150000` | Input/bypass/failure tests, migration contract, remote lint/failure probe, strict build, focused security review, and authenticated 390/1280 px queue checks | Applied to development; fail-closed probe passed; no row approved or published |
 
 ## 5. Model, dataset, and provenance record
 
@@ -195,6 +196,16 @@ approve, reject, activate, or publish a record.
 The private legacy Drive snapshot remains gitignored and quarantined because its
 reuse permission is unknown.
 
+The publication step is now a separate, explicit per-record gate. A human
+`ready_for_approval` event is necessary but insufficient: three confirmations,
+an exact source-derived slug, the current low-risk pre-screen, unchanged
+identity/provenance, bounded Rasht coordinates, and current factual phone/context
+must all pass again inside one locked database transaction. The audit event,
+source approval, and business activation either all commit or all roll back.
+The additive migration is applied to development and its fail-closed path is
+remotely verified. This is still not proof that any business is public: audit,
+approved-source, and active-Rasht counts all remain zero.
+
 The 20 machine-identified completion rows now support a controlled admin
 proposal history. The server re-reads the trusted OSM row and accepts only its
 missing factual contact fields with an HTTPS source. Known directories cannot be
@@ -209,13 +220,14 @@ the exact temporary evidence row was then removed and zero QA rows remain.
 | --- | --- | --- |
 | TypeScript | Pass | Strict type check succeeds |
 | ESLint | Pass | Current source passes lint |
-| Vitest | **215/215 pass across 42 files** | Local unit, deterministic pre-screen, completion evidence, quarantine/idempotency, provenance/UI, append-only review workflow, health-report, and migration-contract suite is green |
+| Vitest | **268/268 pass across 55 files** | Full local unit, publication input/bypass/failure, deterministic pre-screen, quarantine/idempotency, provenance/UI, append-only review, health-report, and migration-contract suite is green |
 | Targeted critical browser slice | **8/8 pass** | Nabz consumer path and unauthenticated owner-route guards pass after the framework upgrade |
 | Open-data profile browser check | **Pass at 390 px and 1280 px** | Approved OSM source and ODbL links render in RTL with no horizontal overflow or console error against a local mock; no record was published remotely |
 | Private OSM queue browser check | **Pass at 390 px and 1280 px; 2/2 access tests** | The authenticated page reads all 50 real quarantined rows, filters 25 restaurants, has no horizontal overflow or console error, and signed-out requests redirect to login |
 | OSM pre-screen browser check | **2/2 authenticated views pass at 390 px and 1280 px** | The real queue reports 30/20/0, filters every recommendation, explains the first score with a version and reason codes, keeps RTL/no-overflow, and displays zero publication |
 | OSM decision workflow | **Remote development pass** | One `unreviewed` QA event persisted and survived refresh; duplicate submit was a no-op, update was blocked by the append-only trigger, public RLS read returned zero, and source/business status stayed quarantined/pending |
 | OSM completion proposal | **Remote development and browser pass** | Migration `20260905010000` is applied; submit/refresh/history passed at 390/1280 px, score stayed fixed, source/business stayed quarantined/pending, creator attribution persisted, and exact QA evidence was deleted |
+| OSM publication gate | **Development apply and negative-path pass** | Migration parity and DB lint pass; public audit read is denied; an unreviewed-row RPC returns `55000` with zero writes; TypeScript, lint, build, 268 tests, security review, and authenticated 390/1280 px rendering pass |
 | Full Playwright suite | **Not green:** 41 passed, 12 failed, 5 skipped, 13 did not run before the run was stopped | Observed failures require missing Supabase configuration or a populated fixture database; this remains a real pilot-environment blocker |
 | Production build | **Pass against development Supabase** | Compilation, type generation, data reads, and static generation complete successfully; this is not deployment proof |
 | Production dependency audit | **0 findings** in the successful 2026-09-05 `npm audit --omit=dev` run | Next.js and all production transitives currently report no known npm advisory |
@@ -231,7 +243,7 @@ development-tool engine warning from `eslint-visitor-keys`; CI should use Node
 
 | Risk | Current mitigation | Residual risk and owner |
 | --- | --- | --- |
-| Copied or unlawfully reused business data | Strict factual-field importer, field provenance, quarantine, approved-source business and review gates, honest no-fixture empty states, visible HTTPS-validated open-data attribution, and manual reconciliation for an existing identity | Complete final per-record review and document the ODbL derivative-data publication approach - engineering |
+| Copied or unlawfully reused business data | Strict factual-field importer, field provenance, quarantine, approved-source business and review gates, honest no-fixture empty states, visible HTTPS-validated open-data attribution, manual reconciliation, and an atomic per-record approval audit | Apply the publication migration, complete the ODbL derivative-data decision, and explicitly review each selected pilot row - founders plus engineering |
 | Fabricated or weak recommendation | Minimum evidence, exact supporting Duel signals, deterministic reranking, explicit insufficient-data state | Needs real-user calibration and abuse monitoring - product/engineering |
 | Persian analysis error | Exact evidence spans, confidence, versioned output, append-only correction, no automatic deletion | Needs a consented, independently labelled held-out sample - pilot owner/product |
 | Coordinated or repeated voting | Same-origin boundary, bounded body, identity/network limits, hashed anonymous token, idempotency, human review | In-memory limiter is single-instance and must move to a shared store before scale - engineering |

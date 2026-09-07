@@ -9,6 +9,11 @@ import {
   recordAdminOsmCompletionProposal,
   type RecordOsmCompletionProposalResult,
 } from "@/lib/data/admin-osm-completion";
+import { approveAdminOsmPublication } from "@/lib/data/admin-osm-publication";
+
+type ApproveOsmSourcePublicationActionResult =
+  | { ok: true; noAction: boolean }
+  | { ok: false; error: string };
 
 export async function recordOsmSourceReviewDecision(
   input: unknown,
@@ -49,5 +54,30 @@ export async function recordOsmCompletionProposal(
       error,
     });
     return { ok: false, error: "ثبت پیشنهاد تکمیل فعلاً ممکن نیست." };
+  }
+}
+
+export async function approveOsmSourcePublication(
+  input: unknown,
+): Promise<ApproveOsmSourcePublicationActionResult> {
+  try {
+    const result = await approveAdminOsmPublication(input);
+    if (result.ok && !result.noAction) {
+      revalidatePath("/admin/businesses/osm-review");
+      revalidatePath("/");
+      revalidatePath("/api/nabz/duel");
+    }
+    return result.ok
+      ? { ok: true, noAction: result.noAction }
+      : result;
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === "unauthorized") {
+      return { ok: false, error: "غیرمجاز" };
+    }
+    console.error("[admin/osm-publication] approval action failed", {
+      route: "/admin/businesses/osm-review",
+      error,
+    });
+    return { ok: false, error: "ثبت انتشار فعلاً ممکن نیست." };
   }
 }
