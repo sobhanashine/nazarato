@@ -23,6 +23,7 @@ import type {
   OsmCompletionPermissionBasis,
 } from "@/lib/admin/osm-completion";
 import { canApproveOsmPublication } from "@/lib/admin/osm-publication";
+import { buildOsmPublicationPreview } from "@/lib/admin/osm-publication-preview";
 import {
   approveOsmSourcePublication,
   recordOsmCompletionProposal,
@@ -607,6 +608,167 @@ function ReviewDecisionPanel({ candidate }: { candidate: OsmReviewCandidate }) {
   );
 }
 
+function PublicationPayloadPreview({
+  candidate,
+}: {
+  candidate: OsmReviewCandidate;
+}) {
+  const preview = buildOsmPublicationPreview(candidate);
+  const headingId = `publication-preview-${candidate.slug}`;
+
+  if (preview.status === "blocked") {
+    return (
+      <section
+        className="mt-4 rounded-2xl border border-pomegr/25 bg-pomegr/[0.055] p-3 sm:p-4"
+        aria-labelledby={headingId}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 id={headingId} className="text-[0.74rem] font-black text-pomegr">
+            پیش‌نمایش قبل از انتشار مسدود است
+          </h3>
+          <span className="rounded-full border border-pomegr/25 bg-pomegr/[0.08] px-2.5 py-1 text-[0.58rem] font-black text-pomegr">
+            خصوصی · بدون انتشار
+          </span>
+        </div>
+        <p className="mt-2 text-[0.64rem] leading-5 text-muted">
+          {preview.reason}
+        </p>
+      </section>
+    );
+  }
+
+  const identityFields = [
+    { label: "نام عمومی", value: preview.identity.name, direction: "rtl" },
+    { label: "دسته", value: preview.identity.category, direction: "rtl" },
+    { label: "شهر", value: preview.identity.city, direction: "rtl" },
+    {
+      label: "مختصات",
+      value: `${preview.identity.latitude}, ${preview.identity.longitude}`,
+      direction: "ltr",
+    },
+  ] as const;
+
+  return (
+    <section
+      className="mt-4 overflow-hidden rounded-2xl border border-[#88d8bd]/25 bg-[linear-gradient(145deg,rgba(110,231,183,0.07),rgba(8,14,20,0.76))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+      aria-labelledby={headingId}
+    >
+      <div className="border-b border-white/[0.08] px-3 py-3 sm:px-4 sm:py-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-[0.56rem] font-black tracking-[0.16em] text-mint/70">
+              PUBLIC PAYLOAD RECEIPT
+            </p>
+            <h3 id={headingId} className="mt-1 text-[0.82rem] font-black text-strong">
+              آنچه کاربر خواهد دید
+            </h3>
+            <p className="mt-1 text-[0.62rem] leading-5 text-muted">
+              این فقط بازنماییِ خواندنیِ دادهٔ مجاز است و هیچ رکوردی را منتشر
+              نمی‌کند.
+            </p>
+          </div>
+          <span className="rounded-full border border-[#f4c66b]/30 bg-[#f4c66b]/[0.08] px-2.5 py-1 text-[0.58rem] font-black text-[#f4c66b]">
+            پیش‌نمایش · هنوز خصوصی
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-4 p-3 sm:p-4">
+        <dl className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
+          {identityFields.map((field) => (
+            <div
+              key={field.label}
+              className="min-w-0 rounded-xl border border-white/[0.08] bg-black/20 p-2.5"
+            >
+              <dt className="text-[0.56rem] font-bold text-white/35">
+                {field.label}
+              </dt>
+              <dd
+                className="mt-1 break-words text-[0.68rem] font-bold leading-5 text-strong [overflow-wrap:anywhere]"
+                dir={field.direction}
+              >
+                {field.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <div>
+          <h4 className="text-[0.62rem] font-black text-strong">اطلاعات تماس موجود</h4>
+          {preview.contact.length > 0 ? (
+            <dl className="mt-2 grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
+              {preview.contact.map((item) => (
+                <div
+                  key={item.label}
+                  className="min-w-0 rounded-xl border border-white/[0.08] bg-black/20 p-2.5"
+                >
+                  <dt className="text-[0.56rem] font-bold text-white/35">
+                    {item.label}
+                  </dt>
+                  <dd
+                    className="mt-1 break-words text-[0.66rem] leading-5 text-strong [overflow-wrap:anywhere]"
+                    dir={item.direction}
+                  >
+                    {item.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="mt-2 rounded-xl border border-white/[0.08] bg-black/20 p-2.5 text-[0.62rem] text-white/40">
+              هیچ اطلاعات تماسی در منبع مجاز موجود نیست.
+            </p>
+          )}
+        </div>
+
+        <div className="rounded-xl border border-lapis/25 bg-lapis/[0.06] p-3">
+          <h4 className="text-[0.62rem] font-black text-[#c6ccff]">
+            انتساب منبع در نمای عمومی
+          </h4>
+          <p className="mt-1 break-words text-[0.64rem] leading-5 text-muted [overflow-wrap:anywhere]" dir="ltr">
+            {preview.attribution.text}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <a
+              href={preview.attribution.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center rounded-full border border-mint/30 px-3 text-[0.62rem] font-bold text-mint transition-colors hover:bg-mint/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
+            >
+              منبع OSM
+            </a>
+            <a
+              href={preview.attribution.licenseUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center rounded-full border border-lapis/30 px-3 text-[0.62rem] font-bold text-[#c6ccff] transition-colors hover:bg-lapis/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lapis"
+            >
+              مجوز {preview.attribution.licenseName}
+            </a>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-[#f4c66b]/20 bg-[#f4c66b]/[0.045] p-3">
+          <h4 className="text-[0.62rem] font-black text-[#f4c66b]">
+            عمداً در این پروفایل منتشر نمی‌شود
+          </h4>
+          <ul className="mt-2 space-y-1.5">
+            {preview.excluded.map((item) => (
+              <li
+                key={item}
+                className="flex items-start gap-2 text-[0.62rem] leading-5 text-muted"
+              >
+                <span aria-hidden className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[#f4c66b]" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function PublicationApprovalPanel({
   candidate,
 }: {
@@ -897,7 +1059,10 @@ function CandidateCard({ candidate }: { candidate: OsmReviewCandidate }) {
           <CompletionProposalPanel candidate={candidate} />
           <ReviewDecisionPanel candidate={candidate} />
           {candidate.reviewState === "ready_for_approval" && (
-            <PublicationApprovalPanel candidate={candidate} />
+            <>
+              <PublicationPayloadPreview candidate={candidate} />
+              <PublicationApprovalPanel candidate={candidate} />
+            </>
           )}
         </div>
       </details>

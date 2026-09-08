@@ -142,6 +142,14 @@ Set globally in `next.config.ts:31-40`:
   preserves the original OSM payload and machine score, and treats map,
   directory, and marketplace pages as unknown-permission leads rather than
   reusable content.
+- A `ready_for_approval` row now shows an admin-only, read-only public-payload
+  preview immediately before the publication gate. The preview derives from the
+  already validated queue DTO, renders only the exact identity, available
+  factual contacts, coordinates, and OSM/ODbL attribution, and explicitly names
+  the third-party content and ownership claims that stay excluded. Missing or
+  mismatched provenance and coordinates fail closed; rows in every other review
+  state never receive the preview. This surface has no action, endpoint, schema,
+  dependency, or publication-status write.
 - That queue now owns a second, explicit per-record publication gate. A latest
   human `ready_for_approval` decision only reveals the gate; the server also
   requires three confirmations and the exact OSM-derived slug. Migration
@@ -303,9 +311,10 @@ Set globally in `next.config.ts:31-40`:
   `ready_for_approval` event whose note limits the payload to exact OSM facts and
   explicitly excludes a street address and third-party content. Independent
   post-write checks still report zero approved OSM sources, zero active Rasht
-  businesses, and zero publication events. A separate founder publication
-  authorization is required before using the implemented one-record publication
-  gate or enabling real-data mode.
+  businesses, and zero publication events. Its exact factual public payload can
+  now be inspected in the private queue before the separate confirmation form.
+  A separate founder publication authorization is required before using the
+  implemented one-record publication gate or enabling real-data mode.
 - **Development-toolchain audit and runtime warning.** Next.js and
   `eslint-config-next` are pinned to 16.3.4 and the last successful
   `npm audit --omit=dev` on 2026-09-05 reports zero production findings. The full
@@ -336,6 +345,23 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-08** — Added the admin-only pre-publication profile preview for an
+  exact `ready_for_approval` OSM candidate. It presents the public identity,
+  available factual contacts, coordinates, and visible OSM/ODbL attribution as
+  a read-only receipt, while explicitly excluding imported reviews, ratings,
+  images, promotional copy, and unearned ownership/verification claims. Invalid
+  provenance, incomplete coordinates, non-current policy, and non-ready review
+  states fail closed. The existing publication confirmations remain a separate
+  operation and were not invoked. TypeScript, lint, 271 unit tests, production
+  build, authenticated keyboard/console checks, and focused RTL browser QA at
+  390/1280 px pass with zero horizontal overflow. The broader Playwright suite
+  exposed nine pre-existing fixture-dependent failures against the current live
+  development data; the changed admin route's signed-out gate passed. Remote
+  post-checks remain zero approved OSM sources, zero active Rasht businesses,
+  and zero publication events. Files:
+  `lib/admin/osm-publication-preview*`,
+  `app/(admin)/admin/businesses/osm-review/OsmReviewQueue.tsx`, and
+  `docs/PROJECT.md`.
 - **2026-09-08** — Recorded the founder-authorized internal review decision for
   `رستوران گیله مرد اصیل` through the authenticated admin workflow. Append-only
   event `41d39a96-157a-455a-b7c2-2f4d5a31ab37` marks the exact limited OSM
