@@ -9,6 +9,12 @@
  */
 
 import { getSession } from "@/lib/auth/session";
+import {
+  getReviewTargets,
+  PUBLIC_BUSINESS_SOURCE_GATE_SELECT,
+  PUBLIC_BUSINESS_STATUSES,
+  type ReviewTargetLoadResult,
+} from "@/lib/data/businesses";
 import { notifyAdminsOfNewReview } from "@/lib/data/notifications";
 import { persistReviewAnalysisBestEffort } from "@/lib/data/review-analysis-persistence";
 import { supabaseAdmin } from "@/lib/supabase/server";
@@ -36,6 +42,18 @@ function toAsciiDigits(s: string): string {
   return s.replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)));
 }
 
+/** Fresh, public-only supply loaded when the picker opens. */
+export async function loadReviewTargets(): Promise<ReviewTargetLoadResult> {
+  try {
+    return await getReviewTargets();
+  } catch (error) {
+    console.error("[review-targets] unexpected load failure", {
+      error: error instanceof Error ? error.message : "unknown error",
+    });
+    return { ok: false, businesses: [] };
+  }
+}
+
 export async function submitQuickReview(
   _prev: QuickReviewState,
   formData: FormData,
@@ -48,6 +66,9 @@ export async function submitQuickReview(
   const slug = asString(formData.get("slug"));
   if (!slug) {
     return { ok: false, error: "اول کسب‌وکار موردنظر را انتخاب کن." };
+  }
+  if (slug.length > 160 || !/^[\p{L}\p{N}_-]+$/u.test(slug)) {
+    return { ok: false, error: "شناسه کسب‌وکار انتخاب‌شده معتبر نیست." };
   }
 
   const rating = Number(toAsciiDigits(asString(formData.get("rating"))));
@@ -67,12 +88,24 @@ export async function submitQuickReview(
 
   const { data: businessRow, error: bizError } = await supabase
     .from("businesses")
-    .select("id, name")
+    .select(`id, name, ${PUBLIC_BUSINESS_SOURCE_GATE_SELECT}`)
     .eq("slug", slug)
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .single();
 
+  if (bizError && bizError.code !== "PGRST116") {
+    console.error("[quick-review] business eligibility lookup failed", {
+      authorId: session.id,
+      code: bizError.code ?? "unknown",
+    });
+  }
+
   if (bizError || !businessRow) {
-    return { ok: false, error: "کسب‌وکار موردنظر در سیستم پیدا نشد." };
+    return {
+      ok: false,
+      error: "این کسب‌وکار فعلاً امکان دریافت نظر ندارد.",
+    };
   }
 
   const { data: insertedReview, error: insertError } = await supabase

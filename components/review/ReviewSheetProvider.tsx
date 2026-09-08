@@ -18,7 +18,8 @@ import {
   useState,
 } from "react";
 import { usePathname } from "next/navigation";
-import type { Business } from "@/lib/data/businesses";
+import type { ReviewTargetLoadResult } from "@/lib/data/businesses";
+import { loadReviewTargets } from "./actions";
 import { ReviewSheet, type ReviewPrefill } from "./ReviewSheet";
 
 type ReviewSheetContextValue = {
@@ -38,13 +39,13 @@ export function useReviewSheet(): ReviewSheetContextValue {
 
 export function ReviewSheetProvider({
   children,
-  businesses,
 }: {
   children: React.ReactNode;
-  businesses: Business[];
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [prefill, setPrefill] = useState<ReviewPrefill | null>(null);
+  const [targetResult, setTargetResult] =
+    useState<ReviewTargetLoadResult | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
   const pathname = usePathname();
 
@@ -62,6 +63,25 @@ export function ReviewSheetProvider({
     setIsOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!isOpen || prefill) return;
+
+    let cancelled = false;
+    setTargetResult(null);
+    void loadReviewTargets()
+      .then((result) => {
+        if (!cancelled) setTargetResult(result);
+      })
+      .catch((error: unknown) => {
+        console.error("[ReviewSheetProvider] target load failed", error);
+        if (!cancelled) setTargetResult({ ok: false, businesses: [] });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, prefill, sessionKey]);
+
   return (
     <ReviewSheetContext.Provider value={{ openReviewSheet }}>
       {children}
@@ -71,7 +91,8 @@ export function ReviewSheetProvider({
           isOpen={isOpen}
           onClose={close}
           prefill={prefill}
-          businesses={businesses}
+          businesses={targetResult?.businesses ?? null}
+          businessesUnavailable={targetResult?.ok === false}
         />
       )}
     </ReviewSheetContext.Provider>

@@ -96,6 +96,11 @@ Set globally in `next.config.ts:31-40`:
   approved-provenance join. The homepage and `/reviews` now fail closed to an
   explicit empty state instead of substituting legacy fixture reviews when the
   approved dataset is empty or unavailable.
+- The global quick-review picker loads a fresh, minimal business DTO only when
+  it opens and only from public businesses with approved provenance; it no
+  longer receives static fixtures from the root layout. The submission action
+  independently revalidates the slug, public status, and approved source before
+  inserting, so stale page-specific prefills and direct calls fail closed.
 - The homepage computes a server-side Nabz supply snapshot before rendering. A
   business is identity-eligible only when it is active, in Rasht, a café or
   restaurant, and has an approved source payload whose name/category/city match
@@ -345,6 +350,16 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-08** — Closed the quick-review provenance bypass: the global picker
+  now loads fresh minimal targets only from active/merged businesses with an
+  approved source, shows distinct loading/unavailable/zero-supply states, and
+  the authenticated server action revalidates the bounded slug plus the same
+  object-level eligibility immediately before insert. Static fixtures can no
+  longer enter the review path, while a stale page prefill fails closed. Strict
+  TypeScript, lint, production build, 278 unit tests, and focused authenticated
+  RTL browser checks at 390/1280 px pass without horizontal overflow. Files:
+  `app/layout.tsx`, `components/review/{ReviewSheet,ReviewSheetProvider,actions}*`,
+  `lib/data/businesses*`, and `docs/PROJECT.md`.
 - **2026-09-08** — Added the admin-only pre-publication profile preview for an
   exact `ready_for_approval` OSM candidate. It presents the public identity,
   available factual contacts, coordinates, and visible OSM/ODbL attribution as

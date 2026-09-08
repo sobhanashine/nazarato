@@ -28,7 +28,7 @@ import Link from "next/link";
 import { STAR_PALETTES, STAR_PATH, type Rating } from "@/components/ui/RatingStars";
 import { useSessionStatus } from "@/components/layout/useSessionStatus";
 import { BTN_PRIMARY } from "@/components/ui/styles";
-import type { Business } from "@/lib/data/businesses";
+import type { ReviewTarget } from "@/lib/data/businesses";
 import { submitQuickReview } from "./actions";
 import { VoiceDictateButton, type VoiceMode } from "./VoiceDictateButton";
 
@@ -50,12 +50,13 @@ const BODY_MIN = 10;
 const BODY_MAX = 2000;
 const EXIT_MS = 400;
 const AUTO_ADVANCE_MS = 850;
+const EMPTY_REVIEW_TARGETS: ReviewTarget[] = [];
 
 const RATING_LABELS = ["خیلی بد", "بد", "متوسط", "خوب", "عالی"];
 
 const fa = (n: number) => n.toLocaleString("fa-IR");
 
-function toSelected(b: Business): Selected {
+function toSelected(b: ReviewTarget): Selected {
   return {
     slug: b.slug,
     name: b.name,
@@ -67,7 +68,7 @@ function toSelected(b: Business): Selected {
 
 function resolveSelected(
   prefill: ReviewPrefill | null,
-  businesses: Business[],
+  businesses: ReviewTarget[],
 ): Selected | null {
   if (!prefill) return null;
   const full = businesses.find((b) => b.slug === prefill.slug);
@@ -86,11 +87,13 @@ export function ReviewSheet({
   onClose,
   prefill,
   businesses,
+  businessesUnavailable,
 }: {
   isOpen: boolean;
   onClose: () => void;
   prefill: ReviewPrefill | null;
-  businesses: Business[];
+  businesses: ReviewTarget[] | null;
+  businessesUnavailable: boolean;
 }) {
   const hasPicker = !prefill;
 
@@ -99,7 +102,7 @@ export function ReviewSheet({
 
   const [step, setStep] = useState<Step>(hasPicker ? "pick" : "rate");
   const [selected, setSelected] = useState<Selected | null>(() =>
-    resolveSelected(prefill, businesses),
+    resolveSelected(prefill, businesses ?? []),
   );
   const [rating, setRating] = useState(0);
   const [body, setBody] = useState("");
@@ -300,6 +303,7 @@ export function ReviewSheet({
               {step === "pick" && (
                 <PickStep
                   businesses={businesses}
+                  unavailable={businessesUnavailable}
                   onPick={(b) => {
                     setSelected(toSelected(b));
                     setStep("rate");
@@ -391,20 +395,73 @@ function AuthGate() {
 
 function PickStep({
   businesses,
+  unavailable,
   onPick,
 }: {
-  businesses: Business[];
-  onPick: (b: Business) => void;
+  businesses: ReviewTarget[] | null;
+  unavailable: boolean;
+  onPick: (b: ReviewTarget) => void;
 }) {
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
+  const availableBusinesses = businesses ?? EMPTY_REVIEW_TARGETS;
 
   const results = useMemo(() => {
-    if (!q) return businesses.slice(0, 8);
-    return businesses.filter((b) =>
+    if (!q) return availableBusinesses.slice(0, 8);
+    return availableBusinesses.filter((b) =>
       `${b.name} ${b.category} ${b.city}`.toLowerCase().includes(q),
     );
-  }, [q, businesses]);
+  }, [q, availableBusinesses]);
+
+  if (businesses === null) {
+    return <LoadingState />;
+  }
+
+  if (unavailable) {
+    return (
+      <div className="flex flex-col items-center py-8 text-center">
+        <h2 className="text-[1.15rem] font-black text-strong">
+          فهرست کسب‌وکارها موقتاً در دسترس نیست
+        </h2>
+        <p className="mt-2 max-w-sm text-[13.5px] leading-[2] text-muted">
+          برای محافظت از صحت داده‌ها، ثبت نظر تا دریافت دوباره‌ی فهرست
+          تأییدشده متوقف شده است. کمی بعد دوباره تلاش کن.
+        </p>
+      </div>
+    );
+  }
+
+  if (businesses.length === 0) {
+    return (
+      <div className="flex flex-col items-center py-8 text-center">
+        <span
+          className="grid h-16 w-16 place-items-center rounded-2xl bg-amber-400/10 text-amber-300"
+          aria-hidden
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="h-8 w-8"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 9v4" />
+            <path d="M12 17h.01" />
+            <path d="M10.3 3.7 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z" />
+          </svg>
+        </span>
+        <h2 className="mt-5 text-[1.15rem] font-black text-strong">
+          هنوز کسب‌وکاری آماده دریافت نظر نیست
+        </h2>
+        <p className="mt-2 max-w-sm text-[13.5px] leading-[2] text-muted">
+          فقط پروفایل‌های عمومی با منبع تأییدشده اینجا نمایش داده می‌شوند. بعد
+          از انتشار اولین کسب‌وکار رشت، ثبت نظر فعال می‌شود.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -60,6 +60,16 @@ export type Business = {
   verified?: boolean;
 };
 
+/** Minimal, public-safe shape accepted by the quick-review picker. */
+export type ReviewTarget = Pick<
+  Business,
+  "slug" | "name" | "category" | "city" | "initial" | "color"
+>;
+
+export type ReviewTargetLoadResult =
+  | { ok: true; businesses: ReviewTarget[] }
+  | { ok: false; businesses: [] };
+
 export type BusinessSourceAttribution = {
   sourceType: "open_dataset";
   sourceUrl: string;
@@ -104,6 +114,9 @@ export type BusinessDetail = {
 };
 
 export const PUBLIC_BUSINESS_STATUSES = ["active", "merged"];
+
+export const PUBLIC_BUSINESS_SOURCE_GATE_SELECT =
+  "business_sources!inner(status)";
 
 export const PUBLIC_BUSINESS_SOURCE_SELECT = `
   business_sources!inner (
@@ -407,6 +420,78 @@ export const businessDetails: BusinessDetail[] = [
 ];
 
 export const featuredBusinesses: Business[] = businessDetails.map(toCard);
+
+const REVIEW_TARGET_LIMIT = 250;
+
+function reviewTargetFromRow(value: unknown): ReviewTarget | null {
+  if (!isRecord(value)) return null;
+
+  const slug = typeof value.slug === "string" ? value.slug.trim() : "";
+  const name = typeof value.name === "string" ? value.name.trim() : "";
+  const categorySlug =
+    typeof value.category_slug === "string" ? value.category_slug.trim() : "";
+  const city = typeof value.city === "string" ? value.city.trim() : "";
+  const initial =
+    typeof value.initial === "string" ? value.initial.trim().slice(0, 2) : "";
+  const color =
+    typeof value.color === "string" && /^#[0-9a-f]{6}$/i.test(value.color)
+      ? value.color
+      : "#7B89FF";
+
+  if (
+    !slug ||
+    slug.length > 160 ||
+    !name ||
+    name.length > 200 ||
+    !categorySlug ||
+    categorySlug.length > 100
+  ) {
+    return null;
+  }
+
+  return {
+    slug,
+    name,
+    category: getCategoryTitle(categorySlug),
+    city: city || "نامشخص",
+    initial: initial || name.charAt(0) || "؟",
+    color,
+  };
+}
+
+/**
+ * Fail-closed supply for the global quick-review picker.
+ *
+ * The service-role client is intentionally reduced to public rows with at
+ * least one approved provenance record before any field reaches the client.
+ */
+export async function getReviewTargets(): Promise<ReviewTargetLoadResult> {
+  const supabase = supabaseAdmin();
+  const { data, error } = await supabase
+    .from("businesses")
+    .select(
+      `slug, name, category_slug, city, initial, color, ${PUBLIC_BUSINESS_SOURCE_GATE_SELECT}`,
+    )
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
+    .order("name", { ascending: true })
+    .limit(REVIEW_TARGET_LIMIT);
+
+  if (error || !Array.isArray(data)) {
+    console.error("[review-targets] failed to load public businesses", {
+      error: error?.message ?? "invalid response",
+    });
+    return { ok: false, businesses: [] };
+  }
+
+  return {
+    ok: true,
+    businesses: data.flatMap((row) => {
+      const target = reviewTargetFromRow(row);
+      return target ? [target] : [];
+    }),
+  };
+}
 
 export async function getBusiness(
   slug: string,

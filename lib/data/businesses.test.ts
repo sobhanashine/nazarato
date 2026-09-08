@@ -4,6 +4,7 @@ import {
   businessDetails,
   getBusiness,
   getBusinessesByCategory,
+  getReviewTargets,
   getSimilarBusinesses,
   toPublicBusinessAttributions,
 } from "./businesses";
@@ -101,6 +102,66 @@ describe("public business provenance", () => {
       "business_sources.status",
       "approved",
     );
+  });
+
+  it("loads the review picker only from public approved-source businesses", async () => {
+    mockSupabaseClient.then.mockImplementation(
+      (callback: (value: unknown) => unknown) =>
+        Promise.resolve(
+          callback({
+            data: [
+              {
+                slug: "cafe-approved",
+                name: "کافه تأییدشده",
+                category_slug: "food",
+                city: "رشت",
+                initial: "ک",
+                color: "#123456",
+              },
+            ],
+            error: null,
+          }),
+        ),
+    );
+
+    await expect(getReviewTargets()).resolves.toEqual({
+      ok: true,
+      businesses: [
+        {
+          slug: "cafe-approved",
+          name: "کافه تأییدشده",
+          category: "خوراکی و شیرینی",
+          city: "رشت",
+          initial: "ک",
+          color: "#123456",
+        },
+      ],
+    });
+    expect(mockSupabaseClient.select).toHaveBeenCalledWith(
+      expect.stringContaining("business_sources!inner"),
+    );
+    expect(mockSupabaseClient.in).toHaveBeenCalledWith("status", [
+      "active",
+      "merged",
+    ]);
+    expect(mockSupabaseClient.eq).toHaveBeenCalledWith(
+      "business_sources.status",
+      "approved",
+    );
+  });
+
+  it("fails the review picker closed when its data source fails", async () => {
+    mockSupabaseClient.then.mockImplementation(
+      (callback: (value: unknown) => unknown) =>
+        Promise.resolve(
+          callback({ data: null, error: { message: "unavailable" } }),
+        ),
+    );
+
+    await expect(getReviewTargets()).resolves.toEqual({
+      ok: false,
+      businesses: [],
+    });
   });
 
   it("keeps only complete HTTPS attribution records", () => {
