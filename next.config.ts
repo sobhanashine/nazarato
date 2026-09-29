@@ -25,6 +25,9 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: projectRoot,
   },
+  outputFileTracingExcludes: {
+    "/preview/golsar": ["./data/private/**/*"],
+  },
   images: {
     remotePatterns: wpImagePattern(),
   },

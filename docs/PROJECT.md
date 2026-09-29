@@ -48,6 +48,12 @@ non-trivial task starts by reading this file and ends by updating it.
 - `next.config.ts:42-53` sets `Cache-Control: no-cache` and `Service-Worker-Allowed: /` for `sw.js`.
 
 
+### Database and local Golsar preview
+
+- Supabase PostgreSQL is the existing database; the server-side service-role client is `lib/supabase/server.ts`. `users`, `businesses`, and `reviews` are linked by stable IDs; the default `submitQuickReview` requires a signed-in user and inserts a pending review.
+- `/preview/golsar` reuses the existing `ReviewSheet` with an explicit local adapter. It requires development, `NAZARATO_LOCAL_PREVIEW=true`, and a loopback Host. Browser experiences stay local; the runtime snapshot at `data/private/golsar-pilot.json` is ignored by Git and excluded from build tracing.
+- Source reconciliation and migration verification precede real pilot review collection. See `docs/golsar-local-preview.md` for the scope and database path.
+
 ### Headless WordPress (blog)
 
 - Client: `lib/wp.ts`. Reads `WP_API_URL` env var.
@@ -129,6 +135,8 @@ Set globally in `next.config.ts:31-40`:
 
 ## 3. Open items / known gaps
 
+- **Baseline chat lint.** Full lint on the dev base reports 6 errors and 6 warnings in `components/chat/ChatClient.tsx` and `app/api/chat/route.ts`; the Golsar change does not modify those files. Scoped lint, tests, TypeScript and build pass.
+
 - **WP_API_URL** must be set in the deployment env or `lib/wp.ts` calls will
   fail. Not yet documented in a `.env.example`.
 - **Web Push (VAPID) keys** must be generated and set in the deployment environment (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) for Web Push notifications to function. See `.env.local.example` for details.
@@ -151,6 +159,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-09-29** — Connected the private 22-cafe Golsar preview to the existing dev ReviewSheet with browser save/edit/delete and documented the existing Supabase pilot path. Files: `app/preview/golsar/page.tsx`, `components/preview/GolsarPreview.tsx`, `components/review/ReviewSheet.tsx`, `lib/preview/golsar.ts`, `docs/golsar-local-preview.md`. 91 tests, TypeScript, scoped lint, build and mobile/desktop browser checks pass; full dev lint has existing chat errors.
 - **2026-07-01** — Implemented AI Chatbot for Iranian store evaluations with Google Search grounding (#chat). Includes a new API route `/api/chat` that streams parsed Google grounding metadata and search citations using Gemini 2.5 Flash, a dark glassy RTL chat UI at `/chat` with suggestion chips and custom formatter, and a 12-suite unit test coverage for payloads and HTML parsing. Files: `app/api/chat/{route,route.test}.ts`, `components/chat/ChatClient.tsx`, `app/chat/page.tsx`, `components/layout/Header.tsx`.
 - **2026-05-26** — Built `/notifications` activity feed (#30). Moved the page from `/profile/notifications` to top-level `/notifications` per the issue contract; the old route is now a thin redirect so push-notification deep links and bookmarks don't 404. `public/sw.js` fallback URL updated. The feed is now grouped by calendar day with «امروز» / «دیروز» / Persian-localized full-date headers, courtesy of a new pure helper `components/notifications/groupByDay.ts` (8-test unit suite covers same-day collapse, day-boundary splits, and the relative-header path). The list region carries `aria-live="polite"` so screen readers narrate the unread-count change after mark-as-read fires. Mark-all-read action moved alongside the page to `app/(user)/notifications/actions.ts`. Files: `app/(user)/notifications/{page,actions}.ts(x)`, `app/(user)/profile/notifications/page.tsx`, `components/notifications/{NotificationsList.tsx,groupByDay.ts,groupByDay.test.ts}`, `components/profile/ProfileNav.tsx`, `public/sw.js`, `e2e/notifications.spec.ts`.
 - **2026-05-26** — Polished the review wizard after live QA: (1) the sheet was visibly wobbling on iOS when the keyboard appeared because `max-h-[93dvh]` reflowed mid-animation — switched to `svh` (small viewport height, stable across browser-chrome changes). (2) Gated the infinite `fab-pulse` halo on the submit button to only run when the form is actually submittable (`ready && !pending`) — the constant throb under the CTA was reading as the card vibrating. (3) Added a contextual hint in the action row: while recording, the counter slot reads «ضبط — برای پایان دوباره بزن» (pomegr); while processing, «در حال تبدیل صدا…» (mint). Plumbed via a new `onModeChange` callback on `VoiceDictateButton`. (4) Lowered the body minimum from 30 → 10 chars (both server validator + client progress bar) — 30 was too long a runway for the actual review tone people write. Files: `components/review/ReviewSheet.tsx`, `components/review/VoiceDictateButton.tsx`, `components/review/actions.ts`.

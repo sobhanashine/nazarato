@@ -35,6 +35,12 @@ import { VoiceDictateButton, type VoiceMode } from "./VoiceDictateButton";
 /** A business the sheet can open with already selected (skips the picker). */
 export type ReviewPrefill = { slug: string; name: string };
 
+/** Supplied only by the gated local preview; normal callers use the server action. */
+export type LocalReviewPreview = {
+  initialValue?: { rating: number; body: string };
+  submit: typeof submitQuickReview;
+};
+
 type Step = "pick" | "rate" | "write" | "done";
 
 /** Minimal business shape the wizard carries between steps. */
@@ -86,11 +92,13 @@ export function ReviewSheet({
   onClose,
   prefill,
   businesses,
+  localPreview,
 }: {
   isOpen: boolean;
   onClose: () => void;
   prefill: ReviewPrefill | null;
   businesses: Business[];
+  localPreview?: LocalReviewPreview;
 }) {
   const hasPicker = !prefill;
 
@@ -101,8 +109,8 @@ export function ReviewSheet({
   const [selected, setSelected] = useState<Selected | null>(() =>
     resolveSelected(prefill, businesses),
   );
-  const [rating, setRating] = useState(0);
-  const [body, setBody] = useState("");
+  const [rating, setRating] = useState(localPreview?.initialValue?.rating ?? 0);
+  const [body, setBody] = useState(localPreview?.initialValue?.body ?? "");
 
   // Submission state lives in plain useState — NOT useActionState. The latter
   // ties `pending` to the form action's React transition, which Next 14+
@@ -165,7 +173,7 @@ export function ReviewSheet({
     fd.set("rating", String(rating || ""));
     fd.set("body", body);
     try {
-      const res = await submitQuickReview({ ok: false }, fd);
+      const res = await (localPreview?.submit ?? submitQuickReview)({ ok: false }, fd);
       if (res.ok) {
         setStep("done");
       } else {
@@ -177,7 +185,7 @@ export function ReviewSheet({
       setSubmitError("خطا در ثبت نظر. لطفاً دوباره تلاش کن.");
       setSubmitting(false);
     }
-  }, [selected, rating, body, submitting]);
+  }, [selected, rating, body, submitting, localPreview]);
 
   const flow: Step[] = useMemo(
     () => (hasPicker ? ["pick", "rate", "write"] : ["rate", "write"]),
@@ -201,7 +209,8 @@ export function ReviewSheet({
 
   if (!present) return null;
 
-  const loggedIn = session?.loggedIn === true;
+  const localOnly = localPreview !== undefined;
+  const loggedIn = localOnly || session?.loggedIn === true;
   const showChrome = loggedIn && step !== "done";
 
   return (
@@ -288,7 +297,7 @@ export function ReviewSheet({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3">
-          {session === null ? (
+          {!localOnly && session === null ? (
             <LoadingState />
           ) : !loggedIn ? (
             <AuthGate />
@@ -323,11 +332,12 @@ export function ReviewSheet({
                   onSubmit={handleSubmit}
                   pending={submitting}
                   error={submitError}
+                  localOnly={localOnly}
                 />
               )}
 
               {step === "done" && (
-                <DoneStep name={selected?.name ?? ""} onClose={onClose} />
+                <DoneStep name={selected?.name ?? ""} onClose={onClose} localOnly={localOnly} />
               )}
             </div>
           )}
@@ -600,6 +610,7 @@ function WriteStep({
   onSubmit,
   pending,
   error,
+  localOnly,
 }: {
   selected: Selected;
   body: string;
@@ -607,6 +618,7 @@ function WriteStep({
   onSubmit: () => void;
   pending: boolean;
   error?: string;
+  localOnly: boolean;
 }) {
   const len = body.trim().length;
   const ready = len >= BODY_MIN;
@@ -635,6 +647,7 @@ function WriteStep({
       >
         <textarea
           name="body"
+          aria-label="متن تجربه"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           maxLength={BODY_MAX}
@@ -677,7 +690,7 @@ function WriteStep({
               style={{ width: `${progress}%` }}
             />
           </div>
-          <VoiceDictateButton
+          {!localOnly && <VoiceDictateButton
             onModeChange={setVoiceMode}
             onAppend={(t) =>
               // Functional updater — without it the closure captures `body`
@@ -686,11 +699,11 @@ function WriteStep({
               // snapshot instead of stacking.
               setBody((prev) => (prev.length > 0 ? `${prev.trimEnd()} ${t}` : t))
             }
-          />
+          />}
         </div>
 
         {error && (
-          <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-pomegr/30 bg-pomegr/10 p-3 text-[13px] font-medium text-white">
+          <div role="alert" className="mt-3 flex items-start gap-2.5 rounded-xl border border-pomegr/30 bg-pomegr/10 p-3 text-[13px] font-medium text-white">
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pomegr/20 text-pomegr">
               !
             </span>
@@ -706,7 +719,7 @@ function WriteStep({
           {pending ? "در حال ثبت…" : "ثبت نظر"}
         </button>
         <p className="mt-2.5 text-center text-[11.5px] leading-[1.9] text-muted">
-          نظرت بعد از یک بررسی کوتاه منتشر می‌شه.
+          {localOnly ? "این تجربه فقط در همین مرورگر ذخیره می‌شه." : "نظرت بعد از یک بررسی کوتاه منتشر می‌شه."}
         </p>
       </form>
     </div>
@@ -722,7 +735,7 @@ const SPARKS: { sx: string; sy: string; delay: string; color: string }[] = [
   { sx: "-12px", sy: "52px", delay: "0.14s", color: "#7B89FF" },
 ];
 
-function DoneStep({ name, onClose }: { name: string; onClose: () => void }) {
+function DoneStep({ name, onClose, localOnly }: { name: string; onClose: () => void; localOnly: boolean }) {
   useEffect(() => {
     const t = setTimeout(onClose, 3400);
     return () => clearTimeout(t);
@@ -773,10 +786,12 @@ function DoneStep({ name, onClose }: { name: string; onClose: () => void }) {
       </div>
 
       <h2 className="mt-5 text-[1.3rem] font-black text-strong">
-        نظرت ثبت شد!
+        {localOnly ? "تجربه‌ات در این مرورگر ذخیره شد!" : "نظرت ثبت شد!"}
       </h2>
       <p className="mt-2 text-[13.5px] leading-[2] text-muted">
-        {name ? (
+        {localOnly ? (
+          "این ذخیرهٔ آزمایشی فقط در همین مرورگر قابل مشاهده است."
+        ) : name ? (
           <>
             نظرت درباره‌ی{" "}
             <span className="font-bold text-strong">«{name}»</span> بعد از یک
