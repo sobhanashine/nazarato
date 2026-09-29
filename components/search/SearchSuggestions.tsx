@@ -46,10 +46,10 @@ export function SearchSuggestions({
                     {s.meta}
                   </span>
                 </span>
-                <span className="flex shrink-0 items-center gap-1 text-[12px] font-bold text-strong [&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:text-saffron">
+                {s.score !== "—" && <span className="flex shrink-0 items-center gap-1 text-[12px] font-bold text-strong [&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:text-saffron">
                   <StarIcon />
                   <span className="tabular-nums">{s.score}</span>
-                </span>
+                </span>}
               </Link>
             </li>
           ))}

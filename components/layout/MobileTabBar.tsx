@@ -63,7 +63,7 @@ export function MobileTabBar() {
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   // Hidden during the focused auth flow — the `(auth)` layout has no chrome.
-  if (pathname.startsWith("/login") || pathname === "/preview/golsar") return null;
+  if (pathname.startsWith("/login")) return null;
 
   return (
     <nav

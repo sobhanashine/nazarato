@@ -1,3 +1,5 @@
+import { getLocalGolsarCafes } from "@/lib/preview/golsar-server";
+import { golsarCategories } from "@/lib/preview/golsar-categories";
 import type { Metadata } from "next";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Container } from "@/components/ui/Container";
@@ -11,7 +13,8 @@ export const metadata: Metadata = {
   description: "همه دسته‌بندی‌های کسب‌وکارها و برندهای ایرانی در نظراتو",
 };
 
-export default function CategoriesPage() {
+export default async function CategoriesPage() {
+  const cafes = await getLocalGolsarCafes();
   return (
     <>
       <Header />
@@ -25,7 +28,7 @@ export default function CategoriesPage() {
 
       <Container>
         <main className="pb-20 lg:pb-32">
-          <CategoryBrowser />
+          <CategoryBrowser items={cafes !== null ? golsarCategories() : undefined} local={cafes !== null} />
         </main>
       </Container>
       <Footer />

@@ -20,7 +20,7 @@ Place the reviewed source snapshot in data/private/golsar-pilot.json (ignored by
 NEXT_PUBLIC_SMFLOW_ENABLED=false NAZARATO_LOCAL_PREVIEW=true npm run dev -- --hostname 127.0.0.1 --port 3016
 ```
 
-Open http://127.0.0.1:3016/preview/golsar. Experiences stay on this browser and origin. Voice transcription is disabled in this local preview.
+Open http://127.0.0.1:3016/ to use the actual dev product design with Golsar data. The old `/preview/golsar#cafe/<PlaceID>` links now redirect to `/company/<PlaceID>`. Experiences and profile bookmarks stay on this browser and origin. Voice transcription is disabled in this local preview. See `docs/golsar-dev-product.md` for the current native-page integration.
 
 ## Database path for the real pilot
 
@@ -30,7 +30,7 @@ Before accepting real pilot reviews: reconcile source Place IDs with existing bu
 
 Verify applied migrations against the selected database environment, including 0012_lower_reviews_body_min.sql, which aligns the SQL constraint with the current 10-character form minimum. Use separate development and production data, backups, and restore verification before public launch. Larger traffic should be measured before changing the existing indexed relational design.
 
-## Verification
+## Verification of the original preview revision
 
 - 91 unit tests / 13 files passed; 12 tests added on this branch (8 snapshot/storage boundary tests, 4 wizard adapter tests). The 4 adapter tests failed before implementation.
 - TypeScript and lint of all changed source files passed; production build passed using the existing ignored local environment configuration.
@@ -38,3 +38,5 @@ Verify applied migrations against the selected database environment, including 0
 - Production returned 404 even with NAZARATO_LOCAL_PREVIEW=true; development with a non-loopback Host returned 404. No private files appeared in any build trace; the snapshot and local environment are ignored by Git.
 - A read-only database check confirmed businesses, users, reviews and business_sources are reachable. Counts are infrastructure evidence, not a claim that those records are pilot-approved or genuine customer data.
 - Full repository lint still reports 6 errors and 6 warnings in the unchanged chat files from origin/dev; no global lint-pass claim is made. This does not affect the scoped preview checks.
+
+The original custom preview page has been replaced by the existing product pages. Current verification: 103 tests, native homepage/search/categories/profile and the global wizard pass at 390 and 1280px; build and private-data gates pass. The database/pilot boundary described above remains the same.

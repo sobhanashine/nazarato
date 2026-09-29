@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
     root: projectRoot,
   },
   outputFileTracingExcludes: {
-    "/preview/golsar": ["./data/private/**/*"],
+    "/*": ["./data/private/**/*"],
   },
   images: {
     remotePatterns: wpImagePattern(),

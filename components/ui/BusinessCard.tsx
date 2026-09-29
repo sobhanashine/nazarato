@@ -48,7 +48,7 @@ export function BusinessCard({ business, isBookmarked }: BusinessCardProps) {
           <LocationIcon />
           {b.category} · {b.city}
         </span>
-        <div className="flex items-center gap-1.5 mt-[2px] [&>svg]:w-[14px] [&>svg]:h-[14px] [&>svg]:text-saffron [&>svg]:shrink-0 [&>svg]:[fill:currentColor] [&>svg]:[filter:drop-shadow(0_0_4px_rgba(245,181,68,0.45))]">
+        {b.reviewCount === 0 ? <span className="mt-[2px] text-[0.78rem] text-muted">هنوز نظری ثبت نشده</span> : <div className="flex items-center gap-1.5 mt-[2px] [&>svg]:w-[14px] [&>svg]:h-[14px] [&>svg]:text-saffron [&>svg]:shrink-0 [&>svg]:[fill:currentColor] [&>svg]:[filter:drop-shadow(0_0_4px_rgba(245,181,68,0.45))]">
           <StarIcon />
           <span className="tabular-nums text-[0.9rem] font-bold text-strong leading-none">
             {b.score}
@@ -56,7 +56,7 @@ export function BusinessCard({ business, isBookmarked }: BusinessCardProps) {
           <span className="tabular-nums text-[0.78rem] text-muted font-normal not-italic">
             ({b.reviews} نظر)
           </span>
-        </div>
+        </div>}
       </div>
       {typeof isBookmarked === "boolean" && (
         <div className="absolute left-4 top-1/2 -translate-y-1/2">

@@ -1,3 +1,5 @@
+import { getLocalGolsarCafes } from "@/lib/preview/golsar-server";
+import { toGolsarBusiness, toGolsarBusinessDetail } from "@/lib/preview/golsar-product";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CompanyProfile } from "@/components/company/CompanyProfile";
@@ -29,7 +31,9 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const business = await getBusiness(slug);
+  const cafes = await getLocalGolsarCafes();
+  const candidate = cafes?.find(cafe => cafe.id === slug);
+  const business = cafes !== null ? (candidate ? toGolsarBusinessDetail(candidate) : null) : await getBusiness(slug);
   if (!business) return { title: "کسب‌وکار – نظراتو" };
   return {
     title: `${business.name} – نظراتو`,
@@ -44,10 +48,12 @@ export default async function CompanyPage({
 }) {
   const { slug } = await params;
   const session = await getSession();
-  const business = await getBusiness(slug, session?.id);
+  const cafes = await getLocalGolsarCafes();
+  const candidate = cafes?.find(cafe => cafe.id === slug);
+  const business = cafes !== null ? (candidate ? toGolsarBusinessDetail(candidate) : null) : await getBusiness(slug, session?.id);
   if (!business) notFound();
 
-  const isBookmarked = session?.id
+  const isBookmarked = cafes === null && session?.id
     ? await getBookmarkStatus(session.id, business.slug)
     : false;
 
@@ -64,8 +70,9 @@ export default async function CompanyPage({
             reviews={toReviews(business)}
             stats={ratingStats(business.reviews)}
             averageLabel={averageLabel(business.reviews)}
-            similar={await getSimilarBusinesses(business)}
+            similar={cafes ? cafes.filter(cafe => cafe.id !== slug).slice(0, 4).map(toGolsarBusiness) : await getSimilarBusinesses(business)}
             isBookmarked={isBookmarked}
+            localPreview={cafes !== null}
           />
         </main>
       </Container>

@@ -6,16 +6,16 @@ import { CloseIcon, SearchIcon } from "@/components/icons";
 import { GLASS } from "@/components/ui/styles";
 import { categories } from "@/lib/data/categories";
 
-export function CategoryBrowser() {
+export function CategoryBrowser({ items = categories, local = false }: { items?: typeof categories; local?: boolean }) {
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return categories;
-    return categories.filter(
+    if (!q) return items;
+    return items.filter(
       (c) => c.title.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q),
     );
-  }, [query]);
+  }, [query, items]);
 
   return (
     <div className="relative">
@@ -34,7 +34,7 @@ export function CategoryBrowser() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="جستجوی دسته‌بندی (مثلاً: پوشاک)..."
+              placeholder={local ? "جستجوی محدوده (مثلاً: توحید)…" : "جستجوی دسته‌بندی (مثلاً: پوشاک)..."}
               className="w-full h-[58px] md:h-[64px] ps-14 pe-14 text-base md:text-[17px] font-medium text-strong placeholder:text-muted/60 bg-glass-strong/30 border border-glass-border rounded-2xl outline-none transition-all duration-300 focus:border-mint/60 focus:bg-glass-strong/50 focus:shadow-[0_0_0_5px_rgba(91,230,178,0.12)]"
             />
             {query && (
@@ -52,7 +52,7 @@ export function CategoryBrowser() {
           {/* Popular Search Tags */}
           <div className="mt-4 flex flex-wrap items-center gap-2 px-1">
             <span className="text-[12px] font-semibold text-muted/80 ml-2">جستجوهای داغ:</span>
-            {["پوشاک", "زیبایی", "خوراکی", "دیجیتال"].map((tag) => (
+            {(local ? ["توحید", "امام علی", "گلسار"] : ["پوشاک", "زیبایی", "خوراکی", "دیجیتال"]).map((tag) => (
               <button
                 key={tag}
                 type="button"
@@ -72,7 +72,7 @@ export function CategoryBrowser() {
             {query.trim() ? "نتایج جستجو" : "همه دسته‌بندی‌ها"}
           </h3>
           <p className="text-[13px] text-muted" aria-live="polite">
-            نمایش {filtered.length} دسته‌بندی از مجموع {categories.length} مورد
+            نمایش {filtered.length} دسته‌بندی از مجموع {items.length} مورد
           </p>
         </div>
         {query.trim() && (

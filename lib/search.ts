@@ -11,6 +11,8 @@
  * parsed back into numbers for filtering and sorting.
  */
 
+import { normalizeGolsarText } from "@/lib/preview/golsar";
+
 import {
   businessDetails,
   featuredBusinesses,
@@ -74,8 +76,8 @@ export const TYPE_TABS: { id: SearchType; label: string }[] = [
 ];
 
 /** Distinct business categories, for the sidebar filter. */
-export function searchCategories(): string[] {
-  return [...new Set(businessDetails.map((b) => b.category))].sort((a, b) =>
+export function searchCategories(businesses?: Business[]): string[] {
+  return [...new Set((businesses ?? businessDetails).map((b) => b.category))].sort((a, b) =>
     a.localeCompare(b, "fa"),
   );
 }
@@ -106,7 +108,12 @@ export type SearchSuggestion = {
  * (`/company/[slug]`; IG shops use their `href`, which becomes `/shop/[handle]`
  * once that route is built — #22).
  */
-export function suggestBusinesses(query: string, limit = 6): SearchSuggestion[] {
+export function suggestBusinesses(query: string, limit = 6, businesses?: Business[]): SearchSuggestion[] {
+  if (businesses !== undefined) {
+    const q = normalizeGolsarText(query);
+    if (q.length < 2) return [];
+    return businesses.filter(b => normalizeGolsarText(`${b.name} ${b.category} ${b.city} ${b.searchText ?? ""}`).includes(q)).slice(0, limit).map(b => ({ href: `/company/${b.slug}`, name: b.name, meta: `${b.category} · ${b.city}`, initial: b.initial, color: b.color, score: b.score }));
+  }
   const q = query.trim().toLowerCase();
   if (q.length < 2) return [];
 
@@ -204,7 +211,7 @@ const ENRICHED: Enriched[] = [
 
 /** Does a row pass every filter? `ignoreType` skips the همه/کسب‌وکار/اینستا cut. */
 function passes(e: Enriched, query: SearchQuery, ignoreType: boolean): boolean {
-  if (query.q && !e.haystack.includes(query.q.toLowerCase())) return false;
+  if (query.q && !normalizeGolsarText(e.haystack).includes(normalizeGolsarText(query.q))) return false;
 
   if (!ignoreType) {
     if (query.type === "biz" && e.kind !== "company") return false;
@@ -256,9 +263,12 @@ function comparator(sort: SortKey, q: string) {
 }
 
 /** Run the full pipeline: filter → count → sort → paginate. */
-export function runSearch(query: SearchQuery): SearchResult {
+export function runSearch(query: SearchQuery, businesses?: Business[]): SearchResult {
+  const source: Enriched[] = businesses === undefined ? ENRICHED : businesses.map((business, order) => ({
+    kind: "company", business, order, scoreNum: faToNum(business.score), reviewCount: business.reviewCount ?? faToNum(business.reviews), verified: business.verified === true, haystack: `${business.name} ${business.category} ${business.city} ${business.searchText ?? ""}`, category: business.category,
+  }));
   // Per-tab counts ignore the type filter so each tab shows its own total.
-  const matched = ENRICHED.filter((e) => passes(e, query, true));
+  const matched = source.filter((e) => passes(e, query, true));
   const counts = {
     all: matched.length,
     biz: matched.filter((e) => e.kind === "company").length,
@@ -303,7 +313,7 @@ const isOn = (v: string | string[] | undefined): boolean => {
 };
 
 /** Turn raw `searchParams` into a validated `SearchQuery`. Never throws. */
-export function parseSearchParams(raw: RawParams): SearchQuery {
+export function parseSearchParams(raw: RawParams, businesses?: Business[]): SearchQuery {
   const typeRaw = firstString(raw.type);
   const type: SearchType =
     typeRaw === "biz" || typeRaw === "insta" ? typeRaw : "all";
@@ -322,7 +332,7 @@ export function parseSearchParams(raw: RawParams): SearchQuery {
   const page = Number.isFinite(pageNum) && pageNum > 1 ? pageNum : 1;
 
   // IG shops have no business category — drop categories when on that tab.
-  const validCategories = new Set(businessDetails.map((b) => b.category));
+  const validCategories = new Set((businesses ?? businessDetails).map((b) => b.category));
   const categories =
     type === "insta"
       ? []

@@ -52,13 +52,13 @@ function StatItem({ stat }: { stat: Stat }) {
   );
 }
 
-export function HeroStats() {
+export function HeroStats({ items = stats }: { items?: Stat[] }) {
   return (
     <ul
       className="grid grid-cols-3 gap-2 w-full max-w-[620px] mt-6 px-5 py-4 bg-glass border border-glass-border rounded-[18px] backdrop-blur-[14px] backdrop-saturate-[160%] list-none"
       aria-label="آمار پلتفرم"
     >
-      {stats.map((s) => (
+      {items.map((s) => (
         <StatItem key={s.label} stat={s} />
       ))}
     </ul>

@@ -58,6 +58,8 @@ export type Business = {
   score: string;
   reviews: string;
   verified?: boolean;
+  reviewCount?: number;
+  searchText?: string;
 };
 
 /** A review as authored — `shop` is attached on read (see `getBusiness`). */
