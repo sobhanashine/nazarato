@@ -1,27 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { SparklesIcon, SendIcon, ChatBubbleIcon, SearchIcon, MenuIcon, CloseIcon } from "@/components/icons";
-import { GLASS, BTN_PRIMARY, TAG_BADGE } from "@/components/ui/styles";
-
-interface ChatMessage {
-  id: string;
-  role: "user" | "model";
-  text: string;
-  sources?: SearchSource[];
-}
-
-interface SearchSource {
-  title: string;
-  url: string;
-}
-
-interface ChatSession {
-  id: string;
-  title: string;
-  messages: ChatMessage[];
-  createdAt: number;
-}
+import { SparklesIcon, SendIcon, ChatBubbleIcon, SearchIcon, MenuIcon } from "@/components/icons";
+import { createChatId, createChatSession, updateAssistantMessage, type ChatMessage, type ChatSession, type SearchSource } from "./chat-state";
 
 const suggestionChips = [
   "آیا خرید از ایرانی کارت معتبر و ایمن است؟",
@@ -96,12 +77,7 @@ export function ChatClient() {
   const messages = activeSession ? activeSession.messages : [];
 
   const handleNewChat = () => {
-    const newSession: ChatSession = {
-      id: Math.random().toString(36).substring(7),
-      title: "گفتگوی جدید",
-      messages: [],
-      createdAt: Date.now()
-    };
+    const newSession = createChatSession("گفتگوی جدید");
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
     setSidebarOpen(false);
@@ -146,12 +122,7 @@ export function ChatClient() {
 
     // Create session if none exists
     if (!currentSessionId) {
-      const newSession: ChatSession = {
-        id: Math.random().toString(36).substring(7),
-        title: messageText.slice(0, 24) + (messageText.length > 24 ? "..." : ""),
-        messages: [],
-        createdAt: Date.now()
-      };
+      const newSession = createChatSession(messageText);
       currentSessionId = newSession.id;
       currentSessions = [newSession, ...currentSessions];
       setSessions(currentSessions);
@@ -159,7 +130,7 @@ export function ChatClient() {
     }
 
     const userMsg: ChatMessage = {
-      id: Math.random().toString(36).substring(7),
+      id: createChatId(),
       role: "user",
       text: messageText
     };
@@ -179,9 +150,8 @@ export function ChatClient() {
 
     setSessions(updatedSessions);
 
-    const assistantMsgId = Math.random().toString(36).substring(7);
+    const assistantMsgId = createChatId();
     let partialText = "";
-    let sources: SearchSource[] = [];
 
     // Get current history for API (excluding the user message we just sent)
     const currentSessionMessages = updatedSessions.find((s) => s.id === currentSessionId)?.messages || [];
@@ -243,36 +213,19 @@ export function ChatClient() {
               const data = JSON.parse(jsonStr);
               if (data.type === "text") {
                 partialText += data.content;
+                const nextText = partialText;
                 setSessions((prev) =>
-                  prev.map((s) =>
-                    s.id === currentSessionId
-                      ? {
-                          ...s,
-                          messages: s.messages.map((m) =>
-                            m.id === assistantMsgId ? { ...m, text: partialText } : m
-                          )
-                        }
-                      : s
-                  )
+                  updateAssistantMessage(prev, currentSessionId, assistantMsgId, { text: nextText })
                 );
               } else if (data.type === "sources") {
-                sources = data.content;
+                const nextSources: SearchSource[] = data.content;
                 setSessions((prev) =>
-                  prev.map((s) =>
-                    s.id === currentSessionId
-                      ? {
-                          ...s,
-                          messages: s.messages.map((m) =>
-                            m.id === assistantMsgId ? { ...m, sources } : m
-                          )
-                        }
-                      : s
-                  )
+                  updateAssistantMessage(prev, currentSessionId, assistantMsgId, { sources: nextSources })
                 );
               } else if (data.type === "error") {
                 throw new Error(data.content);
               }
-            } catch (err) {
+            } catch {
               // Ignore partial JSON packet errors
             }
           }
@@ -302,7 +255,7 @@ export function ChatClient() {
                 messages: [
                   ...s.messages,
                   {
-                    id: Math.random().toString(36).substring(7),
+                    id: assistantMsgId,
                     role: "model",
                     text: `⚠️ **خطا در اتصال:** ${errMsg}`
                   }

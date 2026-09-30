@@ -209,7 +209,7 @@ export async function POST(req: Request): Promise<Response> {
   let body: unknown;
   try {
     body = await req.json();
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: "درخواست نامعتبر است." },
       { status: 400 }

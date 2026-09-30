@@ -35,6 +35,10 @@ export type FormState = {
 
 const RESEND_COOLDOWN_MS = 60_000;
 const MAX_WRONG = 5;
+const LOGIN_UNAVAILABLE: FormState = {
+  ok: false,
+  error: "ورود در حال حاضر در دسترس نیست. لطفاً بعداً دوباره تلاش کن.",
+};
 
 // Per-process throttles. Keyed by canonical phone number.
 const lastSentAt = new Map<string, number>();
@@ -71,6 +75,7 @@ export async function startOtp(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  if (process.env.NODE_ENV !== "development") return LOGIN_UNAVAILABLE;
   const rawPhone = asString(formData.get("phone"));
   if (!formData.get("terms")) {
     return { ok: false, error: "برای ادامه باید قوانین و حریم خصوصی را بپذیری.", phone: rawPhone };
@@ -109,6 +114,7 @@ export async function resendOtp(
   _prev: FormState,
   _formData: FormData,
 ): Promise<FormState> {
+  if (process.env.NODE_ENV !== "development") return LOGIN_UNAVAILABLE;
   void _prev;
   void _formData;
   const challenge = await getOtpChallenge();
@@ -139,6 +145,7 @@ export async function verifyOtp(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  if (process.env.NODE_ENV !== "development") return LOGIN_UNAVAILABLE;
   const challenge = await getOtpChallenge();
   if (!challenge) {
     return { ok: false, reason: "expired", error: "کد منقضی شده است." };
@@ -208,6 +215,7 @@ export async function completeProfile(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  if (process.env.NODE_ENV !== "development") return LOGIN_UNAVAILABLE;
   const challenge = await getOtpChallenge();
   if (!challenge || !challenge.verified) {
     return { ok: false, reason: "expired", error: "نشست منقضی شده. دوباره وارد شو." };

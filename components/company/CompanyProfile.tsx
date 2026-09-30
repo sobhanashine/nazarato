@@ -206,7 +206,7 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
         >
           <span
             aria-hidden
-            className="absolute inset-[-8px] rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
+            className="absolute inset-[-8px] max-sm:inset-x-0 rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
           />
           نوشتن نظر
         </button>

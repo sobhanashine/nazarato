@@ -58,3 +58,8 @@ next-env.d.ts
 
 # private source exports and preview evidence
 /data/private/
+
+# Cloudflare build output and local secrets
+/.open-next/
+/.wrangler/
+.dev.vars*
