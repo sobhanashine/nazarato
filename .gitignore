@@ -55,3 +55,11 @@ next-env.d.ts
 # antigravity cli — local workspace metadata
 .antigravitycli/
 
+
+# private source exports and preview evidence
+/data/private/
+
+# Cloudflare build output and local secrets
+/.open-next/
+/.wrangler/
+.dev.vars*

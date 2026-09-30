@@ -16,12 +16,12 @@ import { ArrowLeftIcon, SearchIcon } from "@/components/icons";
 import { SearchSuggestions } from "@/components/search/SearchSuggestions";
 import { suggestBusinesses, type SearchQuery } from "@/lib/search";
 
-export function SearchBox({ query }: { query: SearchQuery }) {
+export function SearchBox({ query, businesses }: { query: SearchQuery; businesses?: import("@/lib/data/businesses").Business[] }) {
   const [value, setValue] = useState(query.q);
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  const suggestions = useMemo(() => suggestBusinesses(value), [value]);
+  const suggestions = useMemo(() => suggestBusinesses(value, 6, businesses), [value, businesses]);
   const showDropdown = open && value.trim().length >= 2;
 
   return (

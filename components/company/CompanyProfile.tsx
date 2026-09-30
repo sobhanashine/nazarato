@@ -14,6 +14,7 @@ import { RatingBars } from "@/components/ui/RatingBars";
 import { RatingStars, type Rating } from "@/components/ui/RatingStars";
 import { useReviewSheet } from "@/components/review/ReviewSheetProvider";
 import { BookmarkButton } from "@/components/ui/BookmarkButton";
+import { LocalExperiencePanel } from "@/components/preview/LocalExperiencePanel";
 import { ReviewCard } from "@/components/ui/ReviewCard";
 import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
 import type { Business, BusinessDetail } from "@/lib/data/businesses";
@@ -32,6 +33,7 @@ type Props = {
   averageLabel: string;
   similar: Business[];
   isBookmarked: boolean;
+  localPreview?: boolean;
 };
 
 const TABS = [
@@ -71,7 +73,7 @@ function ShareIcon() {
   );
 }
 
-export function CompanyProfile({ business, reviews, stats, averageLabel, similar, isBookmarked }: Props) {
+export function CompanyProfile({ business, reviews, stats, averageLabel, similar, isBookmarked, localPreview = false }: Props) {
   const { openReviewSheet } = useReviewSheet();
   const [tab, setTab] = useState<TabId>("overview");
   const [ratingFilter, setRatingFilter] = useState<Rating | 0>(0);
@@ -181,7 +183,7 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
               </div>
             </div>
             <Link
-              href={`/company/${business.slug}/claim`}
+              href={localPreview ? "/for-business" : `/company/${business.slug}/claim`}
               className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-saffron px-5 py-2.5 text-[0.85rem] font-black text-[#2a1a05] shadow-[0_6px_18px_-6px_rgba(244,177,68,0.55)] transition-transform duration-200 hover:-translate-y-px"
             >
               ادعای مالکیت
@@ -204,7 +206,7 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
         >
           <span
             aria-hidden
-            className="absolute inset-[-8px] rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
+            className="absolute inset-[-8px] max-sm:inset-x-0 rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
           />
           نوشتن نظر
         </button>
@@ -212,6 +214,7 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
           <BookmarkButton
             businessSlug={business.slug}
             initialIsBookmarked={isBookmarked}
+            localOnly={localPreview}
             label={isBookmarked ? "ذخیره شد" : "ذخیره"}
             className="border px-5 py-3 text-[0.85rem] font-semibold transition-colors duration-200 sm:py-2.5 border-glass-border bg-glass text-muted hover:border-mint/45 hover:text-strong data-[active=true]:border-mint/55 data-[active=true]:bg-mint/[0.12] data-[active=true]:text-mint"
           />
@@ -225,6 +228,8 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
           </button>
         </div>
       </div>
+
+      {localPreview && <LocalExperiencePanel slug={business.slug} name={business.name} />}
 
       {/* ── Tabs ── */}
       <div
@@ -419,7 +424,7 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
             ].map((row) => (
               <div key={row.label} className="flex justify-between gap-3 bg-[#0c1018] px-4 py-3">
                 <dt className="text-[0.83rem] text-muted">{row.label}</dt>
-                <dd className="text-[0.83rem] font-semibold text-strong">{row.value}</dd>
+                <dd className="min-w-0 break-words text-end text-[0.83rem] font-semibold text-strong">{row.value}</dd>
               </div>
             ))}
           </dl>

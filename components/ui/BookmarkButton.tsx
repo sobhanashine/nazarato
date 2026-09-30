@@ -3,6 +3,7 @@
 import { useOptimistic, useTransition } from "react";
 import toast from "react-hot-toast";
 import { toggleBookmark } from "@/app/(user)/saved/actions";
+import { notifyLocalPreviewStorage, useLocalPreviewStorage } from "@/components/preview/useLocalPreviewStorage";
 import { BookmarkIcon } from "@/components/icons/BookmarkIcon";
 import { BookmarkFilledIcon } from "@/components/icons/BookmarkFilledIcon";
 
@@ -10,10 +11,11 @@ type Props = {
   businessSlug: string;
   initialIsBookmarked: boolean;
   className?: string;
+  localOnly?: boolean;
   label?: string; // Optional text next to icon
 };
 
-export function BookmarkButton({ businessSlug, initialIsBookmarked, className = "", label }: Props) {
+export function BookmarkButton({ businessSlug, initialIsBookmarked, className = "", label, localOnly = false }: Props) {
   const [isPending, startTransition] = useTransition();
   
   // React 19 useOptimistic
@@ -22,10 +24,23 @@ export function BookmarkButton({ businessSlug, initialIsBookmarked, className = 
     (state: boolean, update: boolean) => update
   );
 
+  const localKey = `nazarato:golsar-bookmark:v1:${businessSlug}`;
+  const localSaved = useLocalPreviewStorage(localKey) === "true";
+  const bookmarked = localOnly ? localSaved : optimisticBookmarked;
+
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation(); // prevent card clicks
     
+    if (localOnly) {
+      try {
+        if (localSaved) window.localStorage.removeItem(localKey);
+        else window.localStorage.setItem(localKey, "true");
+        notifyLocalPreviewStorage();
+        toast.success(localSaved ? "از ذخیره‌های این مرورگر حذف شد" : "در این مرورگر ذخیره شد");
+      } catch { toast.error("ذخیره انجام نشد؛ دسترسی ذخیره‌سازی مرورگر را بررسی کن."); }
+      return;
+    }
     startTransition(async () => {
       const nextState = !optimisticBookmarked;
       addOptimisticBookmark(nextState);
@@ -52,14 +67,14 @@ export function BookmarkButton({ businessSlug, initialIsBookmarked, className = 
       onClick={handleClick}
       disabled={isPending}
       className={`flex items-center justify-center gap-2 rounded-full transition-colors ${className}`}
-      aria-label={optimisticBookmarked ? "حذف از ذخیره‌ها" : "ذخیره"}
+      aria-label={bookmarked ? "حذف از ذخیره‌ها" : "ذخیره"}
     >
-      {optimisticBookmarked ? (
+      {bookmarked ? (
         <BookmarkFilledIcon className="w-5 h-5 text-mint-400" />
       ) : (
         <BookmarkIcon className="w-5 h-5 text-white/70 hover:text-white" />
       )}
-      {label && <span>{label}</span>}
+      {label && <span>{localOnly ? (bookmarked ? "ذخیره شد" : "ذخیره") : label}</span>}
     </button>
   );
 }

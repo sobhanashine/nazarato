@@ -44,7 +44,8 @@ const auroraSweep =
   "conic-gradient(from 0deg, transparent 0deg, rgba(91, 230, 178, 0.08) 60deg, transparent 120deg, " +
   "rgba(123, 137, 255, 0.07) 180deg, transparent 240deg, rgba(245, 181, 68, 0.06) 300deg, transparent 360deg)";
 
-export function Hero() {
+export function Hero({ businesses }: { businesses?: import("@/lib/data/businesses").Business[] }) {
+  const searches = businesses ? ["سایه", "وک", "آوند", "توحید", "امام علی"] : popularSearches;
   return (
     <section className="relative overflow-hidden -top-[72px] -mb-[72px] pt-32 pb-12 sm:-top-20 sm:-mb-20 sm:pt-44 sm:pb-24 lg:pt-48 lg:pb-32">
       {/* Slow rotating conic aurora sweep */}
@@ -91,20 +92,20 @@ export function Hero() {
               تجربه کن
             </strong>
             <span className="block mt-3.5 sm:mt-4 text-[0.95rem] sm:text-[1.05rem] font-normal text-muted tracking-normal">
-              قبل از خرید، نظر بقیه رو بخون.
+              {businesses ? "کافه‌های گلسار را پیدا کن و تجربه‌ات را بنویس." : "قبل از خرید، نظر بقیه رو بخون."}
             </span>
           </h1>
 
-          <HeroSearch />
+          <HeroSearch businesses={businesses} />
 
           <div
             className="flex flex-wrap items-center justify-center gap-y-[0.45rem] gap-x-2 mt-2 max-w-[620px]"
             aria-label="جستجوهای پرطرفدار"
           >
             <span className="w-full text-center text-xs text-muted mb-0.5 tracking-[0.01em]">
-              پرطرفدار:
+              {businesses ? "از اینجا شروع کن:" : "پرطرفدار:"}
             </span>
-            {popularSearches.map((s) => (
+            {searches.map((s) => (
               <Link
                 key={s}
                 href={`/search?q=${encodeURIComponent(s)}`}
@@ -115,7 +116,7 @@ export function Hero() {
             ))}
           </div>
 
-          <HeroStats />
+          <HeroStats items={businesses ? [{ value: businesses.length, label: "کافه در فهرست" }, { value: Math.min(3, businesses.length), label: "کافه برای شروع" }, { value: 0, label: "نظر منتشرشده" }] : undefined} />
         </div>
       </Container>
     </section>

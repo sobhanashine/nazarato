@@ -6,7 +6,8 @@
  * Kavenegar credit is available, replace the body of `sendOtp` with a real API
  * call (`KAVENEGAR_API_KEY` / `KAVENEGAR_TEMPLATE` in `.env.local`) and have
  * callers generate a random 6-digit code instead of `DEV_OTP` — that is the
- * only swap needed; the rest of the auth flow is provider-agnostic.
+ * only swap needed for delivery; production auth actions stay disabled until
+ * real delivery and per-challenge verification replace the development code.
  */
 
 /** Static development OTP. Replace with a random code once SMS is wired. */
@@ -46,6 +47,9 @@ export function formatPhone(canonical: string): string {
  * Deliver the OTP. DEV: logs to the server console. PROD: call Kavenegar here.
  */
 export async function sendOtp(phone: string, code: string): Promise<void> {
+  if (process.env.NODE_ENV !== "development") {
+    throw new Error("Development OTP delivery is disabled outside development");
+  }
   // TODO(kavenegar): POST to Kavenegar's verify-lookup endpoint using
   // KAVENEGAR_API_KEY + KAVENEGAR_TEMPLATE once SMS credit is topped up.
   console.log(`[otp] dev code for ${phone} → ${code}`);

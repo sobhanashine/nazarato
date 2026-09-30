@@ -1,3 +1,5 @@
+import { getLocalGolsarCafes } from "@/lib/preview/golsar-server";
+import { toGolsarBusiness } from "@/lib/preview/golsar-product";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer } from "@/components/layout/Footer";
@@ -60,9 +62,11 @@ export default async function SearchPage({
 }: {
   searchParams: Promise<RawParams>;
 }) {
-  const query = parseSearchParams(await searchParams);
-  const result = runSearch(query);
-  const categories = searchCategories();
+  const cafes = await getLocalGolsarCafes();
+  const businesses = cafes?.map(toGolsarBusiness);
+  const query = parseSearchParams(await searchParams, businesses);
+  const result = runSearch(query, businesses);
+  const categories = businesses ? [...new Set(businesses.map(b => b.category))] : searchCategories();
   const hasQuery = query.q.length > 0;
 
   // Dismissible chips for every active filter.
@@ -112,7 +116,7 @@ export default async function SearchPage({
       <Container>
         <main className="pb-20 lg:pb-32">
           {/* Search box with live company typeahead — first focusable in <main>. */}
-          <SearchBox query={query} />
+          <SearchBox query={query} businesses={businesses} />
 
           {/* Type tabs. */}
           <nav
@@ -243,7 +247,7 @@ export default async function SearchPage({
                     پرطرفدار را ببین.
                   </p>
                   <ul className="grid w-full gap-4 text-start sm:grid-cols-2">
-                    {featuredBusinesses.slice(0, 4).map((b) => (
+                    {(businesses ?? featuredBusinesses).slice(0, 4).map((b) => (
                       <li key={b.slug}>
                         <BusinessCard business={b} />
                       </li>

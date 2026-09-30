@@ -1,3 +1,5 @@
+import { getLocalGolsarCafes } from "@/lib/preview/golsar-server";
+import { toGolsarBusiness } from "@/lib/preview/golsar-product";
 import type { Metadata, Viewport } from "next";
 import { Vazirmatn } from "next/font/google";
 import { SmflowWidget } from "@/components/integrations/SmflowWidget";
@@ -52,11 +54,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cafes = await getLocalGolsarCafes();
   return (
     <html
       lang="fa"
@@ -66,7 +69,7 @@ export default function RootLayout({
     >
       <body className="relative min-h-screen overflow-x-hidden bg-[#06080f] text-strong antialiased [text-rendering:optimizeLegibility] selection:bg-mint/35 selection:text-white pb-[calc(76px+env(safe-area-inset-bottom))] md:pb-0">
         <Backdrop />
-        <ReviewSheetProvider businesses={featuredBusinesses}>
+        <ReviewSheetProvider businesses={cafes?.map(toGolsarBusiness) ?? featuredBusinesses} localPreview={cafes !== null}>
           {children}
           <MobileTabBar />
         </ReviewSheetProvider>

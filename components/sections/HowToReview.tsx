@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import type { Business } from "@/lib/data/businesses";
 import { useReviewSheet } from "@/components/review/ReviewSheetProvider";
 import { Container } from "@/components/ui/Container";
 import { STAR_PALETTES, STAR_PATH, type Rating } from "@/components/ui/RatingStars";
@@ -67,7 +68,8 @@ const STEPS: StepGuide[] = [
 const CYCLE_MS = 2600;
 const fa = (n: number) => n.toLocaleString("fa-IR");
 
-export function HowToReview() {
+export function HowToReview({ businesses }: { businesses?: Business[] }) {
+  const steps = businesses === undefined ? STEPS : STEPS.map(step => step.key === "done" ? { ...step, hint: "تجربه‌ات در همین مرورگر ذخیره می‌شود.", title: "تجربه‌ات ذخیره شد!", subtitle: "این تجربه هنوز منتشر نشده است." } : step);
   const { openReviewSheet } = useReviewSheet();
   const [active, setActive] = useState(0);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -92,7 +94,7 @@ export function HowToReview() {
     setActive(i);
   };
 
-  const step = STEPS[active];
+  const step = steps[active];
 
   return (
     <section className="relative z-10 py-6 md:py-12" aria-labelledby="how-to-review-title">
@@ -119,7 +121,7 @@ export function HowToReview() {
               </p>
 
               <ol className="mb-6 w-full max-w-[520px] space-y-2 sm:mb-8">
-                {STEPS.map((s, i) => {
+                {steps.map((s, i) => {
                   const isActive = i === active;
                   return (
                     <li key={s.key}>
@@ -166,7 +168,7 @@ export function HowToReview() {
 
             {/* Left (RTL): the animation box */}
             <div className="flex justify-center lg:col-span-6">
-              <ReviewFlowBox step={step} stepIndex={active} />
+              <ReviewFlowBox step={step} stepIndex={active} businesses={businesses} />
             </div>
           </div>
         </div>
@@ -177,7 +179,7 @@ export function HowToReview() {
 
 /* ───────────────────────── animation box ───────────────────────── */
 
-function ReviewFlowBox({ step, stepIndex }: { step: StepGuide; stepIndex: number }) {
+function ReviewFlowBox({ step, stepIndex, businesses }: { step: StepGuide; stepIndex: number; businesses?: Business[] }) {
   return (
     <div
       className="relative flex w-full max-w-[320px] flex-col overflow-hidden rounded-[22px] border border-glass-border bg-[#0b0f1a] shadow-[0_24px_70px_rgba(0,0,0,0.5)] sm:max-w-[360px] sm:rounded-[26px]"
@@ -216,7 +218,7 @@ function ReviewFlowBox({ step, stepIndex }: { step: StepGuide; stepIndex: number
             {step.subtitle}
           </p>
           <div className="mt-4">
-            {step.key === "pick" && <PickMock />}
+            {step.key === "pick" && <PickMock businesses={businesses} />}
             {step.key === "rate" && <RateMock />}
             {step.key === "write" && <WriteMock />}
             {step.key === "done" && <DoneMock />}
@@ -227,7 +229,7 @@ function ReviewFlowBox({ step, stepIndex }: { step: StepGuide; stepIndex: number
   );
 }
 
-function PickMock() {
+function PickMock({ businesses }: { businesses?: Business[] }) {
   return (
     <div>
       <div className="flex items-center gap-2.5 rounded-xl border border-mint/40 bg-mint/[0.06] px-3.5 py-3">
@@ -235,13 +237,13 @@ function PickMock() {
           <circle cx="11" cy="11" r="7" />
           <path d="M21 21l-4.3-4.3" />
         </svg>
-        <span className="text-[15px] text-white/80">دیجی‌کالا</span>
+        <span className="text-[15px] text-white/80">{businesses === undefined ? "دیجی‌کالا" : (businesses[0]?.name ?? "کافه‌ای در فهرست نیست")}</span>
       </div>
       <ul className="mt-3 flex flex-col gap-2">
-        {[
+        {(businesses?.slice(0, 2).map(b => ({ ...b, meta: `${b.category} · ${b.city}` })) ?? [
           { name: "دیجی‌کالا", meta: "فروشگاه اینترنتی · تهران", color: "#E11D48", initial: "د" },
           { name: "اسنپ‌فود", meta: "سفارش غذا · تهران", color: "#7B89FF", initial: "ا" },
-        ].map((b) => (
+        ]).map((b) => (
           <div
             key={b.name}
             className="flex items-center gap-3 rounded-xl border border-glass-border bg-white/[0.02] p-2.5"

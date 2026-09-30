@@ -12,12 +12,12 @@ import { SearchIcon } from "@/components/icons";
 import { SearchSuggestions } from "@/components/search/SearchSuggestions";
 import { suggestBusinesses } from "@/lib/search";
 
-export function HeroSearch() {
+export function HeroSearch({ businesses }: { businesses?: import("@/lib/data/businesses").Business[] }) {
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const suggestions = useMemo(() => suggestBusinesses(value), [value]);
+  const suggestions = useMemo(() => suggestBusinesses(value, 6, businesses), [value, businesses]);
   const showDropdown = open && value.trim().length >= 2;
 
   return (

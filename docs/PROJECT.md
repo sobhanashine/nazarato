@@ -13,7 +13,7 @@ non-trivial task starts by reading this file and ends by updating it.
 
 ### Framework
 
-- **Next.js 16.2.6** (App Router only — no `pages/` directory).
+- **Next.js 16.3.8** (App Router only — no `pages/` directory).
 - **React 19.2.4**.
 - **TypeScript 5** with `strict: true`, `noEmit: true`. Path alias `@/*` → repo root (`tsconfig.json:21`).
 - **Tailwind CSS v4** via `@tailwindcss/postcss` (`postcss.config.mjs`). v4 syntax only — do not fall back to v3 patterns.
@@ -23,7 +23,7 @@ non-trivial task starts by reading this file and ends by updating it.
 
 | Path             | Purpose                                                                      |
 | ---------------- | ---------------------------------------------------------------------------- |
-| `app/`           | App Router routes: `/`, `/search`, `/about`, `/contact`, `/categories`, `/terms`, `/privacy`, `/company/[slug]`, `/blog`, `/blog/[slug]`, the `(auth)` group (`/login`, `/login/verify`), and the `(user)` group (`/profile`, `/profile/reviews`). |
+| `app/`           | App Router routes: `/`, `/search`, `/about`, `/contact`, `/categories`, `/terms`, `/privacy`, `/company/[slug]`, `/blog`, `/blog/[slug]`, `/chat`, the `(auth)` group (`/login`, `/login/verify`), and the `(user)` group (`/profile`, `/profile/reviews`). |
 | `components/`    | Grouped by role: `layout/`, `sections/`, `ui/`, `blog/`, `categories/`, `icons/`, `pwa/`. |
 | `lib/`           | Data layer + integrations. `lib/wp.ts` (WordPress client), `lib/supabase/` (service-role DB client), `lib/auth/` (signed-cookie sessions + phone-OTP).              |
 | `lib/data/`      | Static/sample data: `blog-posts`, `blog-taxonomies`, `categories`, `reviews`, `instagram-shops`. |
@@ -47,6 +47,18 @@ non-trivial task starts by reading this file and ends by updating it.
 - Dispatching pushes runs through `lib/push/server.ts`, which catches and logs push service failures to prevent blocking primary transactions (e.g., review submissions).
 - `next.config.ts:42-53` sets `Cache-Control: no-cache` and `Service-Worker-Allowed: /` for `sw.js`.
 
+
+### Database and local Golsar preview
+
+- Supabase PostgreSQL is the existing database; the server-side service-role client is `lib/supabase/server.ts`. `users`, `businesses`, and `reviews` are linked by stable IDs; the default `submitQuickReview` requires a signed-in user and inserts a pending review.
+- The optional Golsar catalog feeds the existing homepage, `/search`, `/categories`, and native `/company/[slug]` pages through `lib/preview/golsar-server.ts`. It requires development, `NAZARATO_LOCAL_PREVIEW=true`, and a loopback Host. The global `ReviewSheet` saves browser-only experiences; native profile bookmarks are also browser-only. `/preview/golsar#cafe/<PlaceID>` redirects to the native product profile. The snapshot at `data/private/golsar-pilot.json` is ignored by Git and excluded from all route traces; production never reads it.
+- Source reconciliation and migration verification precede real pilot review collection. See `docs/golsar-local-preview.md` for the scope and database path.
+
+### Cloudflare Workers deployment
+
+- The existing Worker is `nazarato`; its Git integration deploys `main`. OpenNext 1.20.7 adapts the regular Next build, and Wrangler 4.145.0 uploads `.open-next/worker.js` plus ASSETS. Run `npm run build:cloudflare`, then `npm run preview:cloudflare`; `npm run deploy:cloudflare` builds and publishes. Dashboard build command is `npm run build:cloudflare`, deploy command is `npx wrangler deploy`.
+- Dashboard variables are preserved with `keep_vars`. Supabase service-role and JWT signing key stay in Cloudflare Secrets. The alias to `cloudflare/runtime-env.mjs` prevents OpenNext from bundling `.env*` fallbacks into uploaded code; local Worker tests use ignored `.dev.vars`. See `docs/cloudflare-release.md` for settings and verification.
+- OTP start, resend, verification, and profile completion reject outside development. Public login must remain closed until real SMS delivery and per-challenge verification are implemented. `GEMINI_API_KEY` is required for both AI chat and server dictation; missing configuration returns 503.
 
 ### Headless WordPress (blog)
 
@@ -106,6 +118,8 @@ Set globally in `next.config.ts:31-40`:
 
 ### Routing
 
+- Golsar pilots reuse the existing dev page components and contracts through an explicit catalog adapter. Do not build a second discovery/profile/review design. Source-only candidates carry no verified ownership, imported ratings or published-review counts. An invalid local catalog stays empty rather than falling back to sample businesses.
+
 - Sole router is App Router. New routes go under `app/`.
 - Dynamic segments use bracket folders (e.g. `app/blog/[slug]/page.tsx`).
 
@@ -134,7 +148,7 @@ Set globally in `next.config.ts:31-40`:
 - **Web Push (VAPID) keys** must be generated and set in the deployment environment (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) for Web Push notifications to function. See `.env.local.example` for details.
 - **`GEMINI_API_KEY`** must be set in the deployment env for `app/api/transcribe/route.ts` (voice dictation on the `ReviewSheet` write step). Free tier covers MVP volumes. When unset, the route returns 503 and the mic surfaces a Persian toast; the button itself still renders.
 - **Auth — remaining wiring.** `/login` works end-to-end in dev. Still open:
-  (1) OTP delivery is a static dev code (`123456`) — wire Kavenegar in
+  (1) Static OTP (`123456`) is limited to development; all public auth actions are closed — wire real per-challenge codes and Kavenegar in
   `lib/auth/otp.ts` `sendOtp` once SMS credit is available; (2) sessions are
   HMAC-signed cookies, a deliberate placeholder — migrate to Supabase Auth
   later (keep `getSession`/`setSession`/`clearSession` stable). Deployment
@@ -151,6 +165,10 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-10-01** — Added the existing Cloudflare Worker release path, blocked development OTP in production with user approval, removed chat lint failures with immutable streaming snapshots, and fixed mobile review-button glow overflow. Files: `wrangler.jsonc`, `open-next.config.ts`, `cloudflare/runtime-env.mjs`, `app/(auth)/login/actions.ts`, `components/chat/chat-state.ts`, `components/company/CompanyProfile.tsx`. Gates: 112 tests, TypeScript, full lint, Next/OpenNext build, Wrangler dry run, and 390/1280 browser checks; private Golsar data remains local.
+- **2026-09-30** — Wired the private 22-cafe Golsar catalog into the existing dev homepage, search, categories and CompanyProfile with the global ReviewSheet; old preview links redirect to native profiles. Files: `lib/preview/golsar-server.ts`, `lib/preview/golsar-product.ts`, `app/page.tsx`, `app/search/page.tsx`, `app/company/[slug]/page.tsx`, `components/review/ReviewSheetProvider.tsx`, `docs/golsar-dev-product.md`. 103 tests, TypeScript, scoped lint, build and mobile/desktop browser checks pass; baseline chat lint remains unchanged.
+- **2026-09-29** — Connected the private 22-cafe Golsar preview to the existing dev ReviewSheet with browser save/edit/delete and documented the existing Supabase pilot path. Files: `app/preview/golsar/page.tsx`, `components/preview/GolsarPreview.tsx`, `components/review/ReviewSheet.tsx`, `lib/preview/golsar.ts`, `docs/golsar-local-preview.md`. 91 tests, TypeScript, scoped lint, build and mobile/desktop browser checks pass; full dev lint has existing chat errors.
+- **2026-07-01** — Implemented AI Chatbot for Iranian store evaluations with Google Search grounding (#chat). Includes a new API route `/api/chat` that streams parsed Google grounding metadata and search citations using Gemini 2.5 Flash, a dark glassy RTL chat UI at `/chat` with suggestion chips and custom formatter, and a 12-suite unit test coverage for payloads and HTML parsing. Files: `app/api/chat/{route,route.test}.ts`, `components/chat/ChatClient.tsx`, `app/chat/page.tsx`, `components/layout/Header.tsx`.
 - **2026-05-26** — Built `/notifications` activity feed (#30). Moved the page from `/profile/notifications` to top-level `/notifications` per the issue contract; the old route is now a thin redirect so push-notification deep links and bookmarks don't 404. `public/sw.js` fallback URL updated. The feed is now grouped by calendar day with «امروز» / «دیروز» / Persian-localized full-date headers, courtesy of a new pure helper `components/notifications/groupByDay.ts` (8-test unit suite covers same-day collapse, day-boundary splits, and the relative-header path). The list region carries `aria-live="polite"` so screen readers narrate the unread-count change after mark-as-read fires. Mark-all-read action moved alongside the page to `app/(user)/notifications/actions.ts`. Files: `app/(user)/notifications/{page,actions}.ts(x)`, `app/(user)/profile/notifications/page.tsx`, `components/notifications/{NotificationsList.tsx,groupByDay.ts,groupByDay.test.ts}`, `components/profile/ProfileNav.tsx`, `public/sw.js`, `e2e/notifications.spec.ts`.
 - **2026-05-26** — Polished the review wizard after live QA: (1) the sheet was visibly wobbling on iOS when the keyboard appeared because `max-h-[93dvh]` reflowed mid-animation — switched to `svh` (small viewport height, stable across browser-chrome changes). (2) Gated the infinite `fab-pulse` halo on the submit button to only run when the form is actually submittable (`ready && !pending`) — the constant throb under the CTA was reading as the card vibrating. (3) Added a contextual hint in the action row: while recording, the counter slot reads «ضبط — برای پایان دوباره بزن» (pomegr); while processing, «در حال تبدیل صدا…» (mint). Plumbed via a new `onModeChange` callback on `VoiceDictateButton`. (4) Lowered the body minimum from 30 → 10 chars (both server validator + client progress bar) — 30 was too long a runway for the actual review tone people write. Files: `components/review/ReviewSheet.tsx`, `components/review/VoiceDictateButton.tsx`, `components/review/actions.ts`.
 - **2026-05-26** — Swapped voice-dictation backend from Web Speech API to Gemini 2.5 Flash (follow-up to #90). Chrome's `webkitSpeechRecognition` for `fa-IR` proxies audio to a Google STT endpoint that is unreachable from Iran (surfaced as the `network` error → "no internet" toast even when online). The button now records via `MediaRecorder` and POSTs the blob to a new `app/api/transcribe/route.ts` that forwards inline audio to Gemini and returns the transcript. Route is auth-gated, size-capped (≤1MB), and per-user rate-limited (10/min, in-memory). UX gains a third state ("processing") with a spinner; no streaming partials but accuracy on fa-IR is substantially better than Chrome's. New env var `GEMINI_API_KEY` (logged in `.env.local.example` + §3). E2E rewritten to shim `MediaRecorder` + intercept `/api/transcribe` via `page.route()`; 4 specs cover absent-API, happy path, multi-session stacking, and 503 error toast. Files: `app/api/transcribe/route.ts`, `components/review/VoiceDictateButton.tsx`, `components/review/VoiceDictateButton.test.ts`, `e2e/voice-dictation.spec.ts`, `.env.local.example`.
