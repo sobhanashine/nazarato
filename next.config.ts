@@ -22,6 +22,14 @@ function wpImagePattern() {
 }
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return ["www.nazarato.ir", "nazarato.sobhan-ashineh1.workers.dev"].map(host => ({
+      source: "/:path*",
+      has: [{ type: "host" as const, value: host.replaceAll(".", "\\.") }],
+      destination: "https://nazarato.ir/:path*",
+      permanent: true,
+    }));
+  },
   turbopack: {
     root: projectRoot,
   },
@@ -33,6 +41,10 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/:path+",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }],
+      },
       {
         source: "/(.*)",
         headers: [

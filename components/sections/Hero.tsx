@@ -44,8 +44,8 @@ const auroraSweep =
   "conic-gradient(from 0deg, transparent 0deg, rgba(91, 230, 178, 0.08) 60deg, transparent 120deg, " +
   "rgba(123, 137, 255, 0.07) 180deg, transparent 240deg, rgba(245, 181, 68, 0.06) 300deg, transparent 360deg)";
 
-export function Hero({ businesses }: { businesses?: import("@/lib/data/businesses").Business[] }) {
-  const searches = businesses ? ["سایه", "وک", "آوند", "توحید", "امام علی"] : popularSearches;
+export function Hero({ businesses, earlyAccess = false }: { businesses?: import("@/lib/data/businesses").Business[]; earlyAccess?: boolean }) {
+  const searches = businesses && !earlyAccess ? ["سایه", "وک", "آوند", "توحید", "امام علی"] : popularSearches;
   return (
     <section className="relative overflow-hidden -top-[72px] -mb-[72px] pt-32 pb-12 sm:-top-20 sm:-mb-20 sm:pt-44 sm:pb-24 lg:pt-48 lg:pb-32">
       {/* Slow rotating conic aurora sweep */}
@@ -83,16 +83,16 @@ export function Hero({ businesses }: { businesses?: import("@/lib/data/businesse
               aria-hidden
               className="w-[7px] h-[7px] rounded-full bg-mint shadow-[0_0_0_4px_rgba(91,230,178,0.15),0_0_12px_rgba(91,230,178,0.7)] animate-[pulse_2.4s_ease-in-out_infinite] motion-reduce:animate-none"
             />
-            پلتفرم نظرات واقعی ایرانیان
+            {earlyAccess ? "نسخهٔ اولیهٔ نظراتو" : "پلتفرم نظرات واقعی ایرانیان"}
           </span>
 
           <h1 className="mt-1 text-[2.1rem] sm:text-5xl lg:text-6xl font-extrabold text-strong leading-[1.2] -tracking-[0.025em]">
-            اعتماد کن,{" "}
+            نظراتو؛ اعتماد کن,{" "}
             <strong className="font-[inherit] bg-[linear-gradient(135deg,#5BE6B2_0%,#7B89FF_100%)] bg-clip-text text-transparent [text-shadow:0_0_40px_rgba(91,230,178,0.25)]">
               تجربه کن
             </strong>
             <span className="block mt-3.5 sm:mt-4 text-[0.95rem] sm:text-[1.05rem] font-normal text-muted tracking-normal">
-              {businesses ? "کافه‌های گلسار را پیدا کن و تجربه‌ات را بنویس." : "قبل از خرید، نظر بقیه رو بخون."}
+              {earlyAccess ? "در حال ساخت فضایی برای تجربه‌های واقعی و انتخاب آگاهانه‌تر." : businesses ? "کافه‌های گلسار را پیدا کن و تجربه‌ات را بنویس." : "قبل از خرید، نظر بقیه رو بخون."}
             </span>
           </h1>
 
@@ -116,7 +116,7 @@ export function Hero({ businesses }: { businesses?: import("@/lib/data/businesse
             ))}
           </div>
 
-          <HeroStats items={businesses ? [{ value: businesses.length, label: "کافه در فهرست" }, { value: Math.min(3, businesses.length), label: "کافه برای شروع" }, { value: 0, label: "نظر منتشرشده" }] : undefined} />
+          {!earlyAccess && <HeroStats items={businesses ? [{ value: businesses.length, label: "کافه در فهرست" }, { value: Math.min(3, businesses.length), label: "کافه برای شروع" }, { value: 0, label: "نظر منتشرشده" }] : undefined} />}
         </div>
       </Container>
     </section>

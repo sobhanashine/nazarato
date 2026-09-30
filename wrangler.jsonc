@@ -7,6 +7,10 @@
   "workers_dev": true,
   "preview_urls": false,
   "keep_vars": true,
+  "routes": [
+    { "pattern": "nazarato.ir", "custom_domain": true },
+    { "pattern": "www.nazarato.ir", "custom_domain": true }
+  ],
   "alias": {
     "./next-env.mjs": "./cloudflare/runtime-env.mjs"
   },

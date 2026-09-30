@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useReviewSheet } from "@/components/review/ReviewSheetProvider";
 import { Container } from "@/components/ui/Container";
 
-export function HowItWorks() {
+export function HowItWorks({ earlyAccess = false }: { earlyAccess?: boolean }) {
   const { openReviewSheet } = useReviewSheet();
 
   return (
@@ -31,16 +31,16 @@ export function HowItWorks() {
               </h2>
               
               <p className="text-[14px] sm:text-[15.5px] text-muted leading-[1.8] max-w-[620px] mb-8 font-normal">
-                نظراتو پلتفرمی آزاد برای اشتراک‌گذاری تجربه‌های واقعی خرید شماست. مأموریت ما کمک به خریداران برای انتخابی آگاهانه‌تر در خرید از برندهای بزرگ ایرانی و فروشگاه‌های اینستاگرامی است. از سوی دیگر، به کسب‌وکارهای متعهد کمک می‌کنیم تا با شنیدن صدای مشتریان خود بهبود یابند.
+                نظراتو در حال ساخت فضایی مستقل برای اشتراک‌گذاری تجربه‌های واقعی درباره کسب‌وکارهای ایرانی است. می‌خواهیم انتخاب یک کافه، فروشگاه یا خدمت بر پایهٔ تجربهٔ آدم‌ها آسان‌تر شود و کسب‌وکارها بتوانند صدای مشتریانشان را بشنوند.
               </p>
               
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-                <button
+                {!earlyAccess && <button
                   onClick={() => openReviewSheet()}
                   className="inline-flex items-center justify-center px-6 py-3.5 rounded-full bg-strong text-[#06080f] font-extrabold text-[14.5px] transition-all duration-200 hover:bg-white hover:scale-[1.02] active:scale-98 shadow-md cursor-pointer w-full sm:w-auto text-center"
                 >
                   ثبت تجربه خرید شما
-                </button>
+                </button>}
                 <Link
                   href="/about"
                   className="inline-flex items-center justify-center px-6 py-3.5 rounded-full bg-glass border border-glass-border hover:bg-glass-hover hover:border-glass-border-hi text-[14px] text-strong font-medium transition-all duration-200 w-full sm:w-auto text-center"
@@ -59,11 +59,11 @@ export function HowItWorks() {
                 
                 <div className="relative z-10">
                   <h3 className="text-[1.2rem] sm:text-[1.3rem] font-extrabold text-strong mb-3">
-                    سیستم نقد تأییدشده ما فعال شد!
+                    {earlyAccess ? "نسخهٔ اولیه، در حال توسعه" : "مسیر بررسی تجربه‌های واقعی"}
                   </h3>
                   
                   <p className="text-[12.5px] sm:text-[13.5px] text-muted leading-[1.7] mb-6">
-                    ما با بررسی تصاویر فاکتور خرید، پیامک پرداخت یا اسکرین‌شات دایرکت اینستاگرام، اصالت نظرات خریداران را راستی‌آزمایی می‌کنیم تا نظرات فیک یا تبلیغاتی جایی در نظراتو نداشته باشند.
+                    {earlyAccess ? "این صفحه شروع مسیر نظراتو است. ثبت نظر با حساب واقعی و تأیید مالکیت کسب‌وکار هنوز آمادهٔ استفادهٔ عمومی نیستند. معرفی کسب‌وکارها و تجربه‌های واقعی را به‌تدریج به محصول اضافه می‌کنیم." : "تجربهٔ کاربران و تأیید مالکیت کسب‌وکار دو موضوع جدا هستند. قبل از انتشار هر نظر باید روشن باشد تجربه از کجا آمده و چه بررسی‌ای روی آن انجام شده است."}
                   </p>
                 </div>
 
@@ -73,7 +73,7 @@ export function HowItWorks() {
                     href="/about#verification"
                     className="w-full sm:w-auto text-center inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-glass-border hover:border-mint/40 text-[13px] text-strong font-semibold transition-all duration-200 hover:bg-mint/5"
                   >
-                    ببینید چطور کار می‌کند
+                    {earlyAccess ? "با نظراتو آشنا شوید" : "ببینید چطور کار می‌کند"}
                   </Link>
 
                   {/* Overlapping Interlocking Circles graphic */}

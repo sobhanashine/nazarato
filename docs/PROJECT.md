@@ -60,6 +60,12 @@ non-trivial task starts by reading this file and ends by updating it.
 - Dashboard variables are preserved with `keep_vars`. Supabase service-role and JWT signing key stay in Cloudflare Secrets. The alias to `cloudflare/runtime-env.mjs` prevents OpenNext from bundling `.env*` fallbacks into uploaded code; local Worker tests use ignored `.dev.vars`. See `docs/cloudflare-release.md` for settings and verification.
 - OTP start, resend, verification, and profile completion reject outside development. Public login must remain closed until real SMS delivery and per-challenge verification are implemented. `GEMINI_API_KEY` is required for both AI chat and server dictation; missing configuration returns 503.
 
+### Public domain and early SEO
+
+- `nazarato.ir` is the canonical production domain. `wrangler.jsonc` declares the apex and `www` custom domains; `next.config.ts` redirects `www` and the known `workers.dev` alias to HTTPS apex while retaining path/query.
+- Only `/` is ready for indexing. It uses brand/canonical/social metadata from `lib/site.ts`; `app/sitemap.ts` includes that page only. `app/robots.ts` allows crawlers to read document-level directives while excluding `/api/`. Root metadata and the non-home `X-Robots-Tag` keep unfinished pages noindex, even if a child overrides metadata.
+- The production homepage is an early-product introduction using the existing design; sample reviews, counts, ratings and inactive feature promises are excluded. Development retains the Golsar preview. No database records were modified. Expand indexing only after real catalog/content readiness; crawl permission is not proof of Google indexing. See `docs/domain-seo-launch.md`.
+
 ### Headless WordPress (blog)
 
 - Client: `lib/wp.ts`. Reads `WP_API_URL` env var.
@@ -165,6 +171,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-10-01** — Prepared the canonical main-domain release and truthful early SEO homepage, with home-only sitemap/indexing and noindex on unfinished documents. Existing design and private Golsar development behavior remain. Files: `lib/site.ts`, `app/{page,layout,robots,sitemap}.tsx/ts`, `next.config.ts`, `wrangler.jsonc`, `docs/domain-seo-launch.md`. Gates: 115 tests, TypeScript, full lint, Next/OpenNext build, Wrangler dry run, mobile/desktop browser and local HTTP checks. Provider connection and Search Console verification are recorded on Trello task 23.
 - **2026-10-01** — Added the existing Cloudflare Worker release path, blocked development OTP in production with user approval, removed chat lint failures with immutable streaming snapshots, and fixed mobile review-button glow overflow. Files: `wrangler.jsonc`, `open-next.config.ts`, `cloudflare/runtime-env.mjs`, `app/(auth)/login/actions.ts`, `components/chat/chat-state.ts`, `components/company/CompanyProfile.tsx`. Gates: 112 tests, TypeScript, full lint, Next/OpenNext build, Wrangler dry run, and 390/1280 browser checks; private Golsar data remains local.
 - **2026-09-30** — Wired the private 22-cafe Golsar catalog into the existing dev homepage, search, categories and CompanyProfile with the global ReviewSheet; old preview links redirect to native profiles. Files: `lib/preview/golsar-server.ts`, `lib/preview/golsar-product.ts`, `app/page.tsx`, `app/search/page.tsx`, `app/company/[slug]/page.tsx`, `components/review/ReviewSheetProvider.tsx`, `docs/golsar-dev-product.md`. 103 tests, TypeScript, scoped lint, build and mobile/desktop browser checks pass; baseline chat lint remains unchanged.
 - **2026-09-29** — Connected the private 22-cafe Golsar preview to the existing dev ReviewSheet with browser save/edit/delete and documented the existing Supabase pilot path. Files: `app/preview/golsar/page.tsx`, `components/preview/GolsarPreview.tsx`, `components/review/ReviewSheet.tsx`, `lib/preview/golsar.ts`, `docs/golsar-local-preview.md`. 91 tests, TypeScript, scoped lint, build and mobile/desktop browser checks pass; full dev lint has existing chat errors.
