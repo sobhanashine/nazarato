@@ -33,7 +33,7 @@ export function IgShopCard({ shop, isBookmarked }: IgShopCardProps) {
       <div className="min-w-0 flex flex-col gap-[3px] flex-1">
         <span className="inline-flex items-center gap-1.5 text-[0.95rem] font-semibold text-strong whitespace-nowrap overflow-hidden text-ellipsis">
           {s.name}
-          <span
+          {s.verified && <span
             className="inline-flex w-[14px] h-[14px] text-lapis [filter:drop-shadow(0_0_6px_rgba(123,137,255,0.55))] shrink-0 [&_svg]:w-[14px] [&_svg]:h-[14px]"
             aria-label="فروشگاه تایید شده"
             title="تایید شده"
@@ -42,7 +42,7 @@ export function IgShopCard({ shop, isBookmarked }: IgShopCardProps) {
               <path d="M7 .8l1.6 1.4 2.1-.2.6 2 1.9 1-.8 2 .8 2-1.9 1-.6 2-2.1-.2L7 13.2 5.4 11.8l-2.1.2-.6-2-1.9-1 .8-2-.8-2 1.9-1 .6-2 2.1.2z" fill="currentColor" />
               <path d="M4.4 7.1l1.9 1.8 3.3-3.6" fill="none" stroke="#06121f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </span>
+          </span>}
         </span>
         <span className="text-[0.8rem] text-muted ltr text-right whitespace-nowrap overflow-hidden text-ellipsis opacity-90" dir="ltr">
           {s.handle}

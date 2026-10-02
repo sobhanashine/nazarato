@@ -30,7 +30,6 @@ import { useSessionStatus } from "@/components/layout/useSessionStatus";
 import { BTN_PRIMARY } from "@/components/ui/styles";
 import type { Business } from "@/lib/data/businesses";
 import { submitQuickReview } from "./actions";
-import { VoiceDictateButton, type VoiceMode } from "./VoiceDictateButton";
 
 /** A business the sheet can open with already selected (skips the picker). */
 export type ReviewPrefill = { slug: string; name: string };
@@ -623,7 +622,6 @@ function WriteStep({
   const len = body.trim().length;
   const ready = len >= BODY_MIN;
   const progress = Math.min(len / BODY_MIN, 1) * 100;
-  const [voiceMode, setVoiceMode] = useState<VoiceMode>("idle");
 
   return (
     <div>
@@ -657,49 +655,13 @@ function WriteStep({
           className="w-full resize-none rounded-xl border border-glass-border bg-white/[0.03] px-4 py-3.5 text-[16px] leading-[2] text-white placeholder:text-white/25 outline-none transition-colors focus:border-mint focus:bg-mint/[0.05]"
         />
 
-        {/* Action row: status label · progress bar · mic (trailing in RTL).
-            The label slot is contextual — during recording it tells the user
-            to tap the mic again to finish, since first-time voice users don't
-            realise the transcript only lands after they stop. */}
         <div className="mt-2.5 flex items-center gap-3">
-          <span
-            aria-live="polite"
-            className={`shrink-0 text-[11px] font-bold ${
-              voiceMode === "recording"
-                ? "text-pomegr"
-                : voiceMode === "processing"
-                  ? "text-mint"
-                  : ready
-                    ? "text-mint"
-                    : "text-muted"
-            }`}
-          >
-            {voiceMode === "recording"
-              ? "ضبط — برای پایان دوباره بزن"
-              : voiceMode === "processing"
-                ? "در حال تبدیل صدا…"
-                : ready
-                  ? "آماده‌ی ثبت"
-                  : `${fa(len)} از ${fa(BODY_MIN)}`}
+          <span aria-live="polite" className={`shrink-0 text-[11px] font-bold ${ready ? "text-mint" : "text-muted"}`}>
+            {ready ? "آماده‌ی ثبت" : `${fa(len)} از ${fa(BODY_MIN)}`}
           </span>
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-            <div
-              className={`h-full rounded-full transition-[width,background-color] duration-300 ${
-                ready ? "bg-mint" : "bg-saffron"
-              }`}
-              style={{ width: `${progress}%` }}
-            />
+            <div className={`h-full rounded-full transition-[width,background-color] duration-300 ${ready ? "bg-mint" : "bg-saffron"}`} style={{ width: `${progress}%` }} />
           </div>
-          {!localOnly && <VoiceDictateButton
-            onModeChange={setVoiceMode}
-            onAppend={(t) =>
-              // Functional updater — without it the closure captures `body`
-              // once per recording session, so multiple final transcripts
-              // during a `continuous=true` run would all overwrite the same
-              // snapshot instead of stacking.
-              setBody((prev) => (prev.length > 0 ? `${prev.trimEnd()} ${t}` : t))
-            }
-          />}
         </div>
 
         {error && (

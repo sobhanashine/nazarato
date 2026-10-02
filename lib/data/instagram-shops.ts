@@ -14,6 +14,7 @@ export type InstagramShop = {
   color: string;
   score: string;
   reviews: string;
+  verified?: boolean;
 };
 
 export const nicheTabs: { id: Niche; label: string }[] = [
@@ -74,6 +75,7 @@ export function mapDbRowToInstagramShop(b: DbInstagramShopRow): InstagramShop {
     color: b.color,
     score: b.review_count > 0 ? scoreVal.toLocaleString("fa-IR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "—",
     reviews: b.review_count.toLocaleString("fa-IR"),
+    verified: b.verified === true,
   };
 }
 
@@ -92,7 +94,8 @@ export async function getInstagramShopsFromDb(options?: {
 
   let query = supabase
     .from("businesses")
-    .select("*", { count: "exact" })
+    .select("*, business_sources!inner(status)", { count: "exact" })
+    .eq("business_sources.status", "approved")
     .eq("type", "ig_shop")
     .in("status", ["active", "merged"]);
 
@@ -139,7 +142,9 @@ export async function getShopByHandle(
   // 1. Fetch shop row
   const { data: bRaw, error: bError } = await supabase
     .from("businesses")
-    .select("*")
+    .select("*, business_sources!inner(status)")
+    .in("status", ["active", "merged"])
+    .eq("business_sources.status", "approved")
     .eq("type", "ig_shop")
     .eq("slug", handle)
     .single();
@@ -224,7 +229,8 @@ export async function getShopByHandle(
   let similarSlugs: string[] = [];
   const { data: similarData } = await supabase
     .from("businesses")
-    .select("slug")
+    .select("slug, business_sources!inner(status)")
+    .eq("business_sources.status", "approved")
     .eq("type", "ig_shop")
     .eq("category_slug", b.category_slug)
     .eq("status", "active")
@@ -258,7 +264,9 @@ export async function getSimilarShops(shop: BusinessDetail): Promise<InstagramSh
   const nicheId = nicheTabs.find((t) => t.label === shop.category)?.id || "";
   const { data, error } = await supabase
     .from("businesses")
-    .select("*")
+    .select("*, business_sources!inner(status)")
+    .in("status", ["active", "merged"])
+    .eq("business_sources.status", "approved")
     .eq("type", "ig_shop")
     .eq("category_slug", nicheId)
     .eq("status", "active")

@@ -1,6 +1,9 @@
-import { getLocalGolsarCafes } from "@/lib/preview/golsar-server";
+import { getDiscoveryCatalog } from "@/lib/data/discovery";
+import { getPreferredArea } from "@/lib/local-area-server";
+import { LocalDiscovery } from "@/components/search/LocalDiscovery";
+import { parseSearchParams, searchCategories } from "@/lib/search";
+import { businessInArea } from "@/lib/local-area";
 import { golsarCategories } from "@/lib/preview/golsar-categories";
-import { toGolsarBusiness } from "@/lib/preview/golsar-product";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { ReviewSheetAutoOpen } from "@/components/review/ReviewSheetAutoOpen";
@@ -32,18 +35,22 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const cafes = await getLocalGolsarCafes();
-  const businesses = cafes?.map(toGolsarBusiness);
+  const { businesses, local } = await getDiscoveryCatalog();
+  const area = await getPreferredArea();
+  const query = parseSearchParams({ area }, businesses);
+  const localBusinesses = businesses.filter(b => businessInArea(b, area));
   const earlyAccess = process.env.NODE_ENV !== "development";
   return (
     <>
       <Header />
-      <Hero businesses={earlyAccess ? [] : businesses} earlyAccess={earlyAccess} />
+      <Hero businesses={localBusinesses} earlyAccess={earlyAccess}>
+        <LocalDiscovery key={area} query={query} categories={searchCategories(localBusinesses)} home />
+      </Hero>
       <main>
         {!earlyAccess && <RecentReviews cafes={businesses} />}
         <HowItWorks earlyAccess={earlyAccess} />
-        <Categories items={cafes ? golsarCategories() : undefined} local={cafes !== null} />
-        {!earlyAccess && cafes === null && <InstagramShops />}
+        <Categories items={local ? golsarCategories() : undefined} local={local} />
+        {!earlyAccess && !local && <InstagramShops />}
         {!earlyAccess && <HowToReview businesses={businesses} />}
         {!earlyAccess && <ForBusinessCTA />}
         {!earlyAccess && <Blog />}

@@ -54,11 +54,17 @@ non-trivial task starts by reading this file and ends by updating it.
 - The optional Golsar catalog feeds the existing homepage, `/search`, `/categories`, and native `/company/[slug]` pages through `lib/preview/golsar-server.ts`. It requires development, `NAZARATO_LOCAL_PREVIEW=true`, and a loopback Host. The global `ReviewSheet` saves browser-only experiences; native profile bookmarks are also browser-only. `/preview/golsar#cafe/<PlaceID>` redirects to the native product profile. The snapshot at `data/private/golsar-pilot.json` is ignored by Git and excluded from all route traces; production never reads it.
 - Source reconciliation and migration verification precede real pilot review collection. See `docs/golsar-local-preview.md` for the scope and database path.
 
+### Local discovery and public supply
+
+- `lib/data/discovery.ts` supplies the homepage, search, and global review picker with approved public-source businesses in active/merged status. It projects a validated DTO, excludes private info labels, reads at most 250 newest records for this MVP, and fails empty without fixture fallbacks. Direct company/shop profiles and related lists use the same source/status gate. This is a visibility boundary, not a destructive cleanup or a claim that all existing reviews are real.
+- `lib/local-area.ts` defines Rasht, Golsar and surroundings, Imam Ali, Tohid and all supplied areas. Street matching uses address fields, not business names. `lib/local-area-server.ts` reads the allowlisted preference cookie; an explicit URL area wins. `LocalDiscovery` remembers only the chosen area for 180 days. Cafe links clear restrictive filters and text, while text search, sorting and pagination retain area. No device geolocation is requested.
+- Source-only local cafes remain development-only with zero imported opinions, zero owner-verification claims and browser-only experience storage. Public approval/import and test-data reconciliation are tracked separately; see `docs/production-readiness.md`.
+
 ### Cloudflare Workers deployment
 
 - The existing Worker is `nazarato`; its Git integration deploys `main`. OpenNext 1.20.7 adapts the regular Next build, and Wrangler 4.145.0 uploads `.open-next/worker.js` plus ASSETS. Run `npm run build:cloudflare`, then `npm run preview:cloudflare`; `npm run deploy:cloudflare` builds and publishes. Dashboard build command is `npm run build:cloudflare`, deploy command is `npx wrangler deploy`.
 - Dashboard variables are preserved with `keep_vars`. Supabase service-role and JWT signing key stay in Cloudflare Secrets. The alias to `cloudflare/runtime-env.mjs` prevents OpenNext from bundling `.env*` fallbacks into uploaded code; local Worker tests use ignored `.dev.vars`. See `docs/cloudflare-release.md` for settings and verification.
-- OTP start, resend, verification, and profile completion reject outside development. Public login must remain closed until real SMS delivery and per-challenge verification are implemented. `GEMINI_API_KEY` is required for both AI chat and server dictation; missing configuration returns 503.
+- OTP start, resend, verification, and profile completion reject outside development. Public login remains closed until real SMS delivery and per-challenge verification are implemented. `GEMINI_API_KEY` is needed only for AI chat; missing configuration returns 503. Voice input is retired and `/api/transcribe` returns 410 without processing audio.
 
 ### Public domain and early SEO
 
@@ -66,9 +72,9 @@ non-trivial task starts by reading this file and ends by updating it.
 - Only `/` is ready for indexing. It uses brand/canonical/social metadata from `lib/site.ts`; `app/sitemap.ts` includes that page only. `app/robots.ts` allows crawlers to read document-level directives while excluding `/api/`. Root metadata and the non-home `X-Robots-Tag` keep unfinished pages noindex, even if a child overrides metadata.
 - The production homepage is an early-product introduction using the existing design; sample reviews, counts, ratings and inactive feature promises are excluded. Development retains the Golsar preview. No database records were modified. Expand indexing only after real catalog/content readiness; crawl permission is not proof of Google indexing. See `docs/domain-seo-launch.md`.
 
-### Headless WordPress (blog)
+### Repository blog and optional WordPress
 
-- Client: `lib/wp.ts`. Reads `WP_API_URL` env var.
+- With no `WP_API_URL`, blog listing and detail routes use repository articles in `lib/data/blog-posts.ts`. No WordPress installation is required. The optional client is `lib/wp.ts`.
 - `next.config.ts:7-22` whitelists the WordPress host's `/wp-content/uploads/**` for `next/image`.
 - Background notes: `docs/headless-wordpress-blog.md`.
 - Routes that consume it: `app/blog/page.tsx`, `app/blog/[slug]/page.tsx`.
@@ -149,17 +155,15 @@ Set globally in `next.config.ts:31-40`:
 
 ## 3. Open items / known gaps
 
-- **WP_API_URL** must be set in the deployment env or `lib/wp.ts` calls will
-  fail. Not yet documented in a `.env.example`.
 - **Web Push (VAPID) keys** must be generated and set in the deployment environment (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) for Web Push notifications to function. See `.env.local.example` for details.
-- **`GEMINI_API_KEY`** must be set in the deployment env for `app/api/transcribe/route.ts` (voice dictation on the `ReviewSheet` write step). Free tier covers MVP volumes. When unset, the route returns 503 and the mic surfaces a Persian toast; the button itself still renders.
+- **AI chat** needs a production `GEMINI_API_KEY`. Voice input is removed and needs no service.
 - **Auth — remaining wiring.** `/login` works end-to-end in dev. Still open:
   (1) Static OTP (`123456`) is limited to development; all public auth actions are closed — wire real per-challenge codes and Kavenegar in
   `lib/auth/otp.ts` `sendOtp` once SMS credit is available; (2) sessions are
   HMAC-signed cookies, a deliberate placeholder — migrate to Supabase Auth
   later (keep `getSession`/`setSession`/`clearSession` stable). Deployment
   note: run all migrations under `supabase/migrations/` on every new Supabase environment.
-- **Contact form delivery.** `app/contact/actions.ts` validates and logs but does not yet send email / write to DB. Wire to a transactional provider (or a `contact_messages` table) before launch.
+- **Contact intake** validates and persists to `contact_submissions` (migration 0013); DB errors are shown to the user. Email notifications are separate and optional. The configured database table was read-verified on 2026-10-02.
 - **Pre-launch open routes.** `/profile/edit`, `/settings/security`, `/help`, `/admin` (overview), `/admin/reports`, `/admin/businesses`, `/admin/users` are still 📋. See `docs/journey-of-nazarato.md` for the prioritized launch backlog.
 
 
@@ -171,6 +175,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-10-02** — Added explicit local area selection, remembered preference and one-click cafe discovery to the existing design; public search/profile supply now requires approved sources and eligible status with no sample fallback. Removed voice input and retired audio submissions with 410. Files: `lib/local-area*.ts`, `lib/data/discovery.ts`, `components/search/LocalDiscovery.tsx`, `app/{page,search/page}.tsx`, `components/review/ReviewSheet.tsx`, `app/api/transcribe/route.ts`. Gates: 127 tests, TypeScript, full lint, Cloudflare build, mobile/desktop discovery and text-review browser checks. Same Supabase, repository blog and remaining service inputs documented in `docs/production-readiness.md`.
 - **2026-10-01** — Prepared the canonical main-domain release and truthful early SEO homepage, with home-only sitemap/indexing and noindex on unfinished documents. Existing design and private Golsar development behavior remain. Files: `lib/site.ts`, `app/{page,layout,robots,sitemap}.tsx/ts`, `next.config.ts`, `wrangler.jsonc`, `docs/domain-seo-launch.md`. Gates: 115 tests, TypeScript, full lint, Next/OpenNext build, Wrangler dry run, mobile/desktop browser and local HTTP checks. Provider connection and Search Console verification are recorded on Trello task 23.
 - **2026-10-01** — Added the existing Cloudflare Worker release path, blocked development OTP in production with user approval, removed chat lint failures with immutable streaming snapshots, and fixed mobile review-button glow overflow. Files: `wrangler.jsonc`, `open-next.config.ts`, `cloudflare/runtime-env.mjs`, `app/(auth)/login/actions.ts`, `components/chat/chat-state.ts`, `components/company/CompanyProfile.tsx`. Gates: 112 tests, TypeScript, full lint, Next/OpenNext build, Wrangler dry run, and 390/1280 browser checks; private Golsar data remains local.
 - **2026-09-30** — Wired the private 22-cafe Golsar catalog into the existing dev homepage, search, categories and CompanyProfile with the global ReviewSheet; old preview links redirect to native profiles. Files: `lib/preview/golsar-server.ts`, `lib/preview/golsar-product.ts`, `app/page.tsx`, `app/search/page.tsx`, `app/company/[slug]/page.tsx`, `components/review/ReviewSheetProvider.tsx`, `docs/golsar-dev-product.md`. 103 tests, TypeScript, scoped lint, build and mobile/desktop browser checks pass; baseline chat lint remains unchanged.
