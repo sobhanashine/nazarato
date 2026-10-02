@@ -69,6 +69,7 @@ export function SearchBox({ query, businesses }: { query: SearchQuery; businesse
       </div>
 
       {/* Carry the active filters through a fresh text search. */}
+      <input type="hidden" name="area" value={query.area} />
       {query.type !== "all" && (
         <input type="hidden" name="type" value={query.type} />
       )}

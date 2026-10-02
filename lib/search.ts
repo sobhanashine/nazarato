@@ -5,22 +5,15 @@
  * parses params, calls `runSearch`, and renders. Keeping the logic here means
  * it can be unit-tested directly once a test runner is wired (PROJECT.md §3).
  *
- * Data sources are the fixture lists in `lib/data/` — `businessDetails` carries
- * a real review array (so an average + count can be derived), while IG-shop
- * `score`/`reviews` are pre-formatted Persian-numeral strings that have to be
- * parsed back into numbers for filtering and sorting.
+ * Supply is explicit: approved public DTOs or the isolated local preview.
+ * Missing supply stays empty, including typeahead and category discovery.
  */
 
 import { normalizeGolsarText } from "@/lib/preview/golsar";
 
+import type { Business } from "@/lib/data/businesses";
+import { businessInArea, resolveArea, type SearchArea } from "@/lib/local-area";
 import {
-  businessDetails,
-  featuredBusinesses,
-  ratingStats,
-  type Business,
-} from "@/lib/data/businesses";
-import {
-  instagramShops,
   nicheTabs,
   type InstagramShop,
 } from "@/lib/data/instagram-shops";
@@ -31,6 +24,7 @@ export type SortKey = "relevant" | "rating" | "reviews" | "newest";
 /** Normalized, validated query — the only shape the rest of the page sees. */
 export type SearchQuery = {
   q: string;
+  area: SearchArea;
   type: SearchType;
   categories: string[];
   minRating: number; // 0 = any
@@ -76,8 +70,8 @@ export const TYPE_TABS: { id: SearchType; label: string }[] = [
 ];
 
 /** Distinct business categories, for the sidebar filter. */
-export function searchCategories(businesses?: Business[]): string[] {
-  return [...new Set((businesses ?? businessDetails).map((b) => b.category))].sort((a, b) =>
+export function searchCategories(businesses: Business[] = []): string[] {
+  return [...new Set(businesses.map((b) => b.category))].sort((a, b) =>
     a.localeCompare(b, "fa"),
   );
 }
@@ -108,55 +102,14 @@ export type SearchSuggestion = {
  * (`/company/[slug]`; IG shops use their `href`, which becomes `/shop/[handle]`
  * once that route is built — #22).
  */
-export function suggestBusinesses(query: string, limit = 6, businesses?: Business[]): SearchSuggestion[] {
-  if (businesses !== undefined) {
-    const q = normalizeGolsarText(query);
-    if (q.length < 2) return [];
-    return businesses.filter(b => normalizeGolsarText(`${b.name} ${b.category} ${b.city} ${b.searchText ?? ""}`).includes(q)).slice(0, limit).map(b => ({ href: `/company/${b.slug}`, name: b.name, meta: `${b.category} · ${b.city}`, initial: b.initial, color: b.color, score: b.score }));
-  }
-  const q = query.trim().toLowerCase();
+export function suggestBusinesses(query: string, limit = 6, businesses: Business[] = []): SearchSuggestion[] {
+  const q = normalizeGolsarText(query);
   if (q.length < 2) return [];
-
-  type Candidate = { rank: number; score: number; row: SearchSuggestion };
-  const candidates: Candidate[] = [];
-
-  businessDetails.forEach((d, i) => {
-    if (!`${d.name} ${d.category} ${d.city}`.toLowerCase().includes(q)) return;
-    candidates.push({
-      rank: rankName(d.name, q),
-      score: ratingStats(d.reviews).average,
-      row: {
-        href: `/company/${d.slug}`,
-        name: d.name,
-        meta: `${d.category} · ${d.city}`,
-        initial: d.initial,
-        color: d.color,
-        score: featuredBusinesses[i].score,
-      },
-    });
-  });
-
-  instagramShops.forEach((s) => {
-    const hay = `${s.name} ${s.handle} ${nicheLabel(s.niche)}`.toLowerCase();
-    if (!hay.includes(q)) return;
-    candidates.push({
-      rank: rankName(s.name, q),
-      score: faToNum(s.score),
-      row: {
-        href: s.href,
-        name: s.name,
-        meta: s.handle,
-        initial: s.initial,
-        color: s.color,
-        score: s.score,
-      },
-    });
-  });
-
-  return candidates
-    .sort((a, b) => a.rank - b.rank || b.score - a.score)
+  return businesses
+    .filter(b => normalizeGolsarText(`${b.name} ${b.category} ${b.city} ${b.searchText ?? ""}`).includes(q))
+    .sort((a, b) => rankName(normalizeGolsarText(a.name), q) - rankName(normalizeGolsarText(b.name), q))
     .slice(0, limit)
-    .map((c) => c.row);
+    .map(b => ({ href: `/company/${b.slug}`, name: b.name, meta: `${b.category} · ${b.city}`, initial: b.initial, color: b.color, score: b.score }));
 }
 
 /** Parse a Persian-numeral string (e.g. `"۴.۸"`, `"۳۲۵"`) into a number. */
@@ -179,38 +132,10 @@ type Enriched = SearchHit & {
   category: string | null; // business category; null for IG shops
 };
 
-/**
- * Built once at module load. `featuredBusinesses` is `businessDetails` mapped
- * to card shape in the same order, so index `i` lines them up.
- */
-const ENRICHED: Enriched[] = [
-  ...businessDetails.map((d, i): Enriched => {
-    const { average, count } = ratingStats(d.reviews);
-    return {
-      kind: "company",
-      business: featuredBusinesses[i],
-      scoreNum: average,
-      reviewCount: count,
-      order: i,
-      verified: Boolean(d.verified),
-      haystack: `${d.name} ${d.category} ${d.city}`.toLowerCase(),
-      category: d.category,
-    };
-  }),
-  ...instagramShops.map((s, i): Enriched => ({
-    kind: "shop",
-    shop: s,
-    scoreNum: faToNum(s.score),
-    reviewCount: faToNum(s.reviews),
-    order: i,
-    verified: true, // IG-shop cards always render the verified badge
-    haystack: `${s.name} ${s.handle} ${nicheLabel(s.niche)}`.toLowerCase(),
-    category: null,
-  })),
-];
-
 /** Does a row pass every filter? `ignoreType` skips the همه/کسب‌وکار/اینستا cut. */
 function passes(e: Enriched, query: SearchQuery, ignoreType: boolean): boolean {
+  if (e.kind === "company" && !businessInArea(e.business, query.area)) return false;
+  if (e.kind === "shop" && query.area !== "all") return false;
   if (query.q && !normalizeGolsarText(e.haystack).includes(normalizeGolsarText(query.q))) return false;
 
   if (!ignoreType) {
@@ -263,10 +188,13 @@ function comparator(sort: SortKey, q: string) {
 }
 
 /** Run the full pipeline: filter → count → sort → paginate. */
-export function runSearch(query: SearchQuery, businesses?: Business[]): SearchResult {
-  const source: Enriched[] = businesses === undefined ? ENRICHED : businesses.map((business, order) => ({
+export function runSearch(query: SearchQuery, businesses: Business[] = [], shops: InstagramShop[] = []): SearchResult {
+  const source: Enriched[] = [...businesses.map((business, order): Enriched => ({
     kind: "company", business, order, scoreNum: faToNum(business.score), reviewCount: business.reviewCount ?? faToNum(business.reviews), verified: business.verified === true, haystack: `${business.name} ${business.category} ${business.city} ${business.searchText ?? ""}`, category: business.category,
-  }));
+  })), ...shops.map((shop, order): Enriched => ({
+    kind: "shop", shop, order, scoreNum: faToNum(shop.score), reviewCount: faToNum(shop.reviews), verified: shop.verified === true,
+    haystack: `${shop.name} ${shop.handle} ${nicheLabel(shop.niche)}`, category: null,
+  }))];
   // Per-tab counts ignore the type filter so each tab shows its own total.
   const matched = source.filter((e) => passes(e, query, true));
   const counts = {
@@ -332,7 +260,7 @@ export function parseSearchParams(raw: RawParams, businesses?: Business[]): Sear
   const page = Number.isFinite(pageNum) && pageNum > 1 ? pageNum : 1;
 
   // IG shops have no business category — drop categories when on that tab.
-  const validCategories = new Set((businesses ?? businessDetails).map((b) => b.category));
+  const validCategories = new Set(["کافه", ...(businesses ?? []).map((b) => b.category)]);
   const categories =
     type === "insta"
       ? []
@@ -340,6 +268,7 @@ export function parseSearchParams(raw: RawParams, businesses?: Business[]): Sear
 
   return {
     q: firstString(raw.q).trim().slice(0, 100),
+    area: resolveArea(Array.isArray(raw.area) ? raw.area[0] : raw.area),
     type,
     categories,
     minRating,
@@ -364,6 +293,7 @@ export function searchHref(
   if (next.type === "insta") next.categories = [];
 
   const sp = new URLSearchParams();
+  sp.set("area", next.area);
   if (next.q) sp.set("q", next.q);
   if (next.type !== "all") sp.set("type", next.type);
   for (const c of next.categories) sp.append("category", c);

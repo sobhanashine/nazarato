@@ -1,5 +1,4 @@
-import { getLocalGolsarCafes } from "@/lib/preview/golsar-server";
-import { toGolsarBusiness } from "@/lib/preview/golsar-product";
+import { getDiscoveryCatalog } from "@/lib/data/discovery";
 import type { Metadata, Viewport } from "next";
 import { Vazirmatn } from "next/font/google";
 import { SmflowWidget } from "@/components/integrations/SmflowWidget";
@@ -9,7 +8,6 @@ import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { RegisterSW } from "@/components/pwa/RegisterSW";
 import { ToastProvider } from "@/components/providers/ToastProvider";
 import { ReviewSheetProvider } from "@/components/review/ReviewSheetProvider";
-import { featuredBusinesses } from "@/lib/data/businesses";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -62,7 +60,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cafes = await getLocalGolsarCafes();
+  const { businesses, local } = await getDiscoveryCatalog();
   return (
     <html
       lang="fa"
@@ -72,7 +70,7 @@ export default async function RootLayout({
     >
       <body className="relative min-h-screen overflow-x-hidden bg-[#06080f] text-strong antialiased [text-rendering:optimizeLegibility] selection:bg-mint/35 selection:text-white pb-[calc(76px+env(safe-area-inset-bottom))] md:pb-0">
         <Backdrop />
-        <ReviewSheetProvider businesses={cafes?.map(toGolsarBusiness) ?? (process.env.NODE_ENV === "development" ? featuredBusinesses : [])} localPreview={cafes !== null}>
+        <ReviewSheetProvider businesses={businesses} localPreview={local}>
           {children}
           <MobileTabBar />
         </ReviewSheetProvider>

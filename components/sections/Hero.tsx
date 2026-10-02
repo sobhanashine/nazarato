@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { HeroSearch } from "@/components/sections/HeroSearch";
 import { HeroStats } from "@/components/sections/HeroStats";
@@ -44,7 +45,7 @@ const auroraSweep =
   "conic-gradient(from 0deg, transparent 0deg, rgba(91, 230, 178, 0.08) 60deg, transparent 120deg, " +
   "rgba(123, 137, 255, 0.07) 180deg, transparent 240deg, rgba(245, 181, 68, 0.06) 300deg, transparent 360deg)";
 
-export function Hero({ businesses, earlyAccess = false }: { businesses?: import("@/lib/data/businesses").Business[]; earlyAccess?: boolean }) {
+export function Hero({ businesses, earlyAccess = false, children }: { businesses?: import("@/lib/data/businesses").Business[]; earlyAccess?: boolean; children?: ReactNode }) {
   const searches = businesses && !earlyAccess ? ["سایه", "وک", "آوند", "توحید", "امام علی"] : popularSearches;
   return (
     <section className="relative overflow-hidden -top-[72px] -mb-[72px] pt-32 pb-12 sm:-top-20 sm:-mb-20 sm:pt-44 sm:pb-24 lg:pt-48 lg:pb-32">
@@ -98,7 +99,8 @@ export function Hero({ businesses, earlyAccess = false }: { businesses?: import(
 
           <HeroSearch businesses={businesses} />
 
-          <div
+          {children}
+          {!children && <div
             className="flex flex-wrap items-center justify-center gap-y-[0.45rem] gap-x-2 mt-2 max-w-[620px]"
             aria-label="جستجوهای پرطرفدار"
           >
@@ -114,7 +116,7 @@ export function Hero({ businesses, earlyAccess = false }: { businesses?: import(
                 {s}
               </Link>
             ))}
-          </div>
+          </div>}
 
           {!earlyAccess && <HeroStats items={businesses ? [{ value: businesses.length, label: "کافه در فهرست" }, { value: Math.min(3, businesses.length), label: "کافه برای شروع" }, { value: 0, label: "نظر منتشرشده" }] : undefined} />}
         </div>

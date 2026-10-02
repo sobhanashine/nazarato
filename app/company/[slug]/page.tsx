@@ -10,7 +10,6 @@ import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Container } from "@/components/ui/Container";
 import {
   averageLabel,
-  businessDetails,
   getBusiness,
   getSimilarBusinesses,
   ratingStats,
@@ -22,7 +21,7 @@ import { getSession } from "@/lib/auth/session";
 type Params = { slug: string };
 
 export function generateStaticParams(): Params[] {
-  return businessDetails.map((b) => ({ slug: b.slug }));
+  return [];
 }
 
 export async function generateMetadata({

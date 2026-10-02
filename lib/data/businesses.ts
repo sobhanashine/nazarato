@@ -332,7 +332,9 @@ export async function getBusiness(
   // 1. Fetch business row
   const { data: b, error: bError } = await supabase
     .from("businesses")
-    .select("*")
+    .select("*, business_sources!inner(status)")
+    .in("status", ["active", "merged"])
+    .eq("business_sources.status", "approved")
     .eq("slug", slug)
     .single();
     
@@ -428,7 +430,8 @@ export async function getBusiness(
   let similarSlugs: string[] = [];
   const { data: similarData } = await supabase
     .from("businesses")
-    .select("slug")
+    .select("slug, business_sources!inner(status)")
+    .eq("business_sources.status", "approved")
     .eq("category_slug", b.category_slug)
     .eq("status", "active")
     .neq("slug", b.slug)
@@ -463,7 +466,9 @@ export async function getSimilarBusinesses(detail: BusinessDetail): Promise<Busi
   
   const { data: list, error } = await supabase
     .from("businesses")
-    .select("*")
+    .select("*, business_sources!inner(status)")
+    .in("status", ["active", "merged"])
+    .eq("business_sources.status", "approved")
     .in("slug", detail.similar);
     
   if (error || !list) return [];
@@ -541,7 +546,8 @@ export async function getBusinessesByCategory(
   // 1. Start querying the businesses table
   let query = supabase
     .from("businesses")
-    .select("*", { count: "exact" })
+    .select("*, business_sources!inner(status)", { count: "exact" })
+    .eq("business_sources.status", "approved")
     .eq("category_slug", categorySlug)
     .in("status", ["active", "merged"]);
 

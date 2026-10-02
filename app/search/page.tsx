@@ -1,5 +1,7 @@
-import { getLocalGolsarCafes } from "@/lib/preview/golsar-server";
-import { toGolsarBusiness } from "@/lib/preview/golsar-product";
+import { getDiscoveryCatalog } from "@/lib/data/discovery";
+import { getPreferredArea } from "@/lib/local-area-server";
+import { businessInArea, areaLabel } from "@/lib/local-area";
+import { LocalDiscovery } from "@/components/search/LocalDiscovery";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer } from "@/components/layout/Footer";
@@ -20,7 +22,6 @@ import { Container } from "@/components/ui/Container";
 import { IgShopCard } from "@/components/ui/IgShopCard";
 import { PageBanner } from "@/components/ui/PageBanner";
 import { GLASS } from "@/components/ui/styles";
-import { featuredBusinesses } from "@/lib/data/businesses";
 import {
   TYPE_TABS,
   parseSearchParams,
@@ -62,11 +63,13 @@ export default async function SearchPage({
 }: {
   searchParams: Promise<RawParams>;
 }) {
-  const cafes = await getLocalGolsarCafes();
-  const businesses = cafes?.map(toGolsarBusiness);
-  const query = parseSearchParams(await searchParams, businesses);
-  const result = runSearch(query, businesses);
-  const categories = businesses ? [...new Set(businesses.map(b => b.category))] : searchCategories();
+  const { businesses, shops } = await getDiscoveryCatalog();
+  const raw = await searchParams;
+  const area = await getPreferredArea(raw.area);
+  const query = parseSearchParams({ ...raw, area }, businesses);
+  const result = runSearch(query, businesses, shops);
+  const localBusinesses = businesses.filter(b => businessInArea(b, query.area));
+  const categories = searchCategories(localBusinesses);
   const hasQuery = query.q.length > 0;
 
   // Dismissible chips for every active filter.
@@ -116,7 +119,8 @@ export default async function SearchPage({
       <Container>
         <main className="pb-20 lg:pb-32">
           {/* Search box with live company typeahead — first focusable in <main>. */}
-          <SearchBox query={query} businesses={businesses} />
+          <LocalDiscovery key={query.area} query={query} categories={categories} />
+          <SearchBox key={query.q} query={query} businesses={localBusinesses} />
 
           {/* Type tabs. */}
           <nav
@@ -243,16 +247,11 @@ export default async function SearchPage({
                     چیزی پیدا نشد
                   </p>
                   <p className="mb-7 max-w-[42ch] text-[13px] leading-[1.8] text-muted">
-                    جستجو یا فیلترها را تغییر بده — یا یکی از این کسب‌وکارهای
-                    پرطرفدار را ببین.
+                    {businesses.length === 0
+                      ? "فهرست عمومی کسب‌وکارها در حال آماده‌سازی است. به‌زودی اطلاعات واقعی اینجا اضافه می‌شود."
+                      : `در محدودهٔ ${areaLabel(query.area)} نتیجه‌ای برای این انتخاب نداریم. محدوده یا فیلترها را تغییر بده.`}
                   </p>
-                  <ul className="grid w-full gap-4 text-start sm:grid-cols-2">
-                    {(businesses ?? featuredBusinesses).slice(0, 4).map((b) => (
-                      <li key={b.slug}>
-                        <BusinessCard business={b} />
-                      </li>
-                    ))}
-                  </ul>
+
                 </div>
               )}
 
