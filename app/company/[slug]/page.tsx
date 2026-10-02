@@ -20,10 +20,6 @@ import { getSession } from "@/lib/auth/session";
 
 type Params = { slug: string };
 
-export function generateStaticParams(): Params[] {
-  return [];
-}
-
 export async function generateMetadata({
   params,
 }: {

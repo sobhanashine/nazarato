@@ -9,17 +9,12 @@ import { Container } from "@/components/ui/Container";
 import {
   getShopByHandle,
   getSimilarShops,
-  instagramShops,
 } from "@/lib/data/instagram-shops";
 import { ratingStats, averageLabel, toReviews } from "@/lib/data/businesses";
 import { getBookmarkStatus } from "@/lib/data/bookmarks";
 import { getSession } from "@/lib/auth/session";
 
 type Params = { handle: string };
-
-export function generateStaticParams(): Params[] {
-  return instagramShops.map((s) => ({ handle: s.handle.replace("@", "") }));
-}
 
 export async function generateMetadata({
   params,
