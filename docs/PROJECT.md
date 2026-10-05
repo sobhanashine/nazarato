@@ -4,6 +4,10 @@ This is the **single source of truth** for how this project is built and the
 decisions behind it. It is maintained by the `project-loop` skill: every
 non-trivial task starts by reading this file and ends by updating it.
 
+Current product and delivery status: [product-status.md](product-status.md).
+The 2026-10-06 recovery is integrated and tested on `codex/product-recovery`,
+awaiting review. It is not a deployment or a remote migration apply.
+
 > If you are editing this file by hand, keep entries terse. One bullet, one
 > idea. Link to code with `path:line` so readers can jump in.
 
@@ -23,10 +27,11 @@ non-trivial task starts by reading this file and ends by updating it.
 
 | Path             | Purpose                                                                      |
 | ---------------- | ---------------------------------------------------------------------------- |
-| `app/`           | App Router routes: `/`, `/search`, `/about`, `/contact`, `/categories`, `/terms`, `/privacy`, `/company/[slug]`, `/blog`, `/blog/[slug]`, `/chat`, the `(auth)` group (`/login`, `/login/verify`), and the `(user)` group (`/profile`, `/profile/reviews`). |
+| `app/`           | App Router: discovery/profile/blog routes, real `/nabz` journey, `/api/nabz/{vote,result}`, signed-account routes, `/business/insights`, admin moderation/claims/source review. See `docs/pages-master.md` for the route inventory. |
 | `components/`    | Grouped by role: `layout/`, `sections/`, `ui/`, `blog/`, `categories/`, `icons/`, `pwa/`. |
 | `lib/`           | Data layer + integrations. `lib/wp.ts` (WordPress client), `lib/supabase/` (service-role DB client), `lib/auth/` (signed-cookie sessions + phone-OTP).              |
-| `lib/data/`      | Static/sample data: `blog-posts`, `blog-taxonomies`, `categories`, `reviews`, `instagram-shops`. |
+| `lib/data/`      | Server-side Supabase reads and writes with shared public eligibility; public JSON projection. Repository blog/categories remain local. Historic fixtures are not a public fallback. |
+| `lib/nabz/`, `lib/intelligence/` | Private pair votes, real evidence/result persistence, versioned Persian analysis, owner corrections and follow-up measurements. Demo model is separate. |
 | `design-system/` | Design tokens / system reference (`nazarato/`).                              |
 | `docs/`          | Long-form docs (this file, plus `headless-wordpress-blog.md`, `pages-master.md`). |
 | `public/`        | Static assets — icons, service worker (`sw.js`), PWA manifest assets.        |
@@ -35,7 +40,7 @@ non-trivial task starts by reading this file and ends by updating it.
 ### Locale & layout direction
 
 - App is **RTL Farsi**: `<html lang="fa" dir="rtl">` (`app/layout.tsx:52`).
-- Font: **Vazirmatn** (Arabic subset, weights 300–900) via `next/font/google` (`app/layout.tsx:8`).
+- Font: **Vazirmatn** (Arabic/Latin, variable weights 100–900) via `next/font/local`, checked-in OFL assets under `app/fonts/`.
 - All UI copy is Persian by default.
 
 ### PWA & Push Notifications
@@ -61,11 +66,18 @@ non-trivial task starts by reading this file and ends by updating it.
 - Company/shop profiles read session and catalog at request time; do not add static fixture parameters or empty static generation to these routes. `node scripts/check-public-profiles.mjs <Worker URL>` verifies anonymous unpublished-profile not-found boundaries in the production runtime.
 - Source-only local cafes remain development-only with zero imported opinions, zero owner-verification claims and browser-only experience storage. Public approval/import and test-data reconciliation are tracked separately; see `docs/production-readiness.md`.
 
+### Real consumer and owner loops
+
+- `/nabz` requires four eligible businesses and five distinct accepted daily pair choices. The server reconstructs the caller's votes and ranks only current, adequately supported first-party evidence; sparse supply returns an honest empty result. A situation-only profile is explicitly preliminary. Account save/restore uses a service-only transactional RPC; raw votes and taste weights remain private.
+- Public review feeds, citations and counters require `origin_kind='first_party'`. Existing unknown/synthetic reviews are not automatically promoted. Approved open-data licence credit appears on company and shop profiles; public contact/info/hour JSON is allowlisted. Private user pages also protect metadata.
+- `/business/insights` retains versioned analysis and append-only owner corrections. Owners can create, cancel and measure one active action. Fixed, non-overlapping windows, model/metric versions and sufficient follow-up samples are required; observation does not establish causation.
+- The canonical fresh schema is 22 SQL files. October RPC, metric-version, direct-read policy and review-origin migrations have rollback companions. Read `docs/migration-reconciliation.md` before any separately authorized remote apply.
+
 ### Cloudflare Workers deployment
 
 - The existing Worker is `nazarato`; its Git integration deploys `main`. OpenNext 1.20.7 adapts the regular Next build, and Wrangler 4.145.0 uploads `.open-next/worker.js` plus ASSETS. Run `npm run build:cloudflare`, then `npm run preview:cloudflare`; `npm run deploy:cloudflare` builds and publishes. Dashboard build command is `npm run build:cloudflare`, deploy command is `npx wrangler deploy`.
 - Dashboard variables are preserved with `keep_vars`. Supabase service-role and JWT signing key stay in Cloudflare Secrets. The alias to `cloudflare/runtime-env.mjs` prevents OpenNext from bundling `.env*` fallbacks into uploaded code; local Worker tests use ignored `.dev.vars`. See `docs/cloudflare-release.md` for settings and verification.
-- OTP start, resend, verification, and profile completion reject outside development. Public login remains closed until real SMS delivery and per-challenge verification are implemented. `GEMINI_API_KEY` is needed only for AI chat; missing configuration returns 503. Voice input is retired and `/api/transcribe` returns 410 without processing audio.
+- OTP start, resend, verification, and profile completion reject outside development. Per-challenge keyed digests, expiry/replay checks and Kavenegar integration code are recovered; public login stays closed pending real provider verification and launch approval. `GEMINI_API_KEY` is needed only for AI chat; missing configuration returns 503. Voice input is retired and `/api/transcribe` returns 410 without processing audio.
 
 ### Public domain and early SEO
 
@@ -106,19 +118,18 @@ Set globally in `next.config.ts:31-40`:
 
 - App Router conventions only. No `pages/`.
 - Components are `PascalCase.tsx`, co-located by domain (`components/blog/`, `components/sections/`, ...).
-- Static/sample data lives in `lib/data/*.ts` and is imported directly — no fetch needed.
+- Server data contracts live in `lib/data/*.ts`; static repository content is explicit and never substitutes for a failed public catalog/review query.
 - Co-locate tests next to source: `foo.ts` → `foo.test.ts`. (Tested via Vitest.)
 
 ### Styling
 
 - Tailwind v4 utilities only — styling lives in JSX `className`, never as CSS classes.
-- `app/globals.css` is **config only**: `@import`, `@theme` tokens, `@keyframes`,
-  `@custom-variant`. Two raw-CSS blocks are allowed because they can't be utilities:
-  native `::-webkit-scrollbar`, and `.wp-content` (styles WordPress HTML injected via
-  `dangerouslySetInnerHTML`). Do **not** add component CSS classes here.
+- `app/globals.css` contains tokens/keyframes plus explicit native scrollbar,
+  focus/reduced-motion, WordPress HTML and externally injected SMflow rules.
+  Prefer JSX utilities for app components.
 - Reused class bundles live in `components/ui/styles.ts` (`GLASS`, `CONTAINER`,
-  `HIDE_SCROLL`, `BTN_PRIMARY`, `TAG_BADGE`); `<Container>` wraps the page gutter,
-  `<Backdrop>` renders the ambient aurora/grain layers.
+  `HIDE_SCROLL`, `BTN_PRIMARY`, `TAG_BADGE`); `<Container>` wraps the page gutter.
+  The recovered mobile design uses a warm light canvas and green actions.
 - Animations: declare `@keyframes` in `globals.css`, apply via `animate-[name_…]`.
 - RTL is assumed; use `ms-*`/`me-*` (logical) over `ml-*`/`mr-*` when adding spacing.
 - Never interpolate Tailwind classes (`text-${tone}`) — the v4 scanner only
@@ -144,6 +155,12 @@ Set globally in `next.config.ts:31-40`:
 - Commits follow Conventional Commits with scope tags (see `commit-style` skill).
 - Bug fixes get a failing regression test FIRST (see `testing-discipline` skill).
 - New features ≥ one line → spec first (see `spec-first` skill).
+- Node 24 is pinned in `.nvmrc`. Default Playwright uses a loopback-only
+  substitute with dummy credentials; legacy remote-write tests require explicit
+  opt-in. Run browser/build sequentially. See `docs/product-recovery-verification.md`.
+- Track material tasks on the named Nazarato board; task 29 stays in Review
+  pending acceptance. Completion mail uses `docs/task-completion-email-template.html`,
+  the connected Gmail owner, exact-subject deduplication and one terminal send.
 
 ### Priorities (in order)
 
@@ -156,16 +173,20 @@ Set globally in `next.config.ts:31-40`:
 
 ## 3. Open items / known gaps
 
-- **Web Push (VAPID) keys** must be generated and set in the deployment environment (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) for Web Push notifications to function. See `.env.local.example` for details.
+- **Web Push (VAPID) keys** must be generated and set in the deployment environment (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) for Web Push notifications to function. See `config/env.example` for details.
 - **AI chat** needs a production `GEMINI_API_KEY`. Voice input is removed and needs no service.
-- **Auth — remaining wiring.** `/login` works end-to-end in dev. Still open:
-  (1) Static OTP (`123456`) is limited to development; all public auth actions are closed — wire real per-challenge codes and Kavenegar in
-  `lib/auth/otp.ts` `sendOtp` once SMS credit is available; (2) sessions are
-  HMAC-signed cookies, a deliberate placeholder — migrate to Supabase Auth
-  later (keep `getSession`/`setSession`/`clearSession` stable). Deployment
-  note: run all migrations under `supabase/migrations/` on every new Supabase environment.
+- **Auth — remaining activation.** `/login` works in isolated development.
+  The fixed local code is never accepted in production; recovered challenge/
+  Kavenegar code still needs real provider verification. Sessions remain
+  HMAC-signed app cookies. Distributed abuse controls are separate launch work.
+  Reconcile existing remote history before applying the canonical migration set.
 - **Contact intake** validates and persists to `contact_submissions` (migration 0013); DB errors are shown to the user. Email notifications are separate and optional. The configured database table was read-verified on 2026-10-02.
-- **Pre-launch open routes.** `/profile/edit`, `/settings/security`, `/help`, `/admin` (overview), `/admin/reports`, `/admin/businesses`, `/admin/users` are still 📋. See `docs/journey-of-nazarato.md` for the prioritized launch backlog.
+- **Launch/pilot gates.** Remote migration/history and review-origin
+  reconciliation, approved factual supply, real SMS, provider release and a
+  consenting consumer/owner pilot remain outstanding. Built help/admin routes
+  must not be confused with complete moderation operations or pilot validation.
+  Profile editing/security expansion, community/gamification and monetization
+  remain backlog; older journey documents do not override the locked MVP spec.
 
 
 ---
@@ -176,6 +197,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-10-06** — Integrated the recovered Nabz/intelligence/owner/source workflows and existing mobile redesign on `codex/product-recovery`; completed real five-choice results/private save, owner measurement/cancellation, first-party origin/counters, shared public/privacy gates and visible licence credit. Added canonical migration/rollback reconciliation, current product/status docs and default isolated browser/SQL harnesses. Gates: 363 unit tests (71 files), TypeScript, full lint, 13 browser passes (two private-catalog skips), 22 fresh local migrations/four rollback checks and Next/OpenNext Cloudflare build. Review delivery only: no remote SQL, provider activation, merge/deployment or real pilot.
 - **2026-10-02** — Fixed the Worker-only DYNAMIC_SERVER_USAGE failure on unpublished company profiles by removing static parameter generation from session-aware company/shop pages. Files: `app/company/[slug]/page.tsx`, `app/shop/[handle]/page.tsx`, `scripts/check-public-profiles.mjs`. The runtime regression failed with company HTTP 500 before the fix; both profile types now render branded not-found/noindex. Gates: 127 unit tests, TypeScript, lint, Cloudflare build, runtime smoke test and browser verification.
 - **2026-10-02** — Added explicit local area selection, remembered preference and one-click cafe discovery to the existing design; public search/profile supply now requires approved sources and eligible status with no sample fallback. Removed voice input and retired audio submissions with 410. Files: `lib/local-area*.ts`, `lib/data/discovery.ts`, `components/search/LocalDiscovery.tsx`, `app/{page,search/page}.tsx`, `components/review/ReviewSheet.tsx`, `app/api/transcribe/route.ts`. Gates: 127 tests, TypeScript, full lint, Cloudflare build, mobile/desktop discovery and text-review browser checks. Same Supabase, repository blog and remaining service inputs documented in `docs/production-readiness.md`.
 - **2026-10-01** — Prepared the canonical main-domain release and truthful early SEO homepage, with home-only sitemap/indexing and noindex on unfinished documents. Existing design and private Golsar development behavior remain. Files: `lib/site.ts`, `app/{page,layout,robots,sitemap}.tsx/ts`, `next.config.ts`, `wrangler.jsonc`, `docs/domain-seo-launch.md`. Gates: 115 tests, TypeScript, full lint, Next/OpenNext build, Wrangler dry run, mobile/desktop browser and local HTTP checks. Provider connection and Search Console verification are recorded on Trello task 23.

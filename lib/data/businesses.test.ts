@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getBusinessesByCategory, businessMatchesSubcategory } from "./businesses";
+import {
+  businessMatchesSubcategory,
+  businessDetails,
+  getBusiness,
+  getBusinessesByCategory,
+  getReviewTargets,
+  getSimilarBusinesses,
+  toPublicBusinessAttributions,
+} from "./businesses";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 // Mock the server file that returns the supabaseAdmin client
@@ -9,7 +17,10 @@ vi.mock("@/lib/supabase/server", () => {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     in: vi.fn().mockReturnThis(),
+    neq: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
+    single: vi.fn(),
     then: vi.fn(), // to allow awaiting the query
   };
   return {
@@ -33,13 +44,189 @@ describe("businessMatchesSubcategory", () => {
   });
 });
 
+describe("public business provenance", () => {
+  let mockSupabaseClient: {
+    from: ReturnType<typeof vi.fn>;
+    select: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+    in: ReturnType<typeof vi.fn>;
+    neq: ReturnType<typeof vi.fn>;
+    limit: ReturnType<typeof vi.fn>;
+    order: ReturnType<typeof vi.fn>;
+    single: ReturnType<typeof vi.fn>;
+    then: ReturnType<typeof vi.fn>;
+  };
+
+  beforeEach(() => {
+    mockSupabaseClient = supabaseAdmin() as unknown as typeof mockSupabaseClient;
+    vi.clearAllMocks();
+  });
+
+  it("never serializes internal JSON fields into a public profile", async () => {
+    mockSupabaseClient.single.mockResolvedValue({data: {
+      id: "business-id", slug: "public-cafe", name: "کافه عمومی", category_slug: "cafe", initial: "ک", color: "#20584B",
+      contact: {website: "example.invalid", owner_email: "internal-marker"},
+      info: [{label: "نشانی", value: "نشانی عمومی", internal_note: "internal-marker"}, {label: "private-note", value: "internal-marker"}],
+      hours: [{day: "شنبه", value: "۹ تا ۱۸", admin_note: "internal-marker"}],
+    }, error: null});
+    mockSupabaseClient.then.mockImplementation((callback: (value: unknown) => unknown) => Promise.resolve(callback({data: [], error: null})));
+    const profile = await getBusiness("public-cafe");
+    expect(profile?.info).toEqual([{label: "نشانی", value: "نشانی عمومی"}]);
+    expect(JSON.stringify(profile)).not.toContain("internal-marker");
+  });
+
+  it("fails closed unless a direct profile is public and has an approved source", async () => {
+    mockSupabaseClient.single.mockResolvedValue({
+      data: null,
+      error: { message: "No public row" },
+    });
+
+    await expect(getBusiness("quarantined-cafe")).resolves.toBeUndefined();
+
+    expect(mockSupabaseClient.in).toHaveBeenCalledWith("status", [
+      "active",
+      "merged",
+    ]);
+    expect(mockSupabaseClient.eq).toHaveBeenCalledWith(
+      "business_sources.status",
+      "approved",
+    );
+    expect(mockSupabaseClient.select).toHaveBeenCalledWith(
+      expect.stringContaining("business_sources!inner"),
+    );
+  });
+
+  it("excludes unapproved profiles from similar-business results", async () => {
+    mockSupabaseClient.then.mockImplementation(
+      (callback: (value: unknown) => unknown) =>
+        Promise.resolve(callback({ data: [], error: null })),
+    );
+
+    await getSimilarBusinesses({
+      ...businessDetails[0],
+      similar: ["quarantined-cafe"],
+    });
+
+    expect(mockSupabaseClient.in).toHaveBeenCalledWith("status", [
+      "active",
+      "merged",
+    ]);
+    expect(mockSupabaseClient.eq).toHaveBeenCalledWith(
+      "business_sources.status",
+      "approved",
+    );
+  });
+
+  it("loads the review picker only from public approved-source businesses", async () => {
+    mockSupabaseClient.then.mockImplementation(
+      (callback: (value: unknown) => unknown) =>
+        Promise.resolve(
+          callback({
+            data: [
+              {
+                slug: "cafe-approved",
+                name: "کافه تأییدشده",
+                category_slug: "food",
+                city: "رشت",
+                initial: "ک",
+                color: "#123456",
+              },
+            ],
+            error: null,
+          }),
+        ),
+    );
+
+    await expect(getReviewTargets()).resolves.toEqual({
+      ok: true,
+      businesses: [
+        {
+          slug: "cafe-approved",
+          name: "کافه تأییدشده",
+          category: "خوراکی و شیرینی",
+          city: "رشت",
+          initial: "ک",
+          color: "#123456",
+        },
+      ],
+    });
+    expect(mockSupabaseClient.select).toHaveBeenCalledWith(
+      expect.stringContaining("business_sources!inner"),
+    );
+    expect(mockSupabaseClient.in).toHaveBeenCalledWith("status", [
+      "active",
+      "merged",
+    ]);
+    expect(mockSupabaseClient.eq).toHaveBeenCalledWith(
+      "business_sources.status",
+      "approved",
+    );
+  });
+
+  it("fails the review picker closed when its data source fails", async () => {
+    mockSupabaseClient.then.mockImplementation(
+      (callback: (value: unknown) => unknown) =>
+        Promise.resolve(
+          callback({ data: null, error: { message: "unavailable" } }),
+        ),
+    );
+
+    await expect(getReviewTargets()).resolves.toEqual({
+      ok: false,
+      businesses: [],
+    });
+  });
+
+  it("keeps only complete HTTPS attribution records", () => {
+    expect(
+      toPublicBusinessAttributions([
+        {
+          source_type: "open_dataset",
+          source_ref: "https://www.openstreetmap.org/node/1",
+          license_name: "ODbL-1.0",
+          license_url: "https://opendatacommons.org/licenses/odbl/1-0/",
+          attribution_text: "© OpenStreetMap contributors",
+          status: "approved",
+        },
+        {
+          source_type: "open_dataset",
+          source_ref: "javascript:alert(1)",
+          license_name: "unsafe",
+          license_url: "https://example.test/license",
+          attribution_text: "unsafe source",
+          status: "approved",
+        },
+        {
+          source_type: "open_dataset",
+          source_ref: "https://example.test/quarantined",
+          license_name: "Example",
+          license_url: "https://example.test/license",
+          attribution_text: "not approved",
+          status: "quarantined",
+        },
+      ]),
+    ).toEqual([
+      {
+        sourceType: "open_dataset",
+        sourceUrl: "https://www.openstreetmap.org/node/1",
+        licenseName: "ODbL-1.0",
+        licenseUrl: "https://opendatacommons.org/licenses/odbl/1-0/",
+        attributionText: "© OpenStreetMap contributors",
+      },
+    ]);
+  });
+});
+
 describe("getBusinessesByCategory", () => {
   let mockSupabaseClient: {
     from: ReturnType<typeof vi.fn>;
     select: ReturnType<typeof vi.fn>;
     eq: ReturnType<typeof vi.fn>;
     in: ReturnType<typeof vi.fn>;
+    neq: ReturnType<typeof vi.fn>;
+    limit: ReturnType<typeof vi.fn>;
     order: ReturnType<typeof vi.fn>;
+    single: ReturnType<typeof vi.fn>;
     then: ReturnType<typeof vi.fn>;
   };
 

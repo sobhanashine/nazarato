@@ -1,5 +1,13 @@
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { getCategoryTitle, toRelativePersianTime, type BusinessDetail } from "./businesses";
+import { toPublicBusinessContact, toPublicBusinessHours, toPublicBusinessInfo } from "./public-business-facts";
+import {
+  getCategoryTitle,
+  PUBLIC_BUSINESS_SOURCE_SELECT,
+  PUBLIC_BUSINESS_STATUSES,
+  toPublicBusinessAttributions,
+  toRelativePersianTime,
+  type BusinessDetail,
+} from "./businesses";
 import type { Rating } from "@/components/ui/RatingStars";
 
 export type Niche = "all" | "clothing" | "food" | "beauty" | "decor" | "digital";
@@ -60,6 +68,7 @@ export interface DbInstagramShopRow {
   rating_avg: number | null;
   created_at: string;
   updated_at: string;
+  business_sources?: unknown;
 }
 
 /** Convert a database businesses row to InstagramShop card format */
@@ -94,10 +103,10 @@ export async function getInstagramShopsFromDb(options?: {
 
   let query = supabase
     .from("businesses")
-    .select("*, business_sources!inner(status)", { count: "exact" })
-    .eq("business_sources.status", "approved")
+    .select(`*, ${PUBLIC_BUSINESS_SOURCE_SELECT}`, { count: "exact" })
     .eq("type", "ig_shop")
-    .in("status", ["active", "merged"]);
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved");
 
   if (niche && niche !== "all") {
     query = query.eq("category_slug", niche);
@@ -142,11 +151,11 @@ export async function getShopByHandle(
   // 1. Fetch shop row
   const { data: bRaw, error: bError } = await supabase
     .from("businesses")
-    .select("*, business_sources!inner(status)")
-    .in("status", ["active", "merged"])
-    .eq("business_sources.status", "approved")
+    .select(`*, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
     .eq("type", "ig_shop")
     .eq("slug", handle)
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .single();
     
   if (bError || !bRaw) return undefined;
@@ -169,7 +178,7 @@ export async function getShopByHandle(
       )
     `)
     .eq("business_id", b.id)
-    .eq("status", "published")
+    .eq("status", "published").eq("origin_kind", "first_party")
     .order("created_at", { ascending: false });
 
   if (rError) {
@@ -209,10 +218,11 @@ export async function getShopByHandle(
   }
 
   const reviews = reviewsList.map((r) => {
-    const author = r.author || { display_name: "کاربر نظراتو", avatar_color: "#3B82F6" };
+    const author = r.author || { id: "unknown", display_name: "کاربر نظراتو", avatar_color: "#3B82F6" };
     return {
       id: r.id,
       user: {
+        id: author.id,
         name: author.display_name,
         initial: author.display_name.charAt(0) || "ک",
         color: author.avatar_color || "#3B82F6",
@@ -229,11 +239,11 @@ export async function getShopByHandle(
   let similarSlugs: string[] = [];
   const { data: similarData } = await supabase
     .from("businesses")
-    .select("slug, business_sources!inner(status)")
-    .eq("business_sources.status", "approved")
+    .select(`slug, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
     .eq("type", "ig_shop")
     .eq("category_slug", b.category_slug)
-    .eq("status", "active")
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .neq("slug", b.slug)
     .limit(4);
     
@@ -251,11 +261,12 @@ export async function getShopByHandle(
     verified: b.verified,
     claimed: b.claimed,
     description: b.description || "",
-    contact: b.contact as { website?: string; phone?: string; instagram?: string },
-    hours: b.hours as { day: string; value: string }[] | undefined,
-    info: (b.info || []) as { label: string; value: string }[],
+    contact: toPublicBusinessContact(b.contact),
+    hours: toPublicBusinessHours(b.hours),
+    info: toPublicBusinessInfo(b.info),
     similar: similarSlugs,
     reviews: reviews,
+    attributions: toPublicBusinessAttributions(b.business_sources),
   };
 }
 
@@ -264,12 +275,11 @@ export async function getSimilarShops(shop: BusinessDetail): Promise<InstagramSh
   const nicheId = nicheTabs.find((t) => t.label === shop.category)?.id || "";
   const { data, error } = await supabase
     .from("businesses")
-    .select("*, business_sources!inner(status)")
-    .in("status", ["active", "merged"])
-    .eq("business_sources.status", "approved")
+    .select(`*, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
     .eq("type", "ig_shop")
     .eq("category_slug", nicheId)
-    .eq("status", "active")
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .neq("slug", shop.slug)
     .limit(4);
 

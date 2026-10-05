@@ -2,16 +2,16 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
+import { BTN_PRIMARY } from "@/components/ui/styles";
 import { startOtp, type FormState } from "./actions";
 
 const initial: FormState = { ok: false };
 
 const FIELD_BASE =
-  "w-full bg-transparent px-3 py-3.5 text-[16px] text-white placeholder:text-white/25 " +
+  "w-full bg-transparent px-3 py-3.5 text-[16px] text-strong placeholder:text-muted " +
   "outline-none";
 const LABEL = "text-[13px] font-bold text-muted";
-const ERR_TEXT = "text-[12px] font-bold text-pomegr";
+const ERR_TEXT = "text-[13px] font-medium text-pomegr";
 
 export function LoginForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState(startOtp, initial);
@@ -19,15 +19,15 @@ export function LoginForm({ next }: { next: string }) {
   const formError = state.error && state.field !== "phone" ? state.error : undefined;
 
   return (
-    <div className={`${GLASS} p-6 sm:p-8`}>
-      <h1 className="text-[1.4rem] font-black tracking-tight text-strong">
-        ورود یا ثبت‌نام
+    <div className="border-y border-glass-border py-6 sm:rounded-lg sm:border sm:bg-paper sm:p-8">
+      <h1 className="text-[1.4rem] font-bold text-strong">
+        {process.env.NODE_ENV === "development" ? "ورود آزمایشی" : "ورود عمومی هنوز فعال نیست"}
       </h1>
       <p className="mt-2 text-[14px] leading-[1.9] text-muted">
-        شماره موبایلت را وارد کن تا کد تأیید برایت پیامک شود.
+        {process.env.NODE_ENV === "development" ? "این ورود آزمایشی است. پیامکی ارسال نمی‌شود؛ کد در محیط توسعه نمایش داده می‌شود." : "سامانهٔ پیامک هنوز متصل نشده است. اطلاعات منتشرشده را می‌توانی بدون حساب ببینی."}
       </p>
 
-      <form action={action} noValidate className="mt-6 space-y-4">
+      {process.env.NODE_ENV === "development" && <form action={action} noValidate className="mt-6 space-y-4">
         <input type="hidden" name="next" value={next} />
 
         <div className="flex flex-col gap-2">
@@ -39,7 +39,7 @@ export function LoginForm({ next }: { next: string }) {
           </div>
           <div
             dir="ltr"
-            className={`flex items-center rounded-xl border bg-white/[0.03] backdrop-blur-md transition-colors ${
+            className={`flex items-center min-h-14 rounded-lg border bg-paper transition-colors ${
               phoneError
                 ? "border-pomegr/55 bg-pomegr/[0.05]"
                 : "border-glass-border focus-within:border-mint focus-within:bg-mint/[0.06]"
@@ -64,12 +64,12 @@ export function LoginForm({ next }: { next: string }) {
           </div>
         </div>
 
-        <label className="flex items-start gap-2.5 text-[12.5px] leading-[1.8] text-muted">
+        <label className="flex min-h-11 items-start gap-2.5 py-2 text-[14px] leading-7 text-muted">
           <input
             type="checkbox"
             name="terms"
             required
-            className="mt-1 h-4 w-4 shrink-0 accent-mint"
+            className="mt-1 h-5 w-5 shrink-0 accent-mint"
           />
           <span>
             <Link href="/terms" className="text-mint hover:underline">
@@ -84,7 +84,7 @@ export function LoginForm({ next }: { next: string }) {
         </label>
 
         {formError && (
-          <div className="flex items-start gap-3 rounded-xl border border-pomegr/30 bg-pomegr/10 p-3.5 text-[13.5px] font-medium text-white">
+          <div className="flex items-start gap-3 rounded-lg border border-pomegr/30 bg-pomegr/5 p-3.5 text-[13.5px] font-medium text-pomegr">
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pomegr/20 text-pomegr">
               !
             </span>
@@ -95,11 +95,12 @@ export function LoginForm({ next }: { next: string }) {
         <button
           type="submit"
           disabled={pending}
-          className={`${BTN_PRIMARY} w-full py-3.5 text-[15px] disabled:cursor-not-allowed disabled:opacity-50`}
+          className={`${BTN_PRIMARY} w-full min-h-12 py-3.5 text-[15px] disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {pending ? "در حال ارسال…" : "ارسال کد"}
         </button>
-      </form>
+      </form>}
+      {process.env.NODE_ENV !== "development" && <Link href="/search" className={`${BTN_PRIMARY} mt-6 min-h-12 w-full px-5 text-[15px]`}>جستجوی مکان</Link>}
     </div>
   );
 }

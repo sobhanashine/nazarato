@@ -96,6 +96,17 @@ describe("Bookmarks Data Layer", () => {
 
       expect(mockSupabaseClient.from).toHaveBeenCalledWith("bookmarks");
       expect(mockSupabaseClient.eq).toHaveBeenCalledWith("user_id", "user-1");
+      expect(mockSupabaseClient.in).toHaveBeenCalledWith("business.status", [
+        "active",
+        "merged",
+      ]);
+      expect(mockSupabaseClient.eq).toHaveBeenCalledWith(
+        "business.business_sources.status",
+        "approved",
+      );
+      expect(mockSupabaseClient.select).toHaveBeenCalledWith(
+        expect.stringContaining("business_sources!inner"),
+      );
       expect(bookmarks).toHaveLength(1);
       expect(bookmarks[0].name).toBe("دیجی‌کالا");
       expect(bookmarks[0].score).toBe("۴٫۲");
@@ -158,6 +169,10 @@ describe("Bookmarks Data Layer", () => {
       expect(mockSupabaseClient.order).toHaveBeenCalledWith("review_count", { ascending: false });
       expect(mockSupabaseClient.order).toHaveBeenCalledWith("rating_avg", { ascending: false });
       expect(mockSupabaseClient.limit).toHaveBeenCalledWith(4);
+      expect(mockSupabaseClient.eq).toHaveBeenCalledWith(
+        "business_sources.status",
+        "approved",
+      );
       expect(businesses).toHaveLength(1);
       expect(businesses[0].name).toBe("کسب و کار محبوب");
       expect(businesses[0].reviews).toBe("۱۰۰");

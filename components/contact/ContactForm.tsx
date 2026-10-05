@@ -35,15 +35,15 @@ function validateField(field: Field, value: string): string | null {
 }
 
 const FIELD_BASE =
-  "w-full rounded-xl border border-glass-border bg-white/[0.03] px-4 py-3.5 text-[16px] text-white " +
-  "placeholder:text-white/25 outline-none transition-all duration-200 backdrop-blur-md";
+  "w-full rounded-xl border border-glass-border bg-paper px-4 py-3.5 text-base text-strong " +
+  "placeholder:text-muted outline-none transition-colors duration-150";
 const FIELD_OK =
   "hover:border-glass-border-hi focus:border-mint focus:bg-mint/[0.06]";
 const FIELD_ERR =
   "border-pomegr/55 bg-pomegr/[0.05] focus:border-pomegr placeholder:text-pomegr/30";
 
-const LABEL = "text-[13px] font-bold text-muted";
-const ERR_TEXT = "text-[12px] font-bold text-pomegr";
+const LABEL = "text-sm font-semibold text-strong";
+const ERR_TEXT = "text-[13px] font-medium text-pomegr";
 
 export function ContactForm() {
   const formId = useId();
@@ -115,9 +115,8 @@ export function ContactForm() {
 
   if (status === "success") {
     return (
-      <div className="flex flex-col items-center gap-6 py-14 text-center">
+      <div role="status" className="flex flex-col items-center gap-6 py-10 text-center">
         <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-mint/20 blur-xl" aria-hidden />
           <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-mint/30 bg-mint/[0.08] text-mint">
             <svg
               viewBox="0 0 24 24"
@@ -133,11 +132,11 @@ export function ContactForm() {
           </div>
         </div>
         <div className="space-y-2">
-          <h3 className="text-[1.5rem] font-black tracking-tight text-white">
+          <h3 className="text-[1.5rem] font-bold text-strong">
             پیام شما ارسال شد
           </h3>
           <p className="mx-auto max-w-[40ch] text-[15px] leading-[1.9] text-muted">
-            پیامت رسید. تیم پشتیبانی طی ۱ تا ۲ روز کاری جواب می‌دهد.
+            پیامت دریافت شد. برای پیگیری، از ایمیلی که وارد کردی استفاده می‌کنیم.
           </p>
         </div>
         <button
@@ -148,7 +147,7 @@ export function ContactForm() {
             setTouched({});
             setStatus("idle");
           }}
-          className="rounded-lg border border-glass-border bg-white/5 px-6 py-2.5 text-[14px] font-bold text-white transition-colors hover:bg-white/10"
+          className="min-h-11 rounded-xl border border-glass-border bg-paper px-6 py-3 text-sm font-bold text-forest transition-colors hover:bg-glass-hover"
         >
           ارسال پیام دیگر
         </button>
@@ -167,7 +166,7 @@ export function ContactForm() {
             <label htmlFor={`${formId}-name`} className={LABEL}>
               نام
             </label>
-            {errors.name && <span className={ERR_TEXT}>{errors.name}</span>}
+            {errors.name && <span id={`${formId}-name-error`} className={ERR_TEXT}>{errors.name}</span>}
           </div>
           <input
             id={`${formId}-name`}
@@ -175,6 +174,8 @@ export function ContactForm() {
             type="text"
             autoComplete="name"
             value={values.name}
+            aria-invalid={!!errors.name}
+            aria-describedby={errors.name ? `${formId}-name-error` : undefined}
             onChange={update("name")}
             onBlur={blur("name")}
             placeholder="مثلاً: سبحان"
@@ -188,7 +189,7 @@ export function ContactForm() {
             <label htmlFor={`${formId}-email`} className={LABEL}>
               ایمیل
             </label>
-            {errors.email && <span className={ERR_TEXT}>{errors.email}</span>}
+            {errors.email && <span id={`${formId}-email-error`} className={ERR_TEXT}>{errors.email}</span>}
           </div>
           <input
             id={`${formId}-email`}
@@ -198,6 +199,8 @@ export function ContactForm() {
             autoComplete="email"
             dir="ltr"
             value={values.email}
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? `${formId}-email-error` : undefined}
             onChange={update("email")}
             onBlur={blur("email")}
             placeholder="name@example.com"
@@ -210,15 +213,17 @@ export function ContactForm() {
       <div className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
           <label htmlFor={`${formId}-subject`} className={LABEL}>
-            موضوع <span className="font-medium text-white/30">(اختیاری)</span>
+            موضوع <span className="font-normal text-muted">(اختیاری)</span>
           </label>
-          {errors.subject && <span className={ERR_TEXT}>{errors.subject}</span>}
+          {errors.subject && <span id={`${formId}-subject-error`} className={ERR_TEXT}>{errors.subject}</span>}
         </div>
         <input
           id={`${formId}-subject`}
           name="subject"
           type="text"
           value={values.subject}
+            aria-invalid={!!errors.subject}
+            aria-describedby={errors.subject ? `${formId}-subject-error` : undefined}
           onChange={update("subject")}
           onBlur={blur("subject")}
           placeholder="موضوع پیام"
@@ -233,7 +238,7 @@ export function ContactForm() {
             پیام شما
           </label>
           <div className="flex items-center gap-3">
-            {errors.message && <span className={ERR_TEXT}>{errors.message}</span>}
+            {errors.message && <span id={`${formId}-message-error`} className={ERR_TEXT}>{errors.message}</span>}
             <span
               className={`text-[12px] tabular-nums ${messageLeft < 0 ? "text-pomegr" : "text-muted/60"}`}
             >
@@ -246,6 +251,8 @@ export function ContactForm() {
           name="message"
           rows={6}
           value={values.message}
+            aria-invalid={!!errors.message}
+            aria-describedby={errors.message ? `${formId}-message-error` : undefined}
           onChange={update("message")}
           onBlur={blur("message")}
           placeholder="محتوای پیام خود را اینجا بنویس..."
@@ -254,7 +261,7 @@ export function ContactForm() {
       </div>
 
       {serverError && (
-        <div className="flex items-start gap-3 rounded-xl border border-pomegr/30 bg-pomegr/10 p-4 text-[14px] font-medium text-white">
+        <div role="alert" className="flex items-start gap-3 rounded-xl border border-pomegr/30 bg-pomegr/5 p-4 text-sm font-medium text-pomegr">
           <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pomegr/20 text-pomegr">
             !
           </span>
@@ -265,7 +272,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="group relative flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-xl bg-white px-8 py-4 text-[16px] font-black whitespace-nowrap text-black transition-all duration-200 hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+        className="flex min-h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-forest px-8 py-3 text-base font-bold text-white transition-colors hover:bg-[#174539] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
       >
         {status === "submitting" ? (
           <span className="animate-pulse">در حال ارسال...</span>

@@ -11,6 +11,7 @@ import { IgShopCard } from "@/components/ui/IgShopCard";
 import { IgAvatar } from "@/components/ui/IgAvatar";
 import { BookmarkButton } from "@/components/ui/BookmarkButton";
 import { IgVerifiedBadge } from "@/components/ui/IgVerifiedBadge";
+import { BusinessSourceNotice } from "@/components/company/BusinessSourceNotice";
 import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
 import type { BusinessDetail } from "@/lib/data/businesses";
 import type { InstagramShop } from "@/lib/data/instagram-shops";
@@ -76,10 +77,10 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
     if (navigator.share) {
       try {
         await navigator.share({ title: business.name, url });
-      } catch {
-        /* user dismissed the share sheet */
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return;
       }
-      return;
     }
     try {
       await navigator.clipboard.writeText(url);
@@ -93,27 +94,19 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
 
   return (
     <div className="pb-12">
-      {/* ── Cover ── */}
-      <div
-        className="h-36 w-full rounded-glass border border-glass-border sm:h-52"
-        style={{
-          background: `linear-gradient(135deg, ${business.color}55 0%, rgba(12,16,28,0.6) 60%), linear-gradient(180deg, rgba(123,137,255,0.18), rgba(91,230,178,0.12))`,
-        }}
-        aria-hidden
-      />
-
+      <BusinessSourceNotice attributions={business.attributions ?? []} className="mb-6" />
       {/* ── Identity ── */}
-      <div className="-mt-12 flex flex-col gap-4 px-1 sm:-mt-14 sm:flex-row sm:items-end">
+      <div className="flex flex-col gap-4 border-b border-glass-border pb-6 sm:flex-row sm:items-center">
         <IgAvatar initial={business.initial} color={business.color} size="lg" />
         <div className="min-w-0 flex-1 sm:pb-2">
-          <h1 className="flex items-center gap-2 text-[1.4rem] font-black text-strong sm:text-[1.7rem]">
+          <h1 className="flex items-center gap-2 text-[30px] font-extrabold leading-[1.5] text-strong sm:text-[40px]">
             <span className="min-w-0 break-words">{business.name}</span>
             {business.verified && <IgVerifiedBadge size="lg" />}
           </h1>
-          <p className="mt-1 text-[0.85rem] text-muted">
+          <p className="mt-1 text-sm leading-7 text-muted">
             {business.category} · {business.city}
           </p>
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             {hasReviews ? (
               <>
                 <RatingStars rating={roundedAverage} />
@@ -139,7 +132,7 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
           </p>
           <Link
             href={`/shop/${business.slug}/claim`}
-            className="text-[0.83rem] font-bold text-saffron hover:underline"
+            className="inline-flex min-h-11 items-center text-sm font-bold text-saffron hover:underline"
           >
             ادعای مالکیت ←
           </Link>
@@ -153,10 +146,6 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
           onClick={() => openReviewSheet({ slug: business.slug, name: business.name })}
           className={`${BTN_PRIMARY} relative z-[1] w-full justify-center px-6 py-3 text-[0.9rem] sm:w-auto sm:py-2.5`}
         >
-          <span
-            aria-hidden
-            className="absolute inset-[-8px] rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
-          />
           نوشتن نظر
         </button>
         <div className="grid grid-cols-2 gap-3 sm:flex">
@@ -169,7 +158,7 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
           <button
             type="button"
             onClick={handleShare}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-glass-border bg-glass px-5 py-3 text-[0.85rem] font-semibold text-muted transition-colors duration-200 hover:border-mint/45 hover:text-strong sm:py-2.5"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-glass-border bg-glass px-5 py-3 text-[0.85rem] font-semibold text-muted transition-colors duration-200 hover:border-mint/45 hover:text-strong sm:py-2.5"
           >
             <ShareIcon />
             {shareNote || "اشتراک"}
@@ -183,16 +172,26 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
         aria-label="بخش‌های پروفایل"
         className="mt-7 flex gap-1 overflow-x-auto border-b border-glass-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {TABS.map((t) => {
+        {TABS.map((t, index) => {
           const active = tab === t.id;
           return (
             <button
               key={t.id}
               role="tab"
               type="button"
+              id={`shop-tab-${t.id}`}
               aria-selected={active}
+              aria-controls="shop-panel"
+              tabIndex={active ? 0 : -1}
               onClick={() => setTab(t.id)}
-              className={`shrink-0 border-b-2 px-4 py-2.5 text-[0.88rem] font-bold transition-colors duration-200 ${
+              onKeyDown={event => {
+                const next = event.key === "ArrowLeft" ? (index + 1) % TABS.length : event.key === "ArrowRight" ? (index + TABS.length - 1) % TABS.length : event.key === "Home" ? 0 : event.key === "End" ? TABS.length - 1 : null;
+                if (next === null) return;
+                event.preventDefault();
+                setTab(TABS[next].id);
+                document.getElementById(`shop-tab-${TABS[next].id}`)?.focus();
+              }}
+              className={`min-h-12 shrink-0 border-b-2 px-4 py-2.5 text-[0.88rem] font-bold transition-colors duration-200 ${
                 active
                   ? "border-mint text-strong"
                   : "border-transparent text-muted hover:text-strong"
@@ -206,7 +205,7 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
 
       {/* ── Overview ── */}
       {tab === "overview" && (
-        <div role="tabpanel" className="mt-6 flex flex-col gap-5 lg:grid lg:grid-cols-3">
+        <div role="tabpanel" id="shop-panel" aria-labelledby="shop-tab-overview" tabIndex={0} className="mt-6 flex flex-col gap-5 lg:grid lg:grid-cols-3">
           <div className="contents lg:flex lg:flex-col lg:gap-5 lg:col-span-2">
             <section className={`${CARD} order-1 lg:order-none`}>
               <h2 className={SECTION_H2}>درباره</h2>
@@ -222,7 +221,7 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
                   <button
                     type="button"
                     onClick={() => setTab("reviews")}
-                    className="shrink-0 text-[0.85rem] font-bold text-mint hover:underline"
+                    className="inline-flex min-h-11 shrink-0 items-center text-sm font-bold text-mint hover:underline"
                   >
                     همه نظرات ←
                   </button>
@@ -247,8 +246,8 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
               <h2 className={SECTION_H2}>توزیع امتیاز</h2>
               {hasReviews ? (
                 <>
-                  <div className="mt-4 flex flex-col items-center gap-2.5 rounded-2xl border border-glass-border bg-[#0b0f1a] py-5">
-                    <span className="bg-[linear-gradient(135deg,#5BE6B2,#3FBF92)] bg-clip-text text-[3.4rem] font-black leading-none text-transparent">
+                  <div className="mt-4 flex flex-col items-center gap-2.5 rounded-2xl border border-glass-border bg-paper py-5">
+                    <span className="text-[3rem] font-extrabold leading-none text-forest">
                       {averageLabel}
                     </span>
                     <RatingStars rating={roundedAverage} />
@@ -261,7 +260,7 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
                   </div>
                 </>
               ) : (
-                <p className="mt-3 text-[0.85rem] text-muted">
+                <p className="mt-3 text-sm leading-7 text-muted">
                   با ثبت اولین نظر، امتیاز این فروشگاه شکل می‌گیرد.
                 </p>
               )}
@@ -274,7 +273,7 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
 
       {/* ── Reviews ── */}
       {tab === "reviews" && (
-        <div role="tabpanel" className="mt-6">
+        <div role="tabpanel" id="shop-panel" aria-labelledby="shop-tab-reviews" tabIndex={0} className="mt-6">
           <h2 className={SECTION_H2}>نظرات کاربران</h2>
           {hasReviews ? (
             <>
@@ -328,7 +327,7 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
 
       {/* ── Info ── */}
       {tab === "info" && (
-        <div role="tabpanel" className="mt-6">
+        <div role="tabpanel" id="shop-panel" aria-labelledby="shop-tab-info" tabIndex={0} className="mt-6">
           <h2 className={SECTION_H2}>اطلاعات فروشگاه اینستاگرامی</h2>
           <dl className="mt-4 grid gap-px overflow-hidden rounded-glass border border-glass-border bg-glass-border sm:grid-cols-2">
             {[
@@ -343,9 +342,9 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
                 ? [{ label: "تلفن", value: business.contact.phone }]
                 : []),
             ].map((row) => (
-              <div key={row.label} className="flex justify-between gap-3 bg-[#0c1018] px-4 py-3">
+              <div key={row.label} className="grid min-w-0 gap-1 bg-paper px-4 py-4 sm:grid-cols-[130px_minmax(0,1fr)]">
                 <dt className="text-[0.83rem] text-muted">{row.label}</dt>
-                <dd className="text-[0.83rem] font-semibold text-strong">{row.value}</dd>
+                <dd className="min-w-0 break-words text-sm font-semibold leading-7 text-strong">{row.value}</dd>
               </div>
             ))}
           </dl>
@@ -354,7 +353,7 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
 
       {/* ── Similar ── */}
       {tab === "similar" && (
-        <div role="tabpanel" className="mt-6">
+        <div role="tabpanel" id="shop-panel" aria-labelledby="shop-tab-similar" tabIndex={0} className="mt-6">
           <h2 className={SECTION_H2}>فروشگاه‌های مشابه</h2>
           {similar.length > 0 ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -386,10 +385,6 @@ function NoReviews({ business }: { business: { slug: string; name: string } }) {
         onClick={() => openReviewSheet({ slug: business.slug, name: business.name })}
         className={`${BTN_PRIMARY} relative z-[1] px-6 py-2.5 text-[0.88rem]`}
       >
-        <span
-          aria-hidden
-          className="absolute inset-[-8px] rounded-full bg-[radial-gradient(circle,rgba(91,230,178,0.45),transparent_70%)] blur-[10px] z-[-1] pointer-events-none animate-[fab-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
-        />
         اولین نظر را تو بنویس
       </button>
     </div>
@@ -403,7 +398,7 @@ function IgContactCard({
   business: BusinessDetail;
   className?: string;
 }) {
-  const instagram = business.contact.instagram || business.slug;
+  const instagram = (business.contact.instagram || business.slug).replace(/^@/, "");
   const website = business.contact.website;
   const phone = business.contact.phone;
 
@@ -432,7 +427,7 @@ function IgContactCard({
             icon={<MailIcon />}
             label="وب‌سایت"
             value={website}
-            href={`https://${website}`}
+            href={/^https?:\/\//i.test(website) ? website : `https://${website}`}
           />
         )}
         {phone && (
@@ -467,7 +462,7 @@ function ContactRow({
       </span>
     </>
   );
-  const base = "flex items-center gap-3 rounded-xl border border-glass-border bg-[#0b0f1a] px-3 py-2.5";
+  const base = "flex min-h-11 items-center gap-3 rounded-xl border border-glass-border bg-paper px-3 py-2.5";
   return href ? (
     <a
       href={href}
@@ -496,9 +491,9 @@ function FilterChip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-full border px-3.5 py-1.5 text-[0.78rem] font-semibold transition-colors duration-200 ${
+      className={`inline-flex min-h-11 items-center rounded-lg border px-3.5 py-2 text-sm font-semibold transition-colors duration-200 ${
         active
-          ? "border-mint/55 bg-mint/[0.14] text-strong"
+          ? "border-forest bg-forest text-white"
           : "border-glass-border bg-glass text-muted hover:border-mint/45 hover:text-strong"
       }`}
     >
@@ -521,7 +516,7 @@ function SortButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-full px-3 py-1.5 text-[0.78rem] font-semibold transition-colors duration-200 ${
+      className={`inline-flex min-h-11 items-center rounded-lg border border-glass-border px-3 py-2 text-sm font-semibold transition-colors duration-200 ${
         active ? "text-mint" : "text-muted hover:text-strong"
       }`}
     >

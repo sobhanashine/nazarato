@@ -12,10 +12,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Stack
 
-- Next.js 16.2.6 (App Router), React 19.2, TypeScript 5
+- Next.js 16.3.8 (App Router), React 19.2.4, TypeScript 5
 - Tailwind CSS v4 (PostCSS plugin)
 - ESLint 9 + `eslint-config-next`
-- Deployment target: TBD (assume Vercel unless told otherwise)
+- Deployment target: existing Cloudflare Worker `nazarato`, OpenNext 1.20.7
 
 ## Solo Founder Context
 
@@ -56,3 +56,28 @@ Sobhan is the only developer, designer, and PM on this project.
 - Before shipping UI changes: verify in a browser, not just type-check
 - When corrected on the same thing twice: propose updating this file or writing a skill
 
+## Active scope and task tracking
+
+- Read `docs/product-status.md`, `docs/nabz-rasht-mvp.md` and `docs/PROJECT.md`
+  before material product work. Treat the older May pivot as decision history.
+- Stay within the requested Nazarato repository and private Trello board
+  `Nazarato — 14-Day MVP`: https://trello.com/b/eHnJFMki. Do not inspect unrelated
+  founder projects or boards.
+- Track each material user task on that board; commands/research steps are not
+  separate tasks. Move to Done only after acceptance criteria and relevant checks
+  pass. Review means a completed deliverable awaiting acceptance; Needs You is a
+  real decision/access dependency; Risks is a project risk, not active work.
+- Default browser checks are isolated (`npm run test:e2e`). Legacy remote-write
+  tests need explicit authorization and a separate test database.
+- At terminal outcome (`COMPLETED`, `BLOCKED`, `FAILED`, `NO_ACTION`), send exactly
+  one Persian-first RTL HTML completion email using
+  `docs/task-completion-email-template.html`. Resolve the recipient from the
+  authenticated Gmail profile; never hardcode a personal address in Git.
+- Search Sent for the exact subject before sending. Do not duplicate or retry
+  an uncertain/timed-out delivery. Research updates do not trigger email.
+- The first screen states outcome, required user action and project position,
+  followed by deliverables, next task, risks and compact checks. Include the
+  Trello URL and branch/commit/PR when applicable. Distinguish code completion
+  from deployment and pilot validation; do not paste raw logs.
+- If Trello/Gmail is unavailable, finish safe local work, report the integration
+  failure and leave the task in the appropriate non-Done state.

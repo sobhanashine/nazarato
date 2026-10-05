@@ -14,7 +14,7 @@ export default function CompanyError({
       error={error}
       reset={reset}
       logLabel="company/[slug]"
-      message="نتونستیم صفحه این کسب‌وکار رو بارگذاری کنیم. دوباره تلاش کن."
+      message="اطلاعات این مکان دریافت نشد. دوباره تلاش کن."
     />
   );
 }

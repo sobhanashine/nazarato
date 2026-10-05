@@ -21,9 +21,10 @@ export function ToastProvider() {
   return (
     <Toaster
       position="bottom-center"
+      containerStyle={{ bottom: "calc(88px + env(safe-area-inset-bottom))" }}
       toastOptions={{
         duration: 4000,
-        className: "!bg-[#0a0e18] !text-white !border !border-white/10",
+        className: "!bg-paper !text-strong !border !border-glass-border",
         style: {
           direction: "rtl",
           fontFamily: "var(--font-vazirmatn)",

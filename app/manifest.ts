@@ -2,19 +2,19 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "نظراتو – بهترین نظرات کسب‌وکارها",
+    name: "نظراتو — تجربه‌های محلی، انتخاب‌های بهتر",
     short_name: "نظراتو",
     description:
-      "پلتفرم نظرات واقعی ایرانیان. قبل از خرید، نظر بقیه رو بخون.",
+      "کافه و رستوران‌های رشت؛ اطلاعات روشن و تجربهٔ دست اول برای انتخاب بهتر.",
     lang: "fa",
     dir: "rtl",
     start_url: "/",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#0a0e18",
-    theme_color: "#0a0e18",
-    categories: ["business", "lifestyle", "shopping"],
+    background_color: "#F6F4ED",
+    theme_color: "#F6F4ED",
+    categories: ["business", "lifestyle", "food"],
     icons: [
       {
         src: "/icon-192.png",
@@ -45,14 +45,6 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "any",
         type: "image/svg+xml",
         purpose: "any",
-      },
-    ],
-    screenshots: [
-      {
-        src: "/pwa-banner-mobile.png",
-        sizes: "1080x1920",
-        type: "image/png",
-        label: "نظراتو در موبایل",
       },
     ],
   };

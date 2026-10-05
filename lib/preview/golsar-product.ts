@@ -7,6 +7,7 @@ export function toGolsarBusiness(cafe: GolsarCafe): Business {
     initial: cafe.name.replace(/کافه/g, "").trim().charAt(0) || "ک",
     color: "#7B89FF", score: "—", reviews: "۰", reviewCount: 0, verified: false,
     searchText: `${cafe.sourceName} ${cafe.address} ${cafe.street}`,
+    address: cafe.address || cafe.street,
   };
 }
 

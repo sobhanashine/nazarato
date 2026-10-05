@@ -1,7 +1,17 @@
 # نظراتو — Pages Master Doc
 
-> Single source of truth for every page in the product: what exists, what's planned, what each page is for, and how it's structured.
-> Update this when you add/rename/remove a route.
+> Historical May route plan and backlog details. Current product authority is
+> [product-status.md](product-status.md); implementation architecture is
+> [PROJECT.md](PROJECT.md). The sections below include older product/style plans
+> and do not establish that an optional route or service is active today.
+
+Recovery additions (2026-10-06): `/nabz` serves the real, evidence-gated journey;
+`/api/nabz/{duel,votes,result}` supplies eligible pairs, private votes and a
+server-scoped result; `/business/insights` carries correction/action/observation;
+`/admin/businesses/osm-review` carries the admin source workflow. The shared design
+is now warm paper/forest with local Vazirmatn, not the dark style described in
+the historical section. Public OTP remains closed; voice is retired; only the
+homepage is indexable. See the delivery record for deployment/pilot gates.
 
 Last edited: 2026-05-28 (post-#28 owner dashboard, #29 blog taxonomies, #30 notifications)
 Owner: Sobhan (solo founder)

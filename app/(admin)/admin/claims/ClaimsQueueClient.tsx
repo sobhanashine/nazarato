@@ -108,7 +108,7 @@ export function ClaimsQueueClient({
       <div className={CONTAINER + " py-8 min-h-[70vh]"}>
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-black text-strong mb-2">
+            <h1 className="text-2xl font-bold text-strong mb-2">
               صف ادعای مالکیت کسب‌وکارها
             </h1>
             <p className="text-muted text-sm">
@@ -117,7 +117,7 @@ export function ClaimsQueueClient({
           </div>
           <Link
             href="/admin/moderation"
-            className="inline-flex items-center justify-center rounded-full border border-glass-border bg-glass px-4 py-2 text-xs font-bold text-muted transition-colors hover:border-mint/45 hover:text-strong"
+            className="inline-flex min-h-11 items-center inline-flex items-center justify-center rounded-lg border border-glass-border bg-glass px-4 py-2 text-xs font-bold text-muted transition-colors hover:border-mint/45 hover:text-strong"
           >
             صف نظرات →
           </Link>
@@ -129,11 +129,11 @@ export function ClaimsQueueClient({
               <p className="text-xs text-muted font-bold mb-1">
                 کل درخواست‌های در انتظار
               </p>
-              <h3 className="text-xl font-black text-strong tabular-nums">
+              <h3 className="text-xl font-bold text-strong tabular-nums">
                 {faNum(claims.length)}
               </h3>
             </div>
-            <div className="w-10 h-10 rounded-full bg-mint/10 text-mint flex items-center justify-center border border-mint/20">
+            <div className="w-10 h-10 rounded-lg bg-mint/10 text-mint flex items-center justify-center border border-mint/20">
               <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
@@ -143,11 +143,11 @@ export function ClaimsQueueClient({
           <div className={`${GLASS} p-4 flex items-center justify-between`}>
             <div>
               <p className="text-xs text-muted font-bold mb-1">دارای سند پیوست</p>
-              <h3 className="text-xl font-black text-blue-400 tabular-nums">
+              <h3 className="text-xl font-bold text-lapis tabular-nums">
                 {faNum(claims.filter((c) => c.proof_url).length)}
               </h3>
             </div>
-            <div className="w-10 h-10 rounded-full bg-blue-400/10 text-blue-400 flex items-center justify-center border border-blue-500/20">
+            <div className="w-10 h-10 rounded-lg bg-blue-400/10 text-lapis flex items-center justify-center border border-blue-500/20">
               <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
@@ -158,7 +158,7 @@ export function ClaimsQueueClient({
 
         {claims.length === 0 ? (
           <div className={`${GLASS} flex flex-col items-center justify-center py-16 px-6 text-center`}>
-            <div className="w-16 h-16 rounded-full bg-mint/10 text-mint flex items-center justify-center mb-4 border border-mint/20">
+            <div className="w-16 h-16 rounded-lg bg-mint/10 text-mint flex items-center justify-center mb-4 border border-mint/20">
               <svg viewBox="0 0 24 24" className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
@@ -185,17 +185,17 @@ export function ClaimsQueueClient({
                       <Link
                         href={`/${claim.business_type === "ig_shop" ? "shop" : "company"}/${claim.business_slug}`}
                         target="_blank"
-                        className="text-xs font-black text-mint bg-mint/8 px-3 py-1.5 rounded-xl border border-mint/25 hover:bg-mint/15 transition-colors"
+                        className="inline-flex min-h-11 items-center text-xs font-bold text-mint bg-mint/8 px-3 py-1.5 rounded-lg border border-mint/25 hover:bg-mint/15 transition-colors"
                       >
                         برای: {claim.business_name}
                       </Link>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-500/30 px-2.5 py-1 text-[0.72rem] font-bold text-blue-400">
+                      <span className="inline-flex items-center gap-1 rounded-lg bg-blue-500/10 border border-blue-500/30 px-2.5 py-1 text-[0.72rem] font-bold text-lapis">
                         {PROOF_LABELS[claim.proof_type] || claim.proof_type}
                       </span>
                     </div>
 
                     {claim.proof_email && (
-                      <div className="mb-4 rounded-xl border border-glass-border bg-black/20 px-4 py-3">
+                      <div className="mb-4 rounded-lg border border-glass-border bg-canvas px-4 py-3">
                         <p className="text-[0.72rem] font-bold text-muted mb-1">
                           ایمیل کاری ارائه‌شده
                         </p>
@@ -217,7 +217,7 @@ export function ClaimsQueueClient({
                     )}
 
                     {hasFile && (
-                      <div className="mt-auto p-4 rounded-xl bg-glass-border/8 border border-glass-border/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="mt-auto p-4 rounded-lg bg-glass-border/8 border border-glass-border/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-lg bg-mint/10 text-mint flex items-center justify-center border border-mint/15 shrink-0">
                             <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -233,7 +233,7 @@ export function ClaimsQueueClient({
                           type="button"
                           onClick={() => handleViewProof(claim)}
                           disabled={loadingProofId !== null || isPending}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-mint/45 bg-mint/10 hover:bg-mint/20 text-mint font-bold px-4 py-2.5 min-h-11 text-xs cursor-pointer disabled:opacity-50 shrink-0"
+                          className="min-h-11 min-w-11 inline-flex items-center gap-1.5 rounded-lg border border-mint/45 bg-mint/10 hover:bg-mint/20 text-mint font-bold px-4 py-2.5 min-h-11 text-xs cursor-pointer disabled:opacity-50 shrink-0"
                         >
                           {loadingProofId === claim.id ? "در حال بارگیری..." : "مشاهده مدرک"}
                         </button>
@@ -244,12 +244,12 @@ export function ClaimsQueueClient({
                   <div className="lg:col-span-1 border-t lg:border-t-0 lg:border-r border-glass-border pt-5 lg:pt-0 lg:pr-5 flex flex-col justify-between gap-5">
                     <div className="flex flex-col gap-2">
                       <p className="text-xs font-bold text-muted">متقاضی</p>
-                      <div className="bg-black/20 rounded-xl p-3 border border-glass-border/25 flex flex-col gap-2">
+                      <div className="bg-canvas rounded-lg p-3 border border-glass-border/25 flex flex-col gap-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-slate-700/50 flex items-center justify-center text-[10px] text-strong font-black border border-glass-border/40 shrink-0">
+                          <div className="w-6 h-6 rounded-lg bg-canvas flex items-center justify-center text-[12px] text-strong font-bold border border-glass-border/40 shrink-0">
                             {claim.user_display_name.trim().charAt(0) || "؟"}
                           </div>
-                          <span className="text-xs font-black text-strong truncate">
+                          <span className="text-xs font-bold text-strong truncate">
                             {claim.user_display_name}
                           </span>
                         </div>
@@ -257,11 +257,11 @@ export function ClaimsQueueClient({
                           {claim.contact_phone}
                         </p>
                         {claim.user_phone !== claim.contact_phone && (
-                          <p dir="ltr" className="text-[10px] text-muted/70 tabular-nums">
+                          <p dir="ltr" className="text-[12px] text-muted/70 tabular-nums">
                             حساب: {claim.user_phone}
                           </p>
                         )}
-                        <p className="text-[10px] text-muted">
+                        <p className="text-[12px] text-muted">
                           {formatDate(claim.created_at)}
                         </p>
                       </div>
@@ -272,7 +272,7 @@ export function ClaimsQueueClient({
                         type="button"
                         onClick={() => handleApprove(claim.id)}
                         disabled={isPending}
-                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-mint hover:bg-mint-hi text-[#06231b] font-black px-5 py-3 min-h-11 text-xs cursor-pointer disabled:opacity-50"
+                        className="min-h-11 min-w-11 flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-mint hover:bg-mint/90 text-white font-bold px-5 py-3 min-h-11 text-xs cursor-pointer disabled:opacity-50"
                       >
                         تأیید
                       </button>
@@ -280,7 +280,7 @@ export function ClaimsQueueClient({
                         type="button"
                         onClick={() => setRejectingId(claim.id)}
                         disabled={isPending}
-                        className="flex-1 inline-flex items-center justify-center gap-2 rounded-full border border-red-500/30 hover:border-red-500/50 hover:bg-red-500/10 text-red-400 font-bold px-5 py-3 min-h-11 text-xs cursor-pointer disabled:opacity-50"
+                        className="min-h-11 min-w-11 flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-red-500/30 hover:border-red-500/50 hover:bg-red-500/10 text-pomegr font-bold px-5 py-3 min-h-11 text-xs cursor-pointer disabled:opacity-50"
                       >
                         رد
                       </button>
@@ -294,16 +294,17 @@ export function ClaimsQueueClient({
       </div>
 
       {viewingProof && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
-          <div className={`${GLASS} w-full max-w-4xl max-h-[90vh] flex flex-col p-5 overflow-hidden shadow-2xl`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30  p-4">
+          <div className={`${GLASS} w-full max-w-4xl max-h-[90vh] flex flex-col p-5 overflow-hidden `}>
             <div className="flex items-center justify-between border-b border-glass-border pb-4 mb-4">
-              <h3 className="text-base font-black text-strong">
+              <h3 className="text-base font-bold text-strong">
                 بررسی سند ادعای مالکیت
               </h3>
               <button
                 type="button"
                 onClick={() => setViewingProof(null)}
-                className="w-11 h-11 rounded-full flex items-center justify-center bg-glass-border/30 hover:bg-glass-border/60 text-strong hover:text-red-400 cursor-pointer"
+                aria-label="بستن نمایش مدرک"
+                className="min-h-11 min-w-11 w-11 h-11 rounded-lg flex items-center justify-center bg-glass-border/30 hover:bg-glass-border/60 text-strong hover:text-pomegr cursor-pointer"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
@@ -311,7 +312,7 @@ export function ClaimsQueueClient({
                 </svg>
               </button>
             </div>
-            <div className="flex-1 overflow-auto bg-black/50 rounded-xl flex items-center justify-center p-3 min-h-[50vh]">
+            <div className="flex-1 overflow-auto bg-canvas rounded-lg flex items-center justify-center p-3 min-h-[50vh]">
               {viewingProof.url.toLowerCase().includes(".pdf") ? (
                 <iframe
                   src={viewingProof.url}
@@ -331,7 +332,7 @@ export function ClaimsQueueClient({
               <Link
                 href={viewingProof.url}
                 target="_blank"
-                className="inline-flex items-center gap-1.5 rounded-full border border-glass-border hover:border-mint/45 px-4 py-2.5 min-h-11 text-xs font-bold text-muted hover:text-mint cursor-pointer"
+                className="inline-flex min-h-11 items-center inline-flex items-center gap-1.5 rounded-lg border border-glass-border hover:border-mint/45 px-4 py-2.5 min-h-11 text-xs font-bold text-muted hover:text-mint cursor-pointer"
               >
                 باز کردن در تب جدید
               </Link>
@@ -341,12 +342,12 @@ export function ClaimsQueueClient({
       )}
 
       {rejectingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30  p-4">
           <form
             onSubmit={handleRejectSubmit}
-            className={`${GLASS} w-full max-w-md p-6 flex flex-col shadow-2xl`}
+            className={`${GLASS} w-full max-w-md p-6 flex flex-col `}
           >
-            <h3 className="text-lg font-black text-strong mb-4">
+            <h3 className="text-lg font-bold text-strong mb-4">
               رد درخواست ادعای مالکیت
             </h3>
 
@@ -360,9 +361,9 @@ export function ClaimsQueueClient({
                   key={reason}
                   type="button"
                   onClick={() => setRejectionReason(reason)}
-                  className={`text-[10px] px-2.5 py-1 rounded-full border text-right transition-all cursor-pointer select-none ${
+                  className={`min-h-11 min-w-11 text-[12px] px-2.5 py-1 rounded-lg border text-right transition-all cursor-pointer select-none ${
                     rejectionReason === reason
-                      ? "bg-red-500/20 border-red-500 text-red-300"
+                      ? "bg-red-500/20 border-red-500 text-pomegr"
                       : "bg-glass-border/20 border-glass-border text-muted hover:border-glass-border-hi hover:text-strong"
                   }`}
                 >
@@ -374,7 +375,7 @@ export function ClaimsQueueClient({
             <textarea
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              className="bg-black/30 border border-glass-border rounded-lg p-3 text-sm text-strong focus:outline-none focus:border-mint min-h-[120px] resize-none mb-6 leading-7"
+              className="min-h-11 text-[16px] bg-paper border border-glass-border rounded-lg p-3  text-strong focus:outline-none focus:border-mint min-h-[120px] resize-none mb-6 leading-7"
               placeholder="مثال: مدرک ارائه‌شده ارتباط متقاضی با کسب‌وکار را اثبات نمی‌کند..."
               maxLength={300}
             />
@@ -387,14 +388,14 @@ export function ClaimsQueueClient({
                   setRejectionReason("");
                 }}
                 disabled={isPending}
-                className="px-5 py-2.5 min-h-11 rounded-full border border-glass-border hover:bg-glass-border/30 text-strong font-bold text-xs cursor-pointer disabled:opacity-50"
+                className="min-h-11 min-w-11 px-5 py-2.5 min-h-11 rounded-lg border border-glass-border hover:bg-glass-border/30 text-strong font-bold text-xs cursor-pointer disabled:opacity-50"
               >
                 انصراف
               </button>
               <button
                 type="submit"
                 disabled={isPending}
-                className="px-6 py-2.5 min-h-11 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer disabled:opacity-50"
+                className="min-h-11 min-w-11 px-6 py-2.5 min-h-11 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer disabled:opacity-50"
               >
                 {isPending ? "در حال ثبت..." : "تأیید و رد"}
               </button>

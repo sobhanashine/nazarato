@@ -1,132 +1,67 @@
 # نظراتو · Nazarato
 
-> A Persian-language review platform for Iranian businesses — regular companies (دیجی‌کالا، اسنپ‌فود…) and Instagram shops (`@manto_sara`, `@arezoo_cake`…) side by side. Think Trustpilot, built RTL-first for the Iranian market.
+نظراتو از کافه‌ها و رستوران‌های رشت شروع می‌کند: اطلاعات روشن و تجربهٔ دست اول برای انتخاب مردم، و شناخت مسئله و اقدام برای صاحب کسب‌وکار. مسیر «کشف → پنج انتخاب → پیشنهاد با شاهد → اقدام و سنجش مالک» در شاخهٔ `codex/product-recovery` به هم وصل شده است. این وضعیت، ادعای انتشار عمومی یا اعتبارسنجی پایلوت نیست.
 
-**North-star action:** a consumer writes a real, useful review about an Iranian business.
+قرارداد فعال، وضعیت تحویل و راهنمای AI بعدی در [وضعیت محصول](docs/product-status.md) ثبت شده‌اند. [مشخصات نبض رشت](docs/nabz-rasht-mvp.md) راهبرد بزرگ‌تر و [مشخصات بازطراحی](docs/mobile-redesign.md) برش کشف محلی را توضیح می‌دهند.
 
-**Status:** Solo-founder project · pre-launch.
+## وضعیت فعلی
 
----
+- کشف و جستجو با نام، نشانی و محدوده؛ دادهٔ عمومی فقط با منبع `approved` و وضعیت `active/merged`. کاتالوگ خالی و خطای دریافت پیام‌های جدا دارند.
+- `/nabz` انتخاب‌های واقعیِ ثبت‌شده در سرور را به نتیجهٔ اولیه با شاهد وصل می‌کند. پنج جفت متمایز حداقل چهار مکان می‌خواهد؛ پیشنهاد به حداقل سه نویسندهٔ مستقل برای هر موضوع و تحلیل معتبر فعلی وابسته است. نام مکان، دادهٔ آزمایشی و انتخاب به‌تنهایی امتیاز کیفیت نمی‌سازند.
+- ذخیره و بازیابی سلیقه خصوصی و مختص همان حساب است. پنل مالک تحلیل نسخه‌دار، اصلاح با حفظ تاریخچه، اقدام و مشاهدهٔ قبل/بعد دارد؛ دادهٔ کم یا نسخهٔ متفاوت به نتیجه تبدیل نمی‌شود.
+- نظرهای عمومی و آمارشان به `origin_kind=first_party` محدودند. نظرهای قدیمی با منشأ نامشخص نیاز به بررسی جداگانه دارند؛ متنشان حذف نمی‌شود.
+- ورود و ثبت تجربهٔ عمومی تا اتصال امن پیامک بسته‌اند. کد آزمایشی فقط در development است.
+- پیش‌نمایش خصوصی ۲۲ کافهٔ گلسار فقط در development، با فعال‌سازی صریح و Host محلی کار می‌کند. نظر و ذخیرهٔ آن مرورگری است؛ دادهٔ منتشرشده یا تأیید مالک نیست.
+- مسیر مالک به معرفی/اصلاح اطلاعات و گفت‌وگوی پایلوت در فرم تماس وصل است. فرم معتبر در جدول موجود ثبت می‌شود؛ تضمین زمان پاسخ یا تحلیل آماده نداریم.
+- راهنماهای بلاگ، متن تحریریه دربارهٔ محصول‌اند و گزارش پایلوت نیستند. WordPress اختیاری است.
+- تنها خانه برای indexing مجاز است؛ بقیهٔ صفحات noindex می‌مانند.
 
 ## Stack
 
-- **Next.js 16.2.6** — App Router only (no `pages/` directory)
-- **React 19.2.4**
-- **TypeScript 5** — `strict: true`, path alias `@/*` → repo root
-- **Tailwind CSS v4** — via `@tailwindcss/postcss` (v4 syntax only)
-- **Supabase** (Postgres) — data layer, accessed server-side with the service-role key
-- **Auth** — app-managed phone OTP (Kavenegar) + HMAC-signed cookie sessions
-- **Testing** — Vitest (unit, co-located) + Playwright (E2E in `e2e/`)
-- **ESLint 9** + `eslint-config-next`
-- **Deploy target** — Vercel (assumed)
+Next.js **16.3.8** App Router، React **19.2.4**، TypeScript strict، Tailwind **v4**، Supabase، Vitest و Playwright. انتشار فعلی با **Cloudflare Workers / OpenNext 1.20.7** است.
 
-The UI is **RTL Persian** (`<html lang="fa" dir="rtl">`), Vazirmatn font, Persian digits, on a dark glassy mint/lapis design system. It also ships as a **PWA** with Web Push notifications, a headless-WordPress blog, and Gemini-powered voice dictation on the review form.
+طراحی فارسی و RTL، روشن با زمینهٔ کرم و سبز جنگلی است. Vazirmatn متغیر از فایل محلی دارای مجوز OFL بارگذاری می‌شود؛ build برای فونت به Google نیاز ندارد. توکن‌ها در `app/globals.css` و ابزارهای مشترک در `components/ui/styles.ts` هستند.
 
----
-
-## Getting started
+## اجرای محلی
 
 ```bash
-npm install
-cp .env.local.example .env.local   # then fill in the values
-npm run dev                        # http://localhost:3000
+npm ci
+cp config/env.example .env.local
+npm run dev
 ```
 
-In dev, the OTP code is the static value **`123456`** (logged by `lib/auth/otp.ts`) — Kavenegar SMS is only wired up when credentials are present.
+از Node 24 (`.nvmrc`) استفاده کن و متغیرهای Supabase و `JWT_SECRET` را مطابق مثال تنظیم کن. هیچ کلید privileged نباید به مرورگر یا Git برسد. قبل از اعمال روی دیتابیس موجود، [برنامهٔ تطبیق مهاجرت‌ها](docs/migration-reconciliation.md) را بخوان.
 
-### Scripts
+برای پیش‌نمایش خصوصی، فایل بررسی‌شدهٔ `data/private/golsar-pilot.json` لازم است. این فایل در Git و خروجی انتشار نیست:
 
-| Command            | What it does                          |
-| ------------------ | ------------------------------------- |
-| `npm run dev`      | Start the dev server                  |
-| `npm run build`    | Production build                      |
-| `npm start`        | Serve the production build            |
-| `npm run lint`     | Run ESLint                            |
-| `npm test`         | Run Vitest unit tests (`vitest run`)  |
-| `npm run test:e2e` | Run Playwright E2E tests              |
-
----
-
-## Environment variables
-
-Copy `.env.local.example` → `.env.local` and fill in. Summary:
-
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | yes | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | yes | Server-only privileged key — **never** expose to the browser |
-| `JWT_SECRET` | yes | 32+ char secret for signing session cookies |
-| `KAVENEGAR_API_KEY` / `KAVENEGAR_TEMPLATE` | for SMS | OTP delivery (dev uses static code `123456`) |
-| `NEXT_PUBLIC_APP_URL` | yes | Absolute base URL |
-| `WP_API_URL` | for blog | Root URL of the headless WordPress site |
-| `WP_REVALIDATE_SECONDS` | no | Blog fetch cache TTL (default 60) |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` / `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` | for push | Web Push (generate with `npx web-push generate-vapid-keys --json`) |
-| `GEMINI_API_KEY` | for voice | Gemini STT for the review mic (`/api/transcribe`); when unset the mic returns a 503 toast |
-| `NEXT_PUBLIC_SMFLOW_*` / `SMFLOW_WIDGET_SECRET` | no | AI assistant widget (off by default) |
-
----
-
-## Project layout
-
-```
-app/                 App Router routes (see sitemap below)
-  api/               Route handlers (auth/me, transcribe)
-  (auth)/            Login + OTP verify — chrome-less layout
-  (user)/            Authenticated consumer area (profile, saved, settings, notifications)
-  (business)/        Owner dashboard (post-claim)
-  (admin)/           Internal moderation + claims queues
-components/          React components, grouped by domain (layout, ui, sections, review, …)
-lib/                 Data layer + integrations
-  auth/              Phone OTP + signed-cookie sessions
-  supabase/          Service-role DB client
-  data/              Per-domain query helpers (businesses, reviews, users, …)
-  push/              Web Push dispatcher
-  wp.ts              Headless WordPress client
-supabase/migrations/ SQL migrations (run on every new environment)
-docs/                Source-of-truth docs (architecture, pages, data model)
-e2e/                 Playwright specs
+```bash
+NAZARATO_LOCAL_PREVIEW=true NEXT_PUBLIC_SMFLOW_ENABLED=false npm run dev -- --hostname 127.0.0.1 --port 3027
 ```
 
-### Key routes
+production حتی با این flag فایل خصوصی را نمی‌خواند. `GEMINI_API_KEY` فقط برای چت آزمایشی است؛ بدون پیکربندی، سرویس unavailable است. ورودی صوتی بازنشسته شده و API آن 410 برمی‌گرداند.
 
-`/` · `/search` · `/categories` + `/categories/[slug]` · `/instagram-shops` · `/company/[slug]` (+ `/claim`) · `/shop/[handle]` · `/reviews` · `/blog` (+ `/[slug]`, `/category`, `/tag`) · `/about` · `/contact` · `/login` · `/profile` · `/saved` · `/notifications` · `/settings` · `/users/[username]` · `/for-business` · `/business/*` · `/admin/moderation` + `/admin/claims` · `/terms` · `/privacy`
+## بررسی و انتشار
 
-Reviews are written through a global bottom-sheet wizard (`ReviewSheet`), not a standalone page.
+```bash
+npm test
+npx tsc --noEmit
+npm run lint
+npm run build
+npm run build:cloudflare
+```
 
----
+آزمون پیش‌فرض مرورگر، سرور و پایگاه دادهٔ جایگزینِ loopback را با کلیدهای ساختگی اجرا می‌کند؛ سرور متصلِ باز را استفاده نمی‌کند و هیچ fixture را به سرویس واقعی نمی‌فرستد:
 
-## Data model (high level)
+```bash
+npx playwright install chromium --only-shell
+npm run test:e2e
+PG_BIN=/path/to/postgresql/bin npm run test:migrations:local
+```
 
-Three core Supabase tables plus supporting tables, all `snake_case` with `uuid` PKs and trigger-maintained denormalized counters:
+آزمون‌های قدیمی با احتمال نوشتن در Supabase فقط با `playwright.legacy.config.ts` و فعال‌سازی صریح اجرا می‌شوند؛ آن‌ها را روی دیتابیس محصول اجرا نکن. دو آزمون کاتالوگ خصوصی در suite عمومی ایزوله عمداً skip می‌شوند.
 
-- **`users`** — phone-verified profile (pseudonymous display name; `role` is `consumer` | `admin`). App-managed, standalone — does **not** extend `auth.users`.
-- **`businesses`** — one table for both companies and IG shops, distinguished by `type` (`company` | `ig_shop`), single slug namespace.
-- **`reviews`** — one per `(business_id, author_id)`, moderation-gated (`pending` → `published`/`rejected`), with a two-tier verified-purchase model.
+بررسی واحد، مرورگر، Git و انتشار مراحل جدا هستند؛ build موفق، انتشار عمومی نیست. branchهای `codex/*` به `dev` PR می‌دهند؛ مستقیم به `main` commit نکن. اعمال مهاجرت، طبقه‌بندی دادهٔ قدیمی، انتشار منابع و فعال‌سازی پیامک مراحل عملیاتی جدا هستند.
 
-Supporting: `review_votes`, `business_responses`, `review_reports`, `bookmarks`, `notifications`, `push_subscriptions`, `business_claims`. Full schema in [`docs/data-model.md`](docs/data-model.md).
+## مرجع‌ها
 
----
-
-## Conventions
-
-- **Never `any`** — use `unknown`, then narrow.
-- **Validate all inputs at the boundary** (route handlers, server actions).
-- **App Router only** — no `pages/` directory, ever.
-- **Tailwind v4 utilities only** — `app/globals.css` is config-only; shared class bundles live in `components/ui/styles.ts`. Never interpolate Tailwind classes.
-- **RTL-first** — use logical spacing (`ms-*`/`me-*`) over `ml-*`/`mr-*`.
-- **Co-locate tests** — `foo.ts` → `foo.test.ts`.
-- **Never commit to `main`** — always a feature branch; PRs merge into `dev`.
-
-See [`AGENTS.md`](AGENTS.md) for the full rules and [`docs/PROJECT.md`](docs/PROJECT.md) for architecture decisions.
-
----
-
-## Documentation
-
-| Doc | What's in it |
-| --- | --- |
-| [`AGENTS.md`](AGENTS.md) | Conventions, priorities, hard rules |
-| [`docs/PROJECT.md`](docs/PROJECT.md) | Architecture, stack decisions, changelog |
-| [`docs/pages-master.md`](docs/pages-master.md) | Every page: status, purpose, layout |
-| [`docs/data-model.md`](docs/data-model.md) | Database schema and the reasoning behind it |
+[PROJECT](docs/PROJECT.md) · [بازطراحی](docs/mobile-redesign.md) · [پیش‌نمایش گلسار](docs/golsar-local-preview.md) · [آمادگی انتشار](docs/production-readiness.md) · [Cloudflare](docs/cloudflare-release.md) · [AGENTS](AGENTS.md)

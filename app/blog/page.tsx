@@ -1,20 +1,18 @@
 import type { Metadata } from "next";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Container } from "@/components/ui/Container";
-import { PageBanner } from "@/components/ui/PageBanner";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { PostCard } from "@/components/blog/PostCard";
 import { BlogSidebar } from "@/components/blog/BlogSidebar";
 import { Pagination } from "@/components/blog/Pagination";
-import { FilterIcon } from "@/components/icons";
 import { blogPosts as fallbackPosts } from "@/lib/data/blog-posts";
 import type { BlogPost } from "@/lib/data/blog-posts";
 import { fetchPostsFromWp, isWpEnabled } from "@/lib/wp";
 
 export const metadata: Metadata = {
-  title: "بلاگ‌ها – نظراتو",
-  description: "بلاگ‌های نظراتو – راهنما، تحلیل و معرفی برندهای ایرانی",
+  title: "راهنماهای نظراتو",
+  description: "راهنمای انتخاب محلی، نوشتن تجربهٔ مفید و شنیدن صدای مشتری در نظراتو.",
 };
 
 /** Posts per page on the blog listing. */
@@ -53,38 +51,21 @@ export default async function BlogListPage({
     <>
       <Header />
       <Container>
-        <Breadcrumb items={[{ label: "خانه", href: "/" }, { label: "بلاگ" }]} />
-      </Container>
-      <PageBanner title="صفحه بلاگ!" subtitle="بلاگ‌هارو نگاه کن و ببین کدوم بدردت میخوره!" />
-
-      <Container>
-        <div className="flex flex-col gap-8 mb-16 lg:flex-row-reverse lg:justify-between lg:gap-12 lg:mb-20">
-          <main className="w-full lg:w-[58%]">
-            <div className="mb-6 lg:hidden">
-              <button
-                className="inline-flex items-center gap-2 py-[0.65rem] px-4 bg-glass border border-glass-border rounded-xl shadow-[var(--shadow-sm)] backdrop-blur-[18px] backdrop-saturate-[160%] text-strong text-sm font-medium cursor-pointer transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi [&_svg]:w-4 [&_svg]:h-4 [&_svg]:text-mint"
-                type="button"
-              >
-                <span>فیلترها</span>
-                <FilterIcon />
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-8">
-              {visible.map((post) => (
-                <PostCard key={post.slug} post={post} />
-              ))}
-            </div>
-
-            <Pagination
-              basePath="/blog"
-              totalPages={totalPages}
-              currentPage={page}
-            />
-          </main>
-
-          <BlogSidebar />
-        </div>
+        <Breadcrumb items={[{ label: "خانه", href: "/" }, { label: "راهنماهای نظراتو" }]} />
+        <main className="pb-20 pt-6 sm:pt-9">
+          <header className="mb-8 border-b border-glass-border pb-7 sm:mb-10">
+            <p className="mb-2 text-sm font-semibold text-forest">انتخاب محلی و تجربهٔ دست اول</p>
+            <h1 className="text-[28px] font-extrabold leading-[1.5] text-strong sm:text-[38px]">راهنماهای نظراتو</h1>
+            <p className="mt-4 max-w-[60ch] text-base leading-8 text-muted">برای انتخاب یک مکان، نوشتن تجربهٔ مفید و فهمیدن بازخورد مشتری؛ از همین قدم‌های ساده شروع کن.</p>
+          </header>
+          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-10">
+            <section aria-label="راهنماها" className="min-w-0">
+              <div className="flex flex-col gap-5">{visible.map(post => <PostCard key={post.slug} post={post} />)}</div>
+              <Pagination basePath="/blog" totalPages={totalPages} currentPage={page} />
+            </section>
+            <BlogSidebar />
+          </div>
+        </main>
       </Container>
       <Footer />
     </>

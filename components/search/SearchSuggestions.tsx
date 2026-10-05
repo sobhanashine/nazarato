@@ -19,7 +19,7 @@ export function SearchSuggestions({
   return (
     <div
       onMouseDown={(e) => e.preventDefault()}
-      className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-2xl border border-glass-border-hi bg-[#10141f] text-right shadow-[var(--shadow-lg)]"
+      className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-xl border border-glass-border-hi bg-paper text-right shadow-[var(--shadow-lg)]"
     >
       {suggestions.length > 0 ? (
         <ul aria-label="کسب‌وکارهای پیشنهادی">
@@ -27,11 +27,10 @@ export function SearchSuggestions({
             <li key={`${s.href}-${s.name}`}>
               <Link
                 href={s.href}
-                className="flex items-center gap-3 px-3.5 py-2.5 transition-colors hover:bg-glass-hover"
+                className="flex min-h-14 items-center gap-3 border-b border-glass-border px-4 py-3 transition-colors hover:bg-glass-hover"
               >
                 <span
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[0.95rem] font-bold leading-none text-white"
-                  style={{ background: s.color }}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-mint/5 text-base font-bold leading-none text-forest"
                 >
                   {s.initial}
                 </span>
@@ -41,7 +40,7 @@ export function SearchSuggestions({
                   </span>
                   <span
                     dir="auto"
-                    className="block truncate text-[11.5px] text-muted"
+                    className="block truncate text-[13px] text-muted"
                   >
                     {s.meta}
                   </span>

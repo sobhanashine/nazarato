@@ -3,15 +3,15 @@ import { Header } from "@/components/layout/Header";
 import { ChatClient } from "@/components/chat/ChatClient";
 
 export const metadata: Metadata = {
-  title: "گفتگو با هوش مصنوعی – نظراتو",
-  description: "اعتبار، نظرات و شکایت‌های فروشگاه‌های ایرانی را به صورت زنده با دستیار هوشمند نظراتو بررسی کنید.",
+  title: "بررسی آزمایشی منابع وب — نظراتو",
+  description: "مسیر آزمایشی گفت‌وگو دربارهٔ منابع وب؛ پیشنهاد شخصی محلی در حال توسعه است.",
 };
 
 export default function ChatPage() {
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex h-[calc(100dvh-72px-env(safe-area-inset-bottom))] flex-col overflow-hidden md:h-dvh">
       <Header />
-      <main className="flex-grow h-[calc(100dvh-148px-env(safe-area-inset-bottom,0px))] md:h-[calc(100vh-80px)] overflow-hidden relative">
+      <main className="relative min-h-0 flex-1 overflow-hidden">
         <ChatClient />
       </main>
     </div>

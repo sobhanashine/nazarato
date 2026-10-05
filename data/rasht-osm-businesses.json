@@ -1,0 +1,1210 @@
+{
+  "manifest": {
+    "source": "OpenStreetMap contributors",
+    "sourceUrl": "https://www.openstreetmap.org",
+    "license": "ODbL-1.0",
+    "licenseUrl": "https://www.openstreetmap.org/copyright",
+    "attribution": "© OpenStreetMap contributors",
+    "endpoint": "https://overpass-api.de/api/interpreter",
+    "bbox": [
+      37.22,
+      49.5,
+      37.36,
+      49.69
+    ],
+    "capturedAt": "2026-09-02T19:07:36Z",
+    "selection": "25 cafes + 25 restaurants; unique normalized names; contact-rich records first",
+    "candidateCount": 232,
+    "selectedCount": 50
+  },
+  "imports": [
+    {
+      "business": {
+        "slug": "rasht-osm-node-11503609116",
+        "name": "کافه نُت",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.3025599,
+        "longitude": 49.5928328,
+        "contact": {
+          "phone": "+989124524036",
+          "instagram": "cafenote_rasht",
+          "address": "گلسار-انتهای خیابان ۱۰۴-نبش کوچه نیلوفر"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/11503609116",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-11653954548",
+        "name": "ایجیگا",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2892642,
+        "longitude": 49.5936719,
+        "contact": {
+          "phone": "+989013636301",
+          "instagram": "ijigacars",
+          "address": "شهید عاطفی"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/11653954548",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-13534569719",
+        "name": "کافه دوری",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.325995,
+        "longitude": 49.577503,
+        "contact": {
+          "phone": "+989357851212",
+          "instagram": "cafedorii",
+          "address": "طالقانی"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/13534569719",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-way-512821414",
+        "name": "باکا کافه",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.309456,
+        "longitude": 49.5798347,
+        "contact": {
+          "phone": "+989362181804",
+          "instagram": "bakacafe",
+          "address": "گلسار، بلوار گیلان، بعد از میدان تربیت"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/way/512821414",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-way-979564956",
+        "name": "کافه آوند",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2905255,
+        "longitude": 49.5925187,
+        "contact": {
+          "phone": "+981332111277",
+          "instagram": "avand.cafe",
+          "address": "معتمدین"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/way/979564956",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-11337955261",
+        "name": "کافه ریرا",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.3102606,
+        "longitude": 49.5980298,
+        "contact": {
+          "phone": "+981333727677",
+          "website": "https://qbar.ir/RyraCafe"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/11337955261",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-13970088311",
+        "name": "کافه شیرینی جانان | Janan Verse",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2755938,
+        "longitude": 49.5822282,
+        "contact": {
+          "phone": "+989376164579",
+          "instagram": "janan.verse"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/13970088311",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-9792843297",
+        "name": "کافه کاریز",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.3039674,
+        "longitude": 49.6014556,
+        "contact": {
+          "phone": "+989112363867",
+          "instagram": "karizcafe.restaurant"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/9792843297",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-10971796970",
+        "name": "کافه دانیال",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2627206,
+        "longitude": 49.5428513,
+        "contact": {
+          "phone": "+989901286779",
+          "address": "هنرپرور_دلسوزی ۱۳"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/10971796970",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-11097167870",
+        "name": "Fanoos",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2759417,
+        "longitude": 49.5906627,
+        "contact": {
+          "phone": "+981333250316",
+          "address": "رز"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/11097167870",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12582732220",
+        "name": "کافه مادام موسیو",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2762825,
+        "longitude": 49.5937574,
+        "contact": {
+          "phone": "+989117152375",
+          "address": "بلوار مطهری جنب بانک کشاورزی"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12582732220",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12877808069",
+        "name": "کافه خشت",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2913794,
+        "longitude": 49.5974075,
+        "contact": {
+          "phone": "+989305103780",
+          "address": "دهقان، 5"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12877808069",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-13194917084",
+        "name": "کافه آریاک",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2812732,
+        "longitude": 49.578139,
+        "contact": {
+          "phone": "+989302433894",
+          "address": "مهر شریف"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/13194917084",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-13566289613",
+        "name": "قهوه وحید شعبه۲",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2803826,
+        "longitude": 49.6128331,
+        "contact": {
+          "phone": "+989116048655",
+          "address": "فلسطین"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/13566289613",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-4810862721",
+        "name": "دوستان",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2637731,
+        "longitude": 49.5793235,
+        "contact": {
+          "phone": "+989119392954",
+          "address": "بزرگراه شهید بهشتی"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/4810862721",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-5326168916",
+        "name": "کافه بستنی لئو",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2700107,
+        "longitude": 49.5826587,
+        "contact": {
+          "phone": "+981333339565",
+          "address": "بلوار حافظ"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/5326168916",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-5851755753",
+        "name": "کافه پازل",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2818392,
+        "longitude": 49.5966906,
+        "contact": {
+          "phone": "+989365110081",
+          "address": "شریعتی، 24"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/5851755753",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-10217184675",
+        "name": "کافه کتاب سایه",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2890182,
+        "longitude": 49.5968311,
+        "contact": {
+          "website": "https://sayebookcafe.com/",
+          "instagram": "sayebookcafe"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/10217184675",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-10760120745",
+        "name": "ANTICO CAFE",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.3222707,
+        "longitude": 49.5845,
+        "contact": {
+          "phone": "+981333770852"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/10760120745",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-11110201700",
+        "name": "کافه می",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.265074,
+        "longitude": 49.5682317,
+        "contact": {
+          "phone": "+989115436658"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/11110201700",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-11166704222",
+        "name": "کافه کتاب اردیبهشت",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.3030672,
+        "longitude": 49.5870133,
+        "contact": {
+          "phone": "+981332116561"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/11166704222",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-11339067413",
+        "name": "کافه آتور",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.3050763,
+        "longitude": 49.5944007,
+        "contact": {
+          "phone": "+989055805455"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/11339067413",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12248056536",
+        "name": "کافه گیل دختر",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.272093,
+        "longitude": 49.6190132,
+        "contact": {
+          "phone": "+989307365614"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12248056536",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12484478423",
+        "name": "کافه کیک ماکان",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.2627483,
+        "longitude": 49.5886511,
+        "contact": {
+          "phone": "+989397500198"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12484478423",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-13350712640",
+        "name": "کافه فست‌فود نوید",
+        "categorySlug": "cafe",
+        "city": "رشت",
+        "latitude": 37.3179258,
+        "longitude": 49.6200815,
+        "contact": {
+          "phone": "+989339543144"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/13350712640",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-11257603865",
+        "name": "رستوران گیله مرد اصیل",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2773424,
+        "longitude": 49.5854564,
+        "contact": {
+          "phone": "+981333222533",
+          "website": "https://gilemardasil.ir/",
+          "instagram": "gilemardasil_restaurant"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/11257603865",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-8176636959",
+        "name": "رستوران بی بی کیو",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.3116852,
+        "longitude": 49.5718217,
+        "contact": {
+          "phone": "+989901366772",
+          "website": "https://irbbq.ir/",
+          "address": "جاده رشت - پیربازار"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/8176636959",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12148361437",
+        "name": "امیجیگا",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2865485,
+        "longitude": 49.5873962,
+        "contact": {
+          "phone": "+989059930596",
+          "instagram": "ijiiga"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12148361437",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-4815102922",
+        "name": "شورِ کولی",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.3011998,
+        "longitude": 49.5879577,
+        "contact": {
+          "phone": "+981332121749;+981332121805;+981332111296",
+          "instagram": "shoore.cooli"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/4815102922",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-11740639352",
+        "name": "کته کباب عادل",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2927004,
+        "longitude": 49.5961119,
+        "contact": {
+          "phone": "+989384822127",
+          "address": "احمدزاده"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/11740639352",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12345848725",
+        "name": "رستوران گیل بانو کاسپین",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2707066,
+        "longitude": 49.5780487,
+        "contact": {
+          "phone": "+989119296993",
+          "address": "بلوار ضیابری"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12345848725",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12548775594",
+        "name": "رستوران ترش واش",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2977728,
+        "longitude": 49.6025087,
+        "contact": {
+          "phone": "+989382035101",
+          "address": "رشت بلوار انصاری بالاتر از گلباغ نماز خیابان یعقوب زاده نبش کوچه چهارم پلاک 51"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12548775594",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12866475982",
+        "name": "کافه رستوران ماهی جنوب",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2766627,
+        "longitude": 49.5983023,
+        "contact": {
+          "phone": "+989009718141",
+          "address": "ساغریسان روبه روبه حمام حاجی کوچه سمیع کافه رستوران ماهی جنوب"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12866475982",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-13241390781",
+        "name": "جگرسرای چاشنی رشت",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2950608,
+        "longitude": 49.5743083,
+        "contact": {
+          "phone": "+989127183428",
+          "address": "بلوار محمدعلی کوچکی"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/13241390781",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-13844351453",
+        "name": "رستوران غذاهای سنتی محلی و ایرانی مارال",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2704155,
+        "longitude": 49.6035285,
+        "contact": {
+          "phone": "+989117063868",
+          "address": "بلوار پاسداران"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/13844351453",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-13855851155",
+        "name": "مجتمع گردشگری و رستوران آریانا",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.3516886,
+        "longitude": 49.6318879,
+        "contact": {
+          "phone": "+989111360878",
+          "address": "انزلی - رشت"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/13855851155",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-7133667098",
+        "name": "کافه رستوران ماه عسل",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2540764,
+        "longitude": 49.5992503,
+        "contact": {
+          "phone": "+981333604238",
+          "address": "بیانی ۲"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/7133667098",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-9006736027",
+        "name": "رستوران سنتی ارک",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.305374,
+        "longitude": 49.5806471,
+        "contact": {
+          "phone": "+981333770485",
+          "address": "خیابان ۱۶۸، 41648"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/9006736027",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-11359987694",
+        "name": "حلیم و آش بهشتی",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.3093919,
+        "longitude": 49.5840815,
+        "contact": {
+          "phone": "+981333779783"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/11359987694",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-11381413246",
+        "name": "مالابیج",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.3009618,
+        "longitude": 49.5856091,
+        "contact": {
+          "phone": "+981332134517"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/11381413246",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12040797942",
+        "name": "رستوران و آشپزخانه موفق",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.263016,
+        "longitude": 49.5581897,
+        "contact": {
+          "phone": "+989351316303"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12040797942",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12127516028",
+        "name": "رستوران و آشپزخانه ایلیا",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.3119956,
+        "longitude": 49.5716733,
+        "contact": {
+          "phone": "+989933581183"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12127516028",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12168129720",
+        "name": "رستوران خورشخانه",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2849652,
+        "longitude": 49.624331,
+        "contact": {
+          "phone": "+981333824071"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12168129720",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12247815314",
+        "name": "کافه رستوران آسو",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2620298,
+        "longitude": 49.5964942,
+        "contact": {
+          "phone": "+989038313087"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12247815314",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12290273020",
+        "name": "آش و هلیم سحرخیزان رشت",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2960943,
+        "longitude": 49.576776,
+        "contact": {
+          "phone": "+989046949779"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12290273020",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12699105260",
+        "name": "رستوران رشتی مشتی",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2370421,
+        "longitude": 49.6501251,
+        "contact": {
+          "phone": "+989113317649"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12699105260",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-12718443545",
+        "name": "رستوران خوتکا",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2712915,
+        "longitude": 49.5666583,
+        "contact": {
+          "phone": "+981333519630"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/12718443545",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-13048639983",
+        "name": "غذای آماده و آماده به طبخ فامیلینگو",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2940039,
+        "longitude": 49.5768247,
+        "contact": {
+          "phone": "+989036500220"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/13048639983",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-13273200516",
+        "name": "رستوران عظیم",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.2584207,
+        "longitude": 49.5692617,
+        "contact": {
+          "phone": "+989113319634"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/13273200516",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    },
+    {
+      "business": {
+        "slug": "rasht-osm-node-13285996900",
+        "name": "جیگر سرای شکارچی",
+        "categorySlug": "restaurant",
+        "city": "رشت",
+        "latitude": 37.307301,
+        "longitude": 49.6097855,
+        "contact": {
+          "phone": "+989192328486"
+        }
+      },
+      "source": {
+        "sourceType": "open_dataset",
+        "sourceRef": "https://www.openstreetmap.org/node/13285996900",
+        "permissionBasis": "open_license",
+        "licenseName": "ODbL-1.0",
+        "licenseUrl": "https://www.openstreetmap.org/copyright",
+        "attributionText": "© OpenStreetMap contributors",
+        "publicationApproved": false,
+        "capturedAt": "2026-09-02T19:07:36Z"
+      }
+    }
+  ]
+}

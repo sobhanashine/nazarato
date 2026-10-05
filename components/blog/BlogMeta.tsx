@@ -8,8 +8,8 @@ export function BlogMeta({ post }: { post: BlogPost }) {
     <div className="flex items-center gap-6 mb-3 flex-wrap md:gap-8 md:mb-4">
       <div className="flex items-center gap-1.5">
         <div
-          className="w-7 h-7 rounded-full flex items-center justify-center text-[#06231b] text-xs font-bold shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] bg-[linear-gradient(135deg,#5BE6B2,#7B89FF)]"
-          style={post.author.color ? { background: post.author.color } : undefined}
+          className="w-8 h-8 rounded-lg border border-mint/15 bg-mint/5 flex items-center justify-center text-forest text-xs font-bold shrink-0"
+          aria-hidden
         >
           {post.author.initial}
         </div>

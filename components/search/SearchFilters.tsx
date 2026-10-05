@@ -25,7 +25,7 @@ function FilterGroup({ title, children }: { title: string; children: ReactNode }
 }
 
 const rowBase =
-  "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-[13.5px] transition-colors";
+  "flex min-h-11 items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-colors";
 
 /** A checkbox-style toggle row (square indicator). */
 function CheckRow({
@@ -42,6 +42,7 @@ function CheckRow({
       <Link
         href={href}
         scroll={false}
+        aria-current={active ? "true" : undefined}
         className={`${rowBase} ${
           active ? "text-strong" : "text-muted hover:bg-glass hover:text-strong"
         }`}
@@ -50,7 +51,7 @@ function CheckRow({
           aria-hidden
           className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors ${
             active
-              ? "border-mint bg-mint text-[#06231b]"
+              ? "border-mint bg-mint text-white"
               : "border-glass-border-hi"
           }`}
         >
@@ -109,9 +110,13 @@ function RadioRow({
 export function SearchFilters({
   query,
   categories,
+  hasReviewEvidence = true,
+  hasVerified = true,
 }: {
   query: SearchQuery;
   categories: string[];
+  hasReviewEvidence?: boolean;
+  hasVerified?: boolean;
 }) {
   // Categories don't apply to IG shops — hide the group on that tab.
   const showCategories = query.type !== "insta" && categories.length > 0;
@@ -133,7 +138,7 @@ export function SearchFilters({
         </FilterGroup>
       )}
 
-      <FilterGroup title="امتیاز">
+      {hasReviewEvidence && <FilterGroup title="امتیاز تجربه‌ها">
         {RATING_OPTIONS.map((o) => (
           <RadioRow
             key={o.value}
@@ -142,19 +147,19 @@ export function SearchFilters({
             href={searchHref(query, { minRating: o.value })}
           />
         ))}
-      </FilterGroup>
+      </FilterGroup>}
 
       <FilterGroup title="فیلترهای دیگر">
-        <CheckRow
+        {hasReviewEvidence && <CheckRow
           active={query.reviewedOnly}
-          label="فقط دارای نظر"
+          label="فقط دارای تجربه"
           href={searchHref(query, { reviewedOnly: !query.reviewedOnly })}
-        />
-        <CheckRow
+        />}
+        {hasVerified && <CheckRow
           active={query.verifiedOnly}
           label="فقط تأیید شده"
           href={searchHref(query, { verifiedOnly: !query.verifiedOnly })}
-        />
+        />}
       </FilterGroup>
     </div>
   );

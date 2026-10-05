@@ -157,15 +157,16 @@ export function PushToggle({ vapidPublicKey }: PushToggleProps) {
               iosNeedsInstall
             }
             aria-pressed={on}
-            className="block disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="اعلان‌های فوری روی این دستگاه"
+            className="min-h-11 min-w-11 flex h-11 w-11 items-center disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span
-              className={`block h-6 w-11 rounded-full transition-colors duration-200 ${
-                on ? "bg-mint" : "bg-white/10"
+              className={`block h-6 w-11 rounded-lg transition-colors duration-200 ${
+                on ? "bg-mint" : "bg-line"
               }`}
             />
             <span
-              className={`absolute top-1 right-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+              className={`absolute top-3.5 right-1 h-4 w-4 rounded-lg bg-white  transition-transform duration-200 ${
                 on ? "-translate-x-5" : "translate-x-0"
               }`}
             />
@@ -174,12 +175,12 @@ export function PushToggle({ vapidPublicKey }: PushToggleProps) {
       </div>
 
       {status === "unsupported" && (
-        <p className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-[0.78rem] text-amber-200">
+        <p className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-[0.78rem] text-saffron">
           مرورگر فعلی شما از اعلان‌های فوری پشتیبانی نمی‌کند.
         </p>
       )}
       {status === "denied" && (
-        <p className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-[0.78rem] text-rose-200">
+        <p className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 text-[0.78rem] text-pomegr">
           دسترسی اعلان رد شده است. برای فعال‌سازی، از تنظیمات مرورگر اجازه ارسال اعلان به این سایت را روشن کنید.
         </p>
       )}

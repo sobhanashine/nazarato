@@ -5,17 +5,20 @@
 > (pages) and [`PROJECT.md`](./PROJECT.md) (architecture).
 > Update this when you add/rename/remove a column or table.
 
-Last edited: 2026-05-22
+Last edited: 2026-10-06 (recovery schema additions)
 Owner: Sobhan (solo founder)
-Target DB: Supabase (Postgres). Auth (phone + OTP) lives in `auth.users`.
+Target DB: existing Supabase (Postgres). Auth is app-managed phone OTP and signed
+cookies; account rows live in `public.users`, not `auth.users`.
+Schema delivery is distinct from a remote apply; see
+[migration reconciliation](migration-reconciliation.md).
 
 ---
 
 ## 1. Conventions
 
 - **Naming** — `snake_case` tables and columns. Plural table names.
-- **Keys** — `uuid` primary keys (`gen_random_uuid()`), except `users.id` which
-  is the FK to `auth.users(id)`.
+- **Keys** — `uuid` primary keys (`gen_random_uuid()`); `users.id` is an app
+  account key, not a foreign key to Supabase Auth.
 - **Timestamps** — `timestamptz`, default `now()`. Every table has `created_at`;
   mutable tables also have `updated_at`.
 - **Enums** — modeled as `text` + `CHECK` constraint (easier to evolve than PG
@@ -34,7 +37,8 @@ Target DB: Supabase (Postgres). Auth (phone + OTP) lives in `auth.users`.
 Auth is **app-managed** (phone OTP + signed-cookie sessions — see `lib/auth/`),
 so `users` is a standalone table: it carries its own `phone` column and does
 **not** extend Supabase's `auth.users`. This row is the public-facing profile.
-MVP columns are live — see `supabase/migrations/0001_create_users_table.sql`.
+MVP columns are defined in `supabase/migrations/0001_create_users_table.sql`;
+this recovery did not reverify their remote deployment.
 
 | Column | Type | Default | Phase | Purpose |
 |---|---|---|---|---|
@@ -112,8 +116,9 @@ MVP columns are live — see `supabase/migrations/0001_create_users_table.sql`.
 | `author_id` | `uuid` | — | MVP | FK → `users(id)` |
 | `rating` | `smallint` | — | MVP | `CHECK (rating BETWEEN 1 AND 5)` |
 | `title` | `text` null | — | MVP | Max 80 chars |
-| `body` | `text` | — | MVP | `CHECK (char_length(body) BETWEEN 30 AND 2000)` |
+| `body` | `text` | — | MVP | `CHECK (char_length(body) BETWEEN 10 AND 2000)` |
 | `status` | `text` | `'pending'` | MVP | `'pending'` \| `'published'` \| `'rejected'` — moderation gate |
+| `origin_kind` | `text` | `'unknown'` | Recovery | `'first_party'` \| `'development_fixture'` \| `'unknown'`; published status alone never proves genuine origin |
 | `rejection_reason` | `text` null | — | MVP | Shown on `/profile/reviews` |
 | `verified` | `boolean` | `false` | MVP | Proof approved → نقد تأییدشده |
 | `proof_status` | `text` | `'none'` | MVP | `'none'` \| `'submitted'` \| `'approved'` \| `'rejected'` |
@@ -133,8 +138,10 @@ MVP columns are live — see `supabase/migrations/0001_create_users_table.sql`.
   `proof_status` set → **`proof_url` nulled and the storage file deleted**. Keep
   the verdict, not the personal document. Less storage, less liability.
   (See `pages-master.md` §1 "Verified reviews".)
-- **Verification is never mandatory.** A review with `proof_status = 'none'` is a
-  valid نقد عادی — it just ranks lower, weighs less, and earns no badges.
+- **Verification is never mandatory.** Public eligibility requires published
+  first-party origin and an eligible business with approved source. Proof and
+  future badges do not replace those gates. Only public first-party reviews
+  contribute to the review/rating counters.
 
 ---
 
@@ -143,12 +150,43 @@ MVP columns are live — see `supabase/migrations/0001_create_users_table.sql`.
 | Table | Columns | Key constraint | Phase |
 |---|---|---|---|
 | `review_votes` | `id`, `review_id`, `user_id`, `created_at` | `UNIQUE (review_id, user_id)` | MVP |
-| `business_responses` | `id`, `review_id`, `business_id`, `author_id`, `body`, `created_at`, `updated_at` | `UNIQUE (review_id)` — one owner reply per review | MVP→P2 |
-| `review_reports` | `id`, `review_id`, `reporter_id`, `reason`, `status`, `created_at` | — feeds `/admin/reports` | MVP |
+| `bookmarks` | `id`, `user_id`, `business_id`, `created_at` | One account/business pair | MVP |
+| `business_claims` | Business/account, claim status/proof and OTP verification state | See `0008` and September OTP hardening | MVP |
+| `notifications`, `push_subscriptions` | Account-scoped notifications and push endpoints | Server-authorized account access | MVP |
+| `contact_submissions` | Validated contact intake | Defined in `0013` | MVP |
 | `badges`, `user_badges` | — | not modeled until the P3 engine is built | P3 |
 
-`business_responses` is a separate table (not inline columns on `reviews`) so
-owner replies get edit history and their own timestamps.
+Owner replies are inline `reviews.owner_response_body` (10–1500 characters)
+and `owner_response_at`, added by `0009`; a trigger maintains
+`has_owner_response`. The earlier proposed `business_responses` and
+`review_reports` tables are not in the canonical migrations. Do not invent
+their existence from the route inventory.
+
+### September foundation and October recovery
+
+| Table / field | Contract |
+|---|---|
+| `businesses.neighborhood_slug/latitude/longitude/price_band` | Nullable discovery data with coordinate/price checks |
+| `business_sources` | Field payload/hash, source/permission/licence, capture/review status; fixtures always quarantined; private raw payload |
+| `comparison_votes` | Exactly one account or opaque session identity; distinct business pair, situation/city and daily window; unique identity/pair/window |
+| `review_analyses` | Review/model/version key; one active analysis per review; evidence, confidence, human verdict and timestamp |
+| `review_analysis_corrections` | Append-only application events linked to the reviewed model/version, original output and human label |
+| `taste_profiles` | Private account/model/version key; one active profile per account; prior models retained inactive |
+| `business_improvement_actions` | One planned/active action per business; fixed baseline, target, due date, model and nullable `metric_version`; all six observation fields written together |
+| `business_source_review_events`, `business_source_publication_events` | Separate source-review/publication audit events; approval does not establish ownership |
+| `security_audit_events` | Private bounded claim/auth security events |
+
+`save_real_taste_profile(uuid,jsonb)` is executable only by `service_role`.
+It serializes model transitions per account with an advisory transaction lock.
+The real `nabz-real-evidence@1.0.0` profile is stored in
+`dimension_weights` as a versioned object containing situation, normalized
+weights, five-choice evidence count, usable signal count and update timestamp;
+the server validates the complete shape on save and restore.
+
+Owner observations use `qualified-review-rate/1` and the same analysis version
+as the stored baseline. Legacy NULL metric versions remain withheld, rather
+than receiving fabricated baselines. Public counters include only published
+first-party reviews; unknown is the safe default for old records.
 
 ---
 
@@ -160,8 +198,7 @@ owner replies get edit history and their own timestamps.
 |---|---|
 | `reviews` insert/update/delete | `businesses.review_count`, `rating_sum`, `last_review_at`; `users.reviews_count` |
 | `review_votes` insert/delete | `reviews.helpful_count`; `users.helpful_votes_received` |
-| `business_responses` insert/delete | `reviews.has_owner_response`; `businesses.response_count`, `response_rate` |
-| `review_reports` insert | `reviews.report_count` |
+| `reviews.owner_response_body` update | `reviews.has_owner_response`, `owner_response_at` |
 
 ### Indexes (MVP)
 
@@ -171,11 +208,19 @@ owner replies get edit history and their own timestamps.
 - `businesses (slug)`
 - `users (username)`
 
-### Row-Level Security
+### Row-Level Security and server authorization
 
-- `reviews.proof_url` and the whole `review_reports` table — **admin-only read**.
-- `users` rows with `public_profile = false` — readable only by owner + admin.
-- `reviews` with `status != 'published'` — readable only by author + admin.
+App-managed cookies are not Supabase Auth JWTs. The server service-role client
+bypasses RLS and must authorize every consumer/owner/admin access. RLS supplies
+no anonymous policies for private source, vote, analysis/correction, taste or
+owner-action tables. Recovery removes the older broad anonymous policies on
+businesses/reviews/helpful votes so direct REST cannot bypass application
+eligibility or reveal individual voter identities.
+
+Private profiles return generic metadata/not-found to outsiders. Public feeds
+use approved-source/status and first-party review-origin gates; proofs and raw
+private vote/taste data are never serialized into those feeds. Do not describe
+application checks as column-level RLS guarantees.
 
 ### Anti-gaming is a query, not a column
 
@@ -198,6 +243,9 @@ schema needed — it is a moderation query.
 
 ## 8. Changelog
 
+- **2026-10-06** — Reconciled actual inline owner replies, private foundation
+  tables, real taste RPC, owner metric version and first-party origin/counters.
+  Fresh local sequence verified; remote schema/history apply remains separate.
 - **2026-05-22** — Initial draft. Three core tables (`users`, `businesses`,
   `reviews`) + supporting tables. Gamification columns added as `[P3]`.
 - **2026-05-22** — `users` table created in Supabase (migration

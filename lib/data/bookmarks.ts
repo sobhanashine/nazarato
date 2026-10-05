@@ -1,5 +1,10 @@
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { getCategoryTitle, type Business } from "./businesses";
+import {
+  getCategoryTitle,
+  PUBLIC_BUSINESS_SOURCE_SELECT,
+  PUBLIC_BUSINESS_STATUSES,
+  type Business,
+} from "./businesses";
 
 export async function getBookmarkStatus(userId: string, businessSlug: string): Promise<boolean> {
   const supabase = supabaseAdmin();
@@ -7,8 +12,10 @@ export async function getBookmarkStatus(userId: string, businessSlug: string): P
   // First lookup business ID
   const { data: bData } = await supabase
     .from("businesses")
-    .select("id")
+    .select(`id, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
     .eq("slug", businessSlug)
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .maybeSingle();
     
   if (!bData) return false;
@@ -52,8 +59,12 @@ export async function getUserBookmarks(
   // `business: null` for the unmatched type, which the page can't show anyway).
   let query = supabase
     .from("bookmarks")
-    .select("created_at, business:businesses!inner(*)")
+    .select(
+      `created_at, business:businesses!inner(*, ${PUBLIC_BUSINESS_SOURCE_SELECT})`,
+    )
     .eq("user_id", userId)
+    .in("business.status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business.business_sources.status", "approved")
     .order("created_at", { ascending: false });
 
   if (type) {
@@ -96,8 +107,9 @@ export async function getPopularBusinesses(): Promise<Business[]> {
   
   const { data, error } = await supabase
     .from("businesses")
-    .select("*")
-    .in("status", ["active", "merged"])
+    .select(`*, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .order("review_count", { ascending: false })
     .order("rating_avg", { ascending: false })
     .limit(4);

@@ -114,7 +114,10 @@ export function suggestBusinesses(query: string, limit = 6, businesses: Business
 
 /** Parse a Persian-numeral string (e.g. `"۴.۸"`, `"۳۲۵"`) into a number. */
 function faToNum(input: string): number {
-  const ascii = input.replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d).toString());
+  const ascii = input
+    .replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d).toString())
+    .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString())
+    .replace(/٫/g, ".");
   const n = Number.parseFloat(ascii.replace(/[^0-9.]/g, ""));
   return Number.isFinite(n) ? n : 0;
 }
@@ -260,7 +263,7 @@ export function parseSearchParams(raw: RawParams, businesses?: Business[]): Sear
   const page = Number.isFinite(pageNum) && pageNum > 1 ? pageNum : 1;
 
   // IG shops have no business category — drop categories when on that tab.
-  const validCategories = new Set(["کافه", ...(businesses ?? []).map((b) => b.category)]);
+  const validCategories = new Set(["کافه", "رستوران", ...(businesses ?? []).map((b) => b.category)]);
   const categories =
     type === "insta"
       ? []

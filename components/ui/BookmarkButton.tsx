@@ -66,13 +66,15 @@ export function BookmarkButton({ businessSlug, initialIsBookmarked, className = 
       type="button"
       onClick={handleClick}
       disabled={isPending}
-      className={`flex items-center justify-center gap-2 rounded-full transition-colors ${className}`}
+      className={`flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl transition-colors ${className}`}
+      data-active={bookmarked}
+      aria-pressed={bookmarked}
       aria-label={bookmarked ? "حذف از ذخیره‌ها" : "ذخیره"}
     >
       {bookmarked ? (
-        <BookmarkFilledIcon className="w-5 h-5 text-mint-400" />
+        <BookmarkFilledIcon className="w-5 h-5 text-forest" />
       ) : (
-        <BookmarkIcon className="w-5 h-5 text-white/70 hover:text-white" />
+        <BookmarkIcon className="w-5 h-5 text-muted" />
       )}
       {label && <span>{localOnly ? (bookmarked ? "ذخیره شد" : "ذخیره") : label}</span>}
     </button>

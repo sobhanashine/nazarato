@@ -32,9 +32,9 @@ export function NotificationsForm({
           toast.success("تنظیمات اعلان‌ها با موفقیت به‌روزرسانی شد.", {
             position: "bottom-center",
             style: {
-              background: "#1E293B",
-              color: "#FFF",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
+              background: "#FFFDFA",
+              color: "#1F3029",
+              border: "1px solid #DDDCD2",
               fontFamily: "var(--font-vazirmatn)",
             },
           });
@@ -55,7 +55,7 @@ export function NotificationsForm({
         {/* Toggle 1: Replies */}
         <label className="flex cursor-pointer items-start justify-between gap-4 py-1 select-none">
           <div className="flex flex-col gap-1">
-            <span className="text-[0.95rem] font-bold text-strong transition-colors hover:text-white">
+            <span className="text-[0.95rem] font-bold text-strong transition-colors hover:text-forest">
               پاسخ به نظرات من
             </span>
             <span className="text-[0.8rem] leading-[1.6] text-muted">
@@ -68,15 +68,15 @@ export function NotificationsForm({
               name="notification_replies"
               checked={replies}
               onChange={(e) => setReplies(e.target.checked)}
-              className="sr-only"
+              className="sr-only peer"
             />
             <div
-              className={`h-6 w-11 rounded-full transition-colors duration-200 ${
-                replies ? "bg-mint" : "bg-white/10"
+              className={`h-6 w-11 rounded-lg transition-colors duration-200 peer-focus-visible:ring-2 peer-focus-visible:ring-mint peer-focus-visible:ring-offset-2 ${
+                replies ? "bg-mint" : "bg-line"
               }`}
             />
             <div
-              className={`absolute top-1 right-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+              className={`absolute top-1 right-1 h-4 w-4 rounded-lg bg-white  transition-transform duration-200 ${
                 replies ? "-translate-x-5" : "translate-x-0"
               }`}
             />
@@ -88,7 +88,7 @@ export function NotificationsForm({
         {/* Toggle 2: Bookmarks */}
         <label className="flex cursor-pointer items-start justify-between gap-4 py-1 select-none">
           <div className="flex flex-col gap-1">
-            <span className="text-[0.95rem] font-bold text-strong transition-colors hover:text-white">
+            <span className="text-[0.95rem] font-bold text-strong transition-colors hover:text-forest">
               تغییرات کسب‌وکارهای نشان‌شده
             </span>
             <span className="text-[0.8rem] leading-[1.6] text-muted">
@@ -101,15 +101,15 @@ export function NotificationsForm({
               name="notification_bookmarks"
               checked={bookmarks}
               onChange={(e) => setBookmarks(e.target.checked)}
-              className="sr-only"
+              className="sr-only peer"
             />
             <div
-              className={`h-6 w-11 rounded-full transition-colors duration-200 ${
-                bookmarks ? "bg-mint" : "bg-white/10"
+              className={`h-6 w-11 rounded-lg transition-colors duration-200 peer-focus-visible:ring-2 peer-focus-visible:ring-mint peer-focus-visible:ring-offset-2 ${
+                bookmarks ? "bg-mint" : "bg-line"
               }`}
             />
             <div
-              className={`absolute top-1 right-1 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+              className={`absolute top-1 right-1 h-4 w-4 rounded-lg bg-white  transition-transform duration-200 ${
                 bookmarks ? "-translate-x-5" : "translate-x-0"
               }`}
             />
@@ -121,7 +121,7 @@ export function NotificationsForm({
         <button
           type="submit"
           disabled={isPending}
-          className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-mint px-6 py-3 text-[0.88rem] font-black text-black transition-all duration-200 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+          className="min-h-11 min-w-11 group relative flex w-full items-center justify-center gap-2 rounded-lg bg-mint px-6 py-3 text-[0.88rem] font-bold text-white transition-all duration-200 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           {isPending ? "در حال ذخیره..." : "ذخیره تغییرات"}
         </button>

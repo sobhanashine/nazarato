@@ -1,22 +1,21 @@
 /**
- * Business listings — placeholder data until Supabase is wired (issue #16/#18).
- *
- * `businessDetails` is the source of truth. Card-shaped data (`Business`) and
- * rating stats are *derived* from it, so a company page and its cards can never
- * disagree. `score`/`reviews` on `Business` are pre-formatted Persian-numeral
- * strings so render code stays free of locale formatting.
+ * Public business reads require an approved source and eligible status.
+ * Development fixtures below are never a fallback for database reads.
+ * Ratings and review feeds include published first-party reviews only.
  */
 
 import type { Rating } from "@/components/ui/RatingStars";
 import type { Review } from "@/lib/data/reviews";
 import { categories } from "./categories";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { toPublicBusinessContact, toPublicBusinessHours, toPublicBusinessInfo } from "./public-business-facts";
 
 export function getCategoryTitle(categorySlug: string): string {
   const cat = categories.find((c) => c.href === `/categories/${categorySlug}`);
   if (cat) return cat.title;
   
   const map: Record<string, string> = {
+    cafe: "کافه", cafes: "کافه", restaurant: "رستوران", restaurants: "رستوران",
     digital: "کالای دیجیتال",
     food: "خوراکی و شیرینی",
     health: "سلامت و مکمل",
@@ -60,12 +59,31 @@ export type Business = {
   verified?: boolean;
   reviewCount?: number;
   searchText?: string;
+  address?: string;
+};
+
+/** Minimal, public-safe shape accepted by the quick-review picker. */
+export type ReviewTarget = Pick<
+  Business,
+  "slug" | "name" | "category" | "city" | "initial" | "color"
+>;
+
+export type ReviewTargetLoadResult =
+  | { ok: true; businesses: ReviewTarget[] }
+  | { ok: false; businesses: [] };
+
+export type BusinessSourceAttribution = {
+  sourceType: "open_dataset";
+  sourceUrl: string;
+  licenseName: string;
+  licenseUrl: string;
+  attributionText: string;
 };
 
 /** A review as authored — `shop` is attached on read (see `getBusiness`). */
 type RawReview = {
   id: string;
-  user: { name: string; initial: string; color: string };
+  user: { id?: string; username?: string | null; name: string; initial: string; color: string };
   rating: Rating;
   date: string;
   text: string;
@@ -93,7 +111,89 @@ export type BusinessDetail = {
   info: { label: string; value: string }[];
   similar: string[];
   reviews: RawReview[];
+  /** Visible licence credit for factual fields sourced from approved open data. */
+  attributions?: BusinessSourceAttribution[];
 };
+
+export const PUBLIC_BUSINESS_STATUSES = ["active", "merged"];
+
+export const PUBLIC_BUSINESS_SOURCE_GATE_SELECT =
+  "business_sources!inner(status)";
+
+export const PUBLIC_BUSINESS_SOURCE_SELECT = `
+  business_sources!inner (
+    source_type,
+    source_ref,
+    license_name,
+    license_url,
+    attribution_text,
+    status
+  )
+`;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function readHttpsUrl(value: unknown): string | null {
+  if (typeof value !== "string" || value.length > 500) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Reduce private source rows to safe public credits; incomplete rows disappear. */
+export function toPublicBusinessAttributions(
+  value: unknown,
+): BusinessSourceAttribution[] {
+  if (!Array.isArray(value)) return [];
+
+  const attributions: BusinessSourceAttribution[] = [];
+  const seen = new Set<string>();
+  for (const row of value) {
+    if (
+      !isRecord(row) ||
+      row.status !== "approved" ||
+      row.source_type !== "open_dataset"
+    ) {
+      continue;
+    }
+
+    const sourceUrl = readHttpsUrl(row.source_ref);
+    const licenseUrl = readHttpsUrl(row.license_url);
+    const licenseName =
+      typeof row.license_name === "string" ? row.license_name.trim() : "";
+    const attributionText =
+      typeof row.attribution_text === "string"
+        ? row.attribution_text.trim()
+        : "";
+    if (
+      !sourceUrl ||
+      !licenseUrl ||
+      !licenseName ||
+      licenseName.length > 120 ||
+      !attributionText ||
+      attributionText.length > 300
+    ) {
+      continue;
+    }
+
+    const key = `${sourceUrl}|${licenseUrl}|${attributionText}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    attributions.push({
+      sourceType: "open_dataset",
+      sourceUrl,
+      licenseName,
+      licenseUrl,
+      attributionText,
+    });
+  }
+  return attributions;
+}
 
 const faNum = (n: number) => n.toLocaleString("fa-IR");
 
@@ -122,27 +222,14 @@ export function averageLabel(reviews: RawReview[]): string {
 /** Attach the parent business as `shop` so the row renders in `<ReviewCard />`. */
 export function toReviews(detail: BusinessDetail): Review[] {
   return detail.reviews.map((r) => {
-    const mockMap: Record<string, { id: string; username: string }> = {
-      "سارا احمدی": { id: "user-mock-1", username: "sara_ahmadi" },
-      "نیلوفر حسینی": { id: "user-mock-2", username: "niloofar_h" },
-      "زهرا موسوی": { id: "user-mock-3", username: "zahra_m" },
-      "علی کریمی": { id: "user-mock-4", username: "ali_k" },
-      "محمد رضایی": { id: "user-mock-5", username: "mohammad_r" },
-      "رضا جعفری": { id: "user-mock-6", username: "reza_j" },
-    };
-
-    const mockUser = mockMap[r.user.name];
-    const userId = mockUser ? mockUser.id : `mock-user-${r.user.name.replace(/\s+/g, "-")}`;
-    const username = mockUser ? mockUser.username : null;
-
     return {
       id: r.id,
       user: {
-        id: userId,
+        id: r.user.id ?? "unknown",
         name: r.user.name,
         initial: r.user.initial,
         color: r.user.color,
-        username,
+        username: r.user.username ?? null,
       },
       shop: { name: detail.name, href: `/company/${detail.slug}` },
       date: r.date,
@@ -323,6 +410,78 @@ export const businessDetails: BusinessDetail[] = [
 
 export const featuredBusinesses: Business[] = businessDetails.map(toCard);
 
+const REVIEW_TARGET_LIMIT = 250;
+
+function reviewTargetFromRow(value: unknown): ReviewTarget | null {
+  if (!isRecord(value)) return null;
+
+  const slug = typeof value.slug === "string" ? value.slug.trim() : "";
+  const name = typeof value.name === "string" ? value.name.trim() : "";
+  const categorySlug =
+    typeof value.category_slug === "string" ? value.category_slug.trim() : "";
+  const city = typeof value.city === "string" ? value.city.trim() : "";
+  const initial =
+    typeof value.initial === "string" ? value.initial.trim().slice(0, 2) : "";
+  const color =
+    typeof value.color === "string" && /^#[0-9a-f]{6}$/i.test(value.color)
+      ? value.color
+      : "#7B89FF";
+
+  if (
+    !slug ||
+    slug.length > 160 ||
+    !name ||
+    name.length > 200 ||
+    !categorySlug ||
+    categorySlug.length > 100
+  ) {
+    return null;
+  }
+
+  return {
+    slug,
+    name,
+    category: getCategoryTitle(categorySlug),
+    city: city || "نامشخص",
+    initial: initial || name.charAt(0) || "؟",
+    color,
+  };
+}
+
+/**
+ * Fail-closed supply for the global quick-review picker.
+ *
+ * The service-role client is intentionally reduced to public rows with at
+ * least one approved provenance record before any field reaches the client.
+ */
+export async function getReviewTargets(): Promise<ReviewTargetLoadResult> {
+  const supabase = supabaseAdmin();
+  const { data, error } = await supabase
+    .from("businesses")
+    .select(
+      `slug, name, category_slug, city, initial, color, ${PUBLIC_BUSINESS_SOURCE_GATE_SELECT}`,
+    )
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
+    .order("name", { ascending: true })
+    .limit(REVIEW_TARGET_LIMIT);
+
+  if (error || !Array.isArray(data)) {
+    console.error("[review-targets] failed to load public businesses", {
+      error: error?.message ?? "invalid response",
+    });
+    return { ok: false, businesses: [] };
+  }
+
+  return {
+    ok: true,
+    businesses: data.flatMap((row) => {
+      const target = reviewTargetFromRow(row);
+      return target ? [target] : [];
+    }),
+  };
+}
+
 export async function getBusiness(
   slug: string,
   viewerId?: string,
@@ -332,10 +491,10 @@ export async function getBusiness(
   // 1. Fetch business row
   const { data: b, error: bError } = await supabase
     .from("businesses")
-    .select("*, business_sources!inner(status)")
-    .in("status", ["active", "merged"])
-    .eq("business_sources.status", "approved")
+    .select(`*, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
     .eq("slug", slug)
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .single();
     
   if (bError || !b) return undefined;
@@ -359,7 +518,7 @@ export async function getBusiness(
       )
     `)
     .eq("business_id", b.id)
-    .eq("status", "published")
+    .eq("status", "published").eq("origin_kind", "first_party")
     .order("created_at", { ascending: false });
 
   if (rError) {
@@ -402,10 +561,11 @@ export async function getBusiness(
   }
 
   const reviews: RawReview[] = reviewsList.map((r) => {
-    const author = r.author || { display_name: "کاربر نظراتو", avatar_color: "#3B82F6" };
+    const author = r.author || { id: "unknown", display_name: "کاربر نظراتو", avatar_color: "#3B82F6" };
     return {
       id: r.id,
       user: {
+        id: author.id,
         name: author.display_name,
         initial: author.display_name.charAt(0) || "ک",
         color: author.avatar_color || "#3B82F6",
@@ -430,10 +590,10 @@ export async function getBusiness(
   let similarSlugs: string[] = [];
   const { data: similarData } = await supabase
     .from("businesses")
-    .select("slug, business_sources!inner(status)")
-    .eq("business_sources.status", "approved")
+    .select(`slug, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
     .eq("category_slug", b.category_slug)
-    .eq("status", "active")
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .neq("slug", b.slug)
     .limit(4);
     
@@ -451,11 +611,12 @@ export async function getBusiness(
     verified: b.verified,
     claimed: b.claimed,
     description: b.description || "",
-    contact: b.contact || {},
-    hours: b.hours || undefined,
-    info: b.info || [],
+    contact: toPublicBusinessContact(b.contact),
+    hours: toPublicBusinessHours(b.hours),
+    info: toPublicBusinessInfo(b.info),
     similar: similarSlugs,
     reviews: reviews,
+    attributions: toPublicBusinessAttributions(b.business_sources),
   };
 }
 
@@ -466,10 +627,10 @@ export async function getSimilarBusinesses(detail: BusinessDetail): Promise<Busi
   
   const { data: list, error } = await supabase
     .from("businesses")
-    .select("*, business_sources!inner(status)")
-    .in("status", ["active", "merged"])
-    .eq("business_sources.status", "approved")
-    .in("slug", detail.similar);
+    .select(`*, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
+    .in("slug", detail.similar)
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved");
     
   if (error || !list) return [];
   
@@ -546,10 +707,10 @@ export async function getBusinessesByCategory(
   // 1. Start querying the businesses table
   let query = supabase
     .from("businesses")
-    .select("*, business_sources!inner(status)", { count: "exact" })
-    .eq("business_sources.status", "approved")
+    .select(`*, ${PUBLIC_BUSINESS_SOURCE_SELECT}`, { count: "exact" })
     .eq("category_slug", categorySlug)
-    .in("status", ["active", "merged"]);
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved");
 
   // Apply sorting at the database level where possible
   if (sort === "rating") {
@@ -583,7 +744,7 @@ export async function getBusinessesByCategory(
       reviews: b.review_count.toLocaleString("fa-IR"),
       verified: b.verified,
       description: b.description || "",
-      info: b.info || [],
+      info: toPublicBusinessInfo(b.info),
     };
   });
 

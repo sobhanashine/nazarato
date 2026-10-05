@@ -9,7 +9,14 @@
  */
 
 import { getSession } from "@/lib/auth/session";
+import {
+  getReviewTargets,
+  PUBLIC_BUSINESS_SOURCE_GATE_SELECT,
+  PUBLIC_BUSINESS_STATUSES,
+  type ReviewTargetLoadResult,
+} from "@/lib/data/businesses";
 import { notifyAdminsOfNewReview } from "@/lib/data/notifications";
+import { persistReviewAnalysisBestEffort } from "@/lib/data/review-analysis-persistence";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 const BODY_MIN = 10;
@@ -35,6 +42,18 @@ function toAsciiDigits(s: string): string {
   return s.replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)));
 }
 
+/** Fresh, public-only supply loaded when the picker opens. */
+export async function loadReviewTargets(): Promise<ReviewTargetLoadResult> {
+  try {
+    return await getReviewTargets();
+  } catch (error) {
+    console.error("[review-targets] unexpected load failure", {
+      error: error instanceof Error ? error.message : "unknown error",
+    });
+    return { ok: false, businesses: [] };
+  }
+}
+
 export async function submitQuickReview(
   _prev: QuickReviewState,
   formData: FormData,
@@ -47,6 +66,9 @@ export async function submitQuickReview(
   const slug = asString(formData.get("slug"));
   if (!slug) {
     return { ok: false, error: "اول کسب‌وکار موردنظر را انتخاب کن." };
+  }
+  if (slug.length > 160 || !/^[\p{L}\p{N}_-]+$/u.test(slug)) {
+    return { ok: false, error: "شناسه کسب‌وکار انتخاب‌شده معتبر نیست." };
   }
 
   const rating = Number(toAsciiDigits(asString(formData.get("rating"))));
@@ -66,27 +88,44 @@ export async function submitQuickReview(
 
   const { data: businessRow, error: bizError } = await supabase
     .from("businesses")
-    .select("id, name")
+    .select(`id, name, ${PUBLIC_BUSINESS_SOURCE_GATE_SELECT}`)
     .eq("slug", slug)
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .single();
 
-  if (bizError || !businessRow) {
-    return { ok: false, error: "کسب‌وکار موردنظر در سیستم پیدا نشد." };
+  if (bizError && bizError.code !== "PGRST116") {
+    console.error("[quick-review] business eligibility lookup failed", {
+      authorId: session.id,
+      code: bizError.code ?? "unknown",
+    });
   }
 
-  const { error: insertError } = await supabase.from("reviews").insert({
-    business_id: businessRow.id,
-    author_id: session.id,
-    rating,
-    title: null,
-    body,
-    status: "pending",
-    verified: false,
-    proof_status: "none",
-    proof_url: null,
-    proof_type: null,
-    purchase_date: null,
-  });
+  if (bizError || !businessRow) {
+    return {
+      ok: false,
+      error: "این کسب‌وکار فعلاً امکان دریافت نظر ندارد.",
+    };
+  }
+
+  const { data: insertedReview, error: insertError } = await supabase
+    .from("reviews")
+    .insert({
+      business_id: businessRow.id,
+      author_id: session.id,
+      rating,
+      title: null,
+      body,
+      status: "pending",
+      origin_kind: "first_party",
+      verified: false,
+      proof_status: "none",
+      proof_url: null,
+      proof_type: null,
+      purchase_date: null,
+    })
+    .select("id")
+    .single();
 
   if (insertError) {
     if (insertError.code === "23505") {
@@ -98,6 +137,18 @@ export async function submitQuickReview(
     });
     return { ok: false, error: "خطا در ثبت نظر. لطفاً دوباره تلاش کن." };
   }
+
+  if (!insertedReview?.id || typeof insertedReview.id !== "string") {
+    console.error("[quick-review] insert returned no review id", {
+      authorId: session.id,
+      businessId: businessRow.id,
+    });
+    return { ok: false, error: "خطا در ثبت نظر. لطفاً دوباره تلاش کن." };
+  }
+
+  // Analysis is deliberately best-effort: a review remains publishable in the
+  // moderation queue even if the optional intelligence write is unavailable.
+  await persistReviewAnalysisBestEffort(insertedReview.id, body);
 
   await notifyAdminsOfNewReview({ businessName: businessRow.name });
 

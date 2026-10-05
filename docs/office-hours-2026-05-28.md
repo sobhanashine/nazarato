@@ -2,7 +2,13 @@
 
 **Date:** 2026-05-28
 **Mode:** Startup (YC-style diagnostic)
-**Status:** APPROVED
+**Status:** HISTORICAL — superseded as the active MVP direction on 2026-09-02.
+
+The May Instagram scam-lookup proposal below is retained as decision history.
+The [September locked roadmap](https://trello.com/c/qy0wEf4I),
+[Rasht-first strategy](https://trello.com/c/yeXSvWke) and
+[current delivery record](product-status.md) govern current work. Do not revive
+this pivot or its GitHub backlog by treating the old approval as current scope.
 **Source design doc:** `~/.gstack/projects/sobhanashine-nazarato/sobhan-main-design-20260528-025948.md`
 
 ---

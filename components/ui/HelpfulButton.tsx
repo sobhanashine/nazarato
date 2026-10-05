@@ -59,9 +59,9 @@ export function HelpfulButton({ reviewId, initialCount, initialVoted }: HelpfulB
       disabled={isPending}
       aria-pressed={hasVoted}
       data-voted={hasVoted ? "true" : "false"}
-      className={`inline-flex items-center gap-[0.3rem] text-[0.72rem] sm:text-[0.75rem] font-medium whitespace-nowrap bg-transparent border border-transparent rounded-full cursor-pointer [&>svg]:w-[12px] [&>svg]:h-[12px] sm:[&>svg]:w-[13px] sm:[&>svg]:h-[13px] [&>svg]:shrink-0 transition-all duration-200 active:scale-95 disabled:opacity-50 ${
+      className={`inline-flex min-h-11 items-center gap-2 rounded-lg border border-glass-border bg-paper px-3 text-sm font-medium cursor-pointer [&>svg]:h-4 [&>svg]:w-4 [&>svg]:shrink-0 transition-colors disabled:opacity-50 ${
         hasVoted
-          ? "text-mint font-bold drop-shadow-[0_0_8px_rgba(91,230,178,0.2)]"
+          ? "text-mint font-bold"
           : "text-muted hover:text-strong"
       }`}
     >
