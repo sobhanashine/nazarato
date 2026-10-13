@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "build:cloudflare": "opennextjs-cloudflare build",
+    "build:staging": "NEXT_PUBLIC_NAZARATO_ENV=staging opennextjs-cloudflare build --env staging",
+    "deploy:staging": "node scripts/deploy-staging.mjs",
     "preview:cloudflare": "opennextjs-cloudflare preview",
     "deploy:cloudflare": "npm run build:cloudflare && wrangler deploy",
     "start": "next start",

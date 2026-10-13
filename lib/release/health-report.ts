@@ -6,7 +6,7 @@ export type HealthReport = {
   service: "nazarato";
   ok: boolean;
   releaseSha: string | "unknown";
-  environment: "development" | "preview" | "production" | "test" | "unknown";
+  environment: "development" | "preview" | "staging" | "production" | "test" | "unknown";
   database: DatabaseHealth;
   demoMode: boolean;
   checkedAt: string;
@@ -42,10 +42,11 @@ export function resolveReleaseSha(env: HealthEnvironment): string | "unknown" {
 function resolveEnvironment(
   env: HealthEnvironment,
 ): HealthReport["environment"] {
-  const value = env.VERCEL_ENV ?? env.NODE_ENV;
+  const value = env.NAZARATO_DEPLOYMENT_ENV ?? env.VERCEL_ENV ?? env.NODE_ENV;
   if (
     value === "development" ||
     value === "preview" ||
+    value === "staging" ||
     value === "production" ||
     value === "test"
   ) {

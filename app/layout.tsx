@@ -7,7 +7,7 @@ import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { RegisterSW } from "@/components/pwa/RegisterSW";
 import { ToastProvider } from "@/components/providers/ToastProvider";
 import { ReviewSheetProvider } from "@/components/review/ReviewSheetProvider";
-import { SITE_URL } from "@/lib/site";
+import { IS_STAGING, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const vazirmatn = localFont({
@@ -28,7 +28,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  robots: { index: false, follow: true },
+  robots: { index: false, follow: !IS_STAGING },
   title: "نظراتو — تجربه‌های محلی، انتخاب‌های بهتر",
   description: "کافه و رستوران‌های رشت را پیدا کن؛ با اطلاعات روشن و تجربهٔ دست اول، بهتر انتخاب کن.",
   applicationName: "نظراتو",
@@ -68,6 +68,11 @@ export default async function RootLayout({
       className={`${vazirmatn.variable} scroll-smooth scheme-light`}
     >
       <body className="relative min-h-screen bg-canvas text-strong antialiased [text-rendering:optimizeLegibility] selection:bg-mint/15 selection:text-strong pb-[calc(72px+env(safe-area-inset-bottom))] md:pb-0">
+        {IS_STAGING && (
+          <aside aria-label="محیط آزمایشی" className="border-b border-forest/20 bg-mint/20 px-4 py-2 text-center text-sm leading-6 text-forest">
+            محیط آزمایشی نظراتو — برای بررسی پیش از انتشار
+          </aside>
+        )}
         <ReviewSheetProvider businesses={businesses} localPreview={local}>
           {children}
           <MobileTabBar />

@@ -12,13 +12,13 @@ import { HowItWorks } from "@/components/sections/HowItWorks";
 import { BusinessCard } from "@/components/ui/BusinessCard";
 import { Container } from "@/components/ui/Container";
 import type { Metadata } from "next";
-import { HOME_DESCRIPTION, HOME_TITLE, SITE_URL } from "@/lib/site";
+import { HOME_DESCRIPTION, HOME_TITLE, IS_STAGING, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: HOME_TITLE,
   description: HOME_DESCRIPTION,
   alternates: { canonical: `${SITE_URL}/` },
-  robots: { index: true, follow: true },
+  robots: { index: !IS_STAGING, follow: !IS_STAGING },
   openGraph: { type: "website", locale: "fa_IR", siteName: "نظراتو", title: HOME_TITLE, description: HOME_DESCRIPTION, url: `${SITE_URL}/` },
   twitter: { card: "summary", title: HOME_TITLE, description: HOME_DESCRIPTION },
 };

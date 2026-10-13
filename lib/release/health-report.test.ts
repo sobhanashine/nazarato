@@ -19,6 +19,17 @@ describe("resolveReleaseSha", () => {
 });
 
 describe("buildHealthReport", () => {
+  it("identifies staging without pretending an unconfigured database is ready", async () => {
+    const probeDatabase = vi.fn(async () => undefined);
+    const report = await buildHealthReport({
+      env: { NODE_ENV: "production", NAZARATO_DEPLOYMENT_ENV: "staging", RELEASE_SHA: "f2d0827" },
+      dataMode: "production",
+      probeDatabase,
+      now: () => NOW,
+    });
+    expect(report).toMatchObject({ environment: "staging", database: "unconfigured", ok: false });
+    expect(probeDatabase).not.toHaveBeenCalled();
+  });
   it("is ready only when release, database, and non-demo data are verified", async () => {
     const probeDatabase = vi.fn(async () => undefined);
 
