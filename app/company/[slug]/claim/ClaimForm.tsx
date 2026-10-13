@@ -32,11 +32,11 @@ const fa = (n: number) => n.toLocaleString("fa-IR");
 
 const LABEL = "text-[13px] font-bold text-strong";
 const OPTIONAL = "font-normal text-muted";
-const HINT = "text-[12px] leading-[1.9] text-muted";
+const HINT = "text-[13px] leading-7 text-muted";
 const ERR_TEXT = "text-[12px] font-bold text-pomegr";
 const FIELD =
-  "w-full rounded-xl border bg-white/[0.03] px-4 py-3.5 text-[16px] text-white " +
-  "placeholder:text-white/25 outline-none backdrop-blur-md transition-colors";
+  "w-full rounded-lg border bg-paper px-4 py-3.5 text-[16px] text-strong " +
+  "placeholder:text-muted outline-none  transition-colors";
 
 function fieldBorder(invalid: boolean): string {
   return invalid
@@ -83,7 +83,7 @@ export function ClaimForm({
   return (
     <div className={`${GLASS} p-6 sm:p-8`}>
       {previousRejection && (
-        <div className="mb-5 rounded-xl border border-pomegr/40 bg-pomegr/[0.06] p-4">
+        <div className="mb-5 rounded-lg border border-pomegr/40 bg-pomegr/[0.06] p-4">
           <p className="text-[0.82rem] font-bold text-pomegr">
             درخواست قبلی شما رد شد.
           </p>
@@ -94,7 +94,7 @@ export function ClaimForm({
       )}
 
       {state.error && (
-        <div className="mb-5 rounded-xl border border-pomegr/45 bg-pomegr/[0.06] p-4">
+        <div className="mb-5 rounded-lg border border-pomegr/45 bg-pomegr/[0.06] p-4">
           <p className="text-[0.85rem] font-bold text-pomegr">{state.error}</p>
         </div>
       )}
@@ -111,10 +111,10 @@ export function ClaimForm({
               return (
                 <label
                   key={opt.value}
-                  className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
+                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${
                     active
                       ? "border-mint/55 bg-mint/[0.08]"
-                      : "border-glass-border bg-white/[0.02] hover:border-glass-border-hi"
+                      : "border-glass-border bg-paper hover:border-glass-border-hi"
                   }`}
                 >
                   <input
@@ -123,7 +123,7 @@ export function ClaimForm({
                     value={opt.value}
                     checked={active}
                     onChange={(e) => setProofType(e.target.value)}
-                    className="mt-1 h-4 w-4 shrink-0 accent-mint"
+                    className="mt-1 h-5 w-5 shrink-0 accent-mint"
                   />
                   <span className="min-w-0">
                     <span className="block text-[0.92rem] font-bold text-strong">
@@ -152,14 +152,13 @@ export function ClaimForm({
               type="email"
               dir="ltr"
               placeholder="you@yourcompany.ir"
-              className={`${FIELD} text-left ${fieldBorder(Boolean(fe.proofEmail))}`}
+              className={`min-h-11 text-[16px] ${FIELD} text-left ${fieldBorder(Boolean(fe.proofEmail))}`}
             />
             {fe.proofEmail ? (
               <p className={ERR_TEXT}>{fe.proofEmail}</p>
             ) : (
               <p className={HINT}>
-                به این ایمیل یک پیام تأیید می‌فرستیم تا آدرس واقعی بودنش را
-                بررسی کنیم.
+                ایمیل کاری به‌عنوان مدرک ارتباط با کسب‌وکار بررسی می‌شود. ارسال خودکار ایمیل تأیید هنوز فعال نیست.
               </p>
             )}
           </div>
@@ -179,7 +178,7 @@ export function ClaimForm({
               id="claim-proof"
             />
             <div
-              className={`flex items-center justify-between gap-3 rounded-xl border bg-white/[0.03] px-4 py-3 ${fieldBorder(
+              className={`flex flex-col items-stretch justify-between gap-3 rounded-lg border bg-paper px-4 py-3 sm:flex-row sm:items-center ${fieldBorder(
                 Boolean(fe.proof),
               )}`}
             >
@@ -194,14 +193,14 @@ export function ClaimForm({
                   <button
                     type="button"
                     onClick={clearProof}
-                    className="rounded-full border border-glass-border bg-glass px-3 py-2 text-[0.78rem] font-bold text-muted hover:text-strong"
+                    className="min-h-11 min-w-11 rounded-lg border border-glass-border bg-glass px-3 py-2 text-[0.78rem] font-bold text-muted hover:text-strong"
                   >
                     حذف
                   </button>
                 )}
                 <label
                   htmlFor="claim-proof"
-                  className="cursor-pointer rounded-full border border-mint/45 bg-mint/10 px-4 py-2 text-[0.8rem] font-bold text-mint hover:bg-mint/20"
+                  className="inline-flex min-h-11 cursor-pointer items-center rounded-lg border border-mint/45 bg-mint/10 px-4 py-2 text-[0.8rem] font-bold text-mint hover:bg-mint/20"
                 >
                   انتخاب فایل
                 </label>
@@ -223,7 +222,7 @@ export function ClaimForm({
             dir="ltr"
             defaultValue={defaultPhone}
             placeholder="+989121234567"
-            className={`${FIELD} text-left ${fieldBorder(Boolean(fe.contactPhone))}`}
+            className={`min-h-11 text-[16px] ${FIELD} text-left ${fieldBorder(Boolean(fe.contactPhone))}`}
           />
           {fe.contactPhone ? (
             <p className={ERR_TEXT}>{fe.contactPhone}</p>
@@ -241,7 +240,7 @@ export function ClaimForm({
               توضیحات <span className={OPTIONAL}>(اختیاری)</span>
             </label>
             <span
-              className={`text-[11px] ${
+              className={`text-[12px] ${
                 notesLen > NOTES_MAX ? "text-pomegr" : "text-muted"
               }`}
             >
@@ -255,7 +254,7 @@ export function ClaimForm({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="هر اطلاعاتی که به بازبینی کمک می‌کند — مثلاً سمت شما در شرکت، شماره ثبت، یا توضیح در مورد مدرک پیوست‌شده."
-            className={`${FIELD} resize-y leading-[1.9] ${fieldBorder(Boolean(fe.notes))}`}
+            className={`min-h-11 text-[16px] ${FIELD} resize-y leading-[1.9] ${fieldBorder(Boolean(fe.notes))}`}
           />
           {fe.notes && <p className={ERR_TEXT}>{fe.notes}</p>}
         </div>
@@ -264,11 +263,11 @@ export function ClaimForm({
           <button
             type="submit"
             disabled={pending}
-            className={`${BTN_PRIMARY} w-full justify-center px-6 py-3 text-[0.92rem] sm:w-auto sm:py-2.5 disabled:opacity-60`}
+            className={`min-h-11 min-w-11 ${BTN_PRIMARY} w-full justify-center px-6 py-3 text-[0.92rem] sm:w-auto sm:py-2.5 disabled:opacity-60`}
           >
             {pending ? "در حال ارسال..." : "ثبت درخواست"}
           </button>
-          <p className="text-[12px] leading-[1.9] text-muted">
+          <p className="text-[13px] leading-7 text-muted">
             با ثبت درخواست، تأیید می‌کنی که مدرک ارائه‌شده واقعی است و در صورت
             خلاف، درخواست شما رد خواهد شد.
           </p>

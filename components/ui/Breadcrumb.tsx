@@ -5,7 +5,7 @@ export type BreadcrumbItem = { label: ReactNode; href?: string };
 
 export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <nav className="flex items-center gap-2 my-6 text-sm" aria-label="breadcrumb">
+    <nav className="my-3 flex flex-wrap items-center gap-x-2 text-sm" aria-label="مسیر صفحه">
       {items.map((item, i) => {
         const isLast = i === items.length - 1;
         return (
@@ -13,7 +13,7 @@ export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
             {item.href && !isLast ? (
               <Link
                 href={item.href}
-                className="text-muted transition-colors duration-200 hover:text-mint"
+                className="inline-flex min-h-11 items-center text-muted transition-colors duration-200 hover:text-mint"
               >
                 {item.label}
               </Link>

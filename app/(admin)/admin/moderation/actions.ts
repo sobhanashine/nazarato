@@ -32,13 +32,15 @@ export async function approveReview(reviewId: string) {
   // 1. Fetch review to check if it has a proof_url
   const { data: review, error: fetchError } = await supabase
     .from("reviews")
-    .select("proof_url, business_id, proof_status, author_id")
+    .select("proof_url, business_id, proof_status, author_id, origin_kind")
     .eq("id", reviewId)
     .single();
 
   if (fetchError || !review) {
     return { ok: false, error: "نظر یافت نشد." };
   }
+
+  if (review.origin_kind !== "first_party") return {ok:false,error:"منشأ این نظر باید پیش از انتشار جداگانه بررسی شود."};
 
   const isProofSubmitted = review.proof_status === "submitted";
   const updates: Record<string, unknown> = {
@@ -116,7 +118,7 @@ export async function rejectReview(reviewId: string, rejectionReason?: string) {
   // 1. Fetch review to check if it has a proof_url
   const { data: review, error: fetchError } = await supabase
     .from("reviews")
-    .select("proof_url, business_id, proof_status, author_id")
+    .select("proof_url, business_id, proof_status, author_id, origin_kind")
     .eq("id", reviewId)
     .single();
 

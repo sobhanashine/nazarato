@@ -1,7 +1,8 @@
+import type { OtpChallenge } from "@/lib/auth/otp";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  getOtpChallenge: vi.fn(async () => ({ phone: "+989000000001", verified: true })),
+  getOtpChallenge: vi.fn<() => Promise<OtpChallenge | null>>(),
   setOtpChallenge: vi.fn(),
   clearOtpChallenge: vi.fn(),
   setSession: vi.fn(),
@@ -22,10 +23,13 @@ vi.mock("@/lib/auth/otp", async (importOriginal) => ({
   sendOtp: mocks.sendOtp,
 }));
 
+import { createOtpChallenge } from "@/lib/auth/otp";
+vi.mock("@/lib/security/audit", () => ({ recordSecurityEvent: vi.fn() }));
+
 import { completeProfile, resendOtp, startOtp, verifyOtp } from "./actions";
 
 describe("development OTP boundary", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); mocks.getOtpChallenge.mockResolvedValue(createOtpChallenge({phone:"+989000000001",code:"123456"})); });
   afterEach(() => vi.unstubAllEnvs());
 
   it.each([startOtp, resendOtp, verifyOtp, completeProfile])(

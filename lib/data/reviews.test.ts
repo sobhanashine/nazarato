@@ -79,7 +79,18 @@ describe("getReviewsFromDb", () => {
     });
 
     expect(mockSupabaseClient.from).toHaveBeenCalledWith("reviews");
+    expect(mockSupabaseClient.select.mock.calls[0]?.[0]).toContain(
+      "business_sources!inner",
+    );
     expect(mockSupabaseClient.eq).toHaveBeenCalledWith("status", "published");
+    expect(mockSupabaseClient.in).toHaveBeenCalledWith("business.status", [
+      "active",
+      "merged",
+    ]);
+    expect(mockSupabaseClient.eq).toHaveBeenCalledWith(
+      "business.business_sources.status",
+      "approved",
+    );
     expect(mockSupabaseClient.eq).toHaveBeenCalledWith("rating", 5);
     expect(mockSupabaseClient.eq).toHaveBeenCalledWith("business.category_slug", "digital");
     expect(mockSupabaseClient.order).toHaveBeenCalledWith("created_at", { ascending: false });
@@ -154,6 +165,7 @@ describe("getUserReviews", () => {
     from: ReturnType<typeof vi.fn>;
     select: ReturnType<typeof vi.fn>;
     eq: ReturnType<typeof vi.fn>;
+    in: ReturnType<typeof vi.fn>;
     order: ReturnType<typeof vi.fn>;
     then: ReturnType<typeof vi.fn>;
   };
@@ -193,8 +205,19 @@ describe("getUserReviews", () => {
     const result = await getUserReviews("user-abc");
 
     expect(mockSupabaseClient.from).toHaveBeenCalledWith("reviews");
+    expect(mockSupabaseClient.select.mock.calls[0]?.[0]).toContain(
+      "business_sources!inner",
+    );
     expect(mockSupabaseClient.eq).toHaveBeenCalledWith("author_id", "user-abc");
     expect(mockSupabaseClient.eq).toHaveBeenCalledWith("status", "published");
+    expect(mockSupabaseClient.in).toHaveBeenCalledWith("business.status", [
+      "active",
+      "merged",
+    ]);
+    expect(mockSupabaseClient.eq).toHaveBeenCalledWith(
+      "business.business_sources.status",
+      "approved",
+    );
     expect(mockSupabaseClient.order).toHaveBeenCalledWith("created_at", { ascending: false });
 
     expect(result).toHaveLength(1);
@@ -216,4 +239,3 @@ describe("getUserReviews", () => {
     expect(result).toHaveLength(0);
   });
 });
-

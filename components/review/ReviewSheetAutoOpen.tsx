@@ -35,7 +35,7 @@ export function ReviewSheetAutoOpen({ prefill }: { prefill?: ReviewPrefill }) {
     const url = qs
       ? `${window.location.pathname}?${qs}`
       : window.location.pathname;
-    window.history.replaceState(null, "", url);
+    window.history.replaceState(window.history.state, "", url + window.location.hash);
   }, [openReviewSheet, prefill]);
 
   return null;

@@ -3,6 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth/session";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import {
+  PUBLIC_BUSINESS_SOURCE_SELECT,
+  PUBLIC_BUSINESS_STATUSES,
+} from "@/lib/data/businesses";
+
+const BUSINESS_SLUG_PATTERN = /^[\p{L}\p{N}_-]{1,160}$/u;
 
 export async function toggleBookmark(
   businessSlug: string
@@ -11,14 +17,19 @@ export async function toggleBookmark(
   if (!session?.id) {
     return { ok: false, error: "برای ذخیره باید وارد شوید" };
   }
+  if (typeof businessSlug !== "string" || !BUSINESS_SLUG_PATTERN.test(businessSlug)) {
+    return { ok: false, error: "کسب‌وکار پیدا نشد" };
+  }
 
   const supabase = supabaseAdmin();
 
   // Lookup business ID from slug
   const { data: bData, error: bError } = await supabase
     .from("businesses")
-    .select("id")
+    .select(`id, ${PUBLIC_BUSINESS_SOURCE_SELECT}`)
     .eq("slug", businessSlug)
+    .in("status", PUBLIC_BUSINESS_STATUSES)
+    .eq("business_sources.status", "approved")
     .maybeSingle();
 
   if (bError || !bData) {

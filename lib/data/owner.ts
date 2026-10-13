@@ -85,13 +85,13 @@ export async function getOwnerKpis(businessId: string): Promise<OwnerKpis> {
       .from("reviews")
       .select("id", { count: "exact", head: true })
       .eq("business_id", businessId)
-      .eq("status", "published")
+      .eq("status", "published").eq("origin_kind", "first_party")
       .gte("created_at", oneWeekAgo),
     supabase
       .from("reviews")
       .select("id", { count: "exact", head: true })
       .eq("business_id", businessId)
-      .eq("status", "published")
+      .eq("status", "published").eq("origin_kind", "first_party")
       .eq("has_owner_response", false),
   ]);
 
@@ -131,7 +131,7 @@ export async function getOwnerInsights(businessId: string): Promise<OwnerInsight
     .from("reviews")
     .select("rating, created_at, verified, has_owner_response, helpful_count")
     .eq("business_id", businessId)
-    .eq("status", "published");
+    .eq("status", "published").eq("origin_kind", "first_party");
 
   if (error) {
     console.error("[owner] getOwnerInsights failed", {
@@ -219,7 +219,7 @@ export async function getRecentReviewsForOwner(
     .from("reviews")
     .select(REVIEW_SELECT)
     .eq("business_id", businessId)
-    .eq("status", "published")
+    .eq("status", "published").eq("origin_kind", "first_party")
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -250,7 +250,7 @@ export async function getReviewsForOwner(
     .from("reviews")
     .select(REVIEW_SELECT, { count: "exact" })
     .eq("business_id", businessId)
-    .eq("status", "published");
+    .eq("status", "published").eq("origin_kind", "first_party");
 
   if (filter === "unanswered") query = query.eq("has_owner_response", false);
   else if (filter === "answered") query = query.eq("has_owner_response", true);

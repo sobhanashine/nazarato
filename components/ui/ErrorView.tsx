@@ -32,8 +32,8 @@ export function ErrorView({
     <>
       <Header />
       <Container>
-        <div className="flex flex-col items-center gap-4 py-24 text-center">
-          <h1 className="text-[1.5rem] font-black text-strong">یه چیزی خراب شد</h1>
+        <main className="flex flex-col items-center gap-4 py-16 text-center">
+          <h1 className="text-[1.5rem] font-bold text-strong">این صفحه بارگذاری نشد</h1>
           <p className="max-w-[42ch] text-[0.9rem] leading-[1.9] text-muted">
             {message}
           </p>
@@ -44,7 +44,7 @@ export function ErrorView({
           >
             تلاش دوباره
           </button>
-        </div>
+        </main>
       </Container>
       <Footer />
     </>

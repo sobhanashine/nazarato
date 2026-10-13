@@ -7,13 +7,13 @@
  * purely as the database here; this client carries no user session.
  */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { IS_STAGING } from "@/lib/site";
+import { assertStagingDatabaseIsolation } from "./staging-isolation";
 
 let client: SupabaseClient | undefined;
 
 /** Lazily-created, process-cached service-role client. */
 export function supabaseAdmin(): SupabaseClient {
-  if (client) return client;
-
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceKey) {
@@ -23,6 +23,10 @@ export function supabaseAdmin(): SupabaseClient {
     );
   }
 
+  if (IS_STAGING || process.env.NAZARATO_DEPLOYMENT_ENV === "staging") {
+    assertStagingDatabaseIsolation(url, process.env.NAZARATO_STAGING_SUPABASE_REF);
+  }
+  if (client) return client;
   client = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });

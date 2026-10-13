@@ -1,0 +1,16 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
+const mocks = vi.hoisted(()=>({session:vi.fn(),pool:vi.fn(),choices:vi.fn(),reviews:vi.fn(),load:vi.fn(),save:vi.fn(),build:vi.fn()}));
+vi.mock("@/lib/auth/session",()=>({getSession:mocks.session}));
+vi.mock("@/lib/nabz/supabase-business-pool",()=>({getSupabaseNabzBusinessPool:mocks.pool}));
+vi.mock("@/lib/nabz/real-result-store",()=>({getOwnRealChoices:mocks.choices,getRealReviewEvidence:mocks.reviews,loadRealTaste:mocks.load,saveRealTaste:mocks.save}));
+vi.mock("@/lib/nabz/real-recommendation",()=>({buildRealResult:mocks.build}));
+import {GET,POST} from "./route";
+function request(body:unknown,origin="http://localhost:4321",cookie="") {return new NextRequest("http://localhost:4321/api/nabz/result",{method:"POST",headers:{origin,"content-type":"application/json",cookie},body:JSON.stringify(body)});}
+describe("private real result boundary",()=>{
+  beforeEach(()=>{vi.resetAllMocks();mocks.session.mockResolvedValue(null);mocks.choices.mockResolvedValue(Array.from({length:5},()=>({winnerId:"w",loserId:"l"})));mocks.pool.mockResolvedValue({status:"ready",businesses:[{id:"real-business"}]});mocks.reviews.mockResolvedValue([]);mocks.build.mockReturnValue({status:"insufficient_evidence",profile:{modelId:"nabz-real-evidence"},recommendations:[]});});
+  it("rejects forged weights and cross-origin writes before data reads",async()=>{expect((await POST(request({scenario:"date",weights:{taste:99}}))).status).toBe(400);expect((await POST(request({scenario:"date"},"https://unrelated.invalid"))).status).toBe(403);expect(mocks.choices).not.toHaveBeenCalled();});
+  it("requires authentication for save and scopes restore to the current user",async()=>{expect((await POST(request({scenario:"date",save:true}))).status).toBe(401);expect((await GET()).status).toBe(401);mocks.session.mockResolvedValue({id:"current-user"});mocks.load.mockResolvedValue(null);const result=await GET();expect(mocks.load).toHaveBeenCalledWith("current-user");expect(result.headers.get("cache-control")).toContain("no-store");expect(await result.json()).toEqual({ok:true,profile:null});});
+  it("rebuilds only from the opaque anonymous session's server-side votes",async()=>{const response=await POST(request({scenario:"date"},undefined,"nzr_nabz_session=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));expect(response.status).toBe(200);expect(mocks.choices).toHaveBeenCalledWith({anonymousId:expect.stringMatching(/^[0-9a-f]{64}$/)},"date");expect(mocks.build).toHaveBeenCalledWith(expect.objectContaining({choices:await mocks.choices.mock.results[0].value}));expect(mocks.save).not.toHaveBeenCalled();});
+  it("keeps partial or revoked evidence and storage failures distinct from success",async()=>{mocks.session.mockResolvedValue({id:"current-user"});mocks.choices.mockResolvedValue([]);expect((await POST(request({scenario:"date"}))).status).toBe(422);mocks.choices.mockResolvedValue(Array(5).fill({winnerId:"w",loserId:"l"}));mocks.build.mockReturnValue(null);expect((await POST(request({scenario:"date"}))).status).toBe(422);mocks.build.mockReturnValue({profile:{}});mocks.save.mockRejectedValue(new Error("isolated outage"));expect((await POST(request({scenario:"date",save:true}))).status).toBe(503);});
+});

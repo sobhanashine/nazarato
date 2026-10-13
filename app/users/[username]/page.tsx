@@ -20,8 +20,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { username } = await params;
   const decodedUsername = decodeURIComponent(username);
-  const user = await getUserByUsername(decodedUsername);
-  if (!user) return { title: "کاربر – نظراتو" };
+  const [user, viewer] = await Promise.all([
+    getUserByUsername(decodedUsername),
+    getSession(),
+  ]);
+  if (!user || (user.public_profile === false && viewer?.id !== user.id)) {
+    return { title: "کاربر – نظراتو" };
+  }
   return {
     title: `پروفایل ${user.display_name} – نظراتو`,
     description: user.username ? `@${user.username} در نظراتو` : user.display_name,
@@ -31,7 +36,6 @@ export async function generateMetadata({
 export const dynamic = "force-dynamic";
 
 const faNum = (n: number) => n.toLocaleString("fa-IR");
-const FALLBACK_COLOR = "#5BBB7B";
 
 export default async function UserProfilePage({
   params,
@@ -81,22 +85,21 @@ export default async function UserProfilePage({
           <div className="flex flex-col gap-6">
             {/* Identity Card */}
             <section className={`${GLASS} p-5 sm:p-6`}>
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex min-w-0 flex-1 items-center gap-4">
                   <div
-                    className="grid h-[68px] w-[68px] shrink-0 place-items-center rounded-full text-2xl font-black text-white shadow-[0_6px_18px_-4px_rgba(0,0,0,0.5)] sm:h-20 sm:w-20"
-                    style={{ background: user.avatar_color ?? FALLBACK_COLOR }}
+                    className="grid h-[68px] w-[68px] shrink-0 place-items-center rounded-xl border border-mint/15 bg-mint/5 text-2xl font-bold text-forest sm:h-20 sm:w-20"
                     aria-hidden
                   >
                     {initial}
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h1 className="truncate text-[1.15rem] font-black text-strong sm:text-[1.3rem]">
+                      <h1 className="break-words text-[1.15rem] font-black text-strong sm:text-[1.3rem]">
                         {user.display_name}
                       </h1>
                       {user.role === "admin" && (
-                        <span className="inline-flex items-center rounded-full bg-rose-500/15 px-2 py-0.5 text-[0.7rem] font-bold text-rose-400 border border-rose-500/30">
+                        <span className="inline-flex items-center rounded-full bg-pomegr/8 px-2 py-1 text-xs font-bold text-pomegr border border-pomegr/25">
                           مدیر سیستم
                         </span>
                       )}

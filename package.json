@@ -6,12 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "build:cloudflare": "opennextjs-cloudflare build",
+    "build:staging": "NEXT_PUBLIC_NAZARATO_ENV=staging opennextjs-cloudflare build --env staging",
+    "deploy:staging": "node scripts/deploy-staging.mjs",
     "preview:cloudflare": "opennextjs-cloudflare preview",
     "deploy:cloudflare": "npm run build:cloudflare && wrangler deploy",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:isolated": "playwright test -c playwright.recovery.config.ts",
+    "test:migrations:local": "node scripts/check-migrations-local.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "1.20.7",

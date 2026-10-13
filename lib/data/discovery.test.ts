@@ -15,6 +15,9 @@ describe("public discovery supply", () => {
   it("keeps an unverified shop unverified", () => {
     expect(mapDiscoveryRow({ ...row, type: "ig_shop", category_slug: "food" })).toEqual({ shop: expect.objectContaining({ href: "/shop/real-cafe", verified: false }) });
   });
+  it("preserves an explicit restaurant category when the name also contains cafe", () => {
+    expect(mapDiscoveryRow({ ...row, category_slug: "restaurant", name: "کافه رستوران محلی" })).toEqual({ business: expect.objectContaining({ category: "رستوران" }) });
+  });
   function setup(data: unknown, error: { code: string } | null = null) {
     const query = { from: vi.fn().mockReturnThis(), select: vi.fn().mockReturnThis(), in: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), limit: vi.fn().mockResolvedValue({ data, error }) };
     mocks.db.mockReturnValue(query); return query;
@@ -31,12 +34,20 @@ describe("public discovery supply", () => {
   it("keeps a failed read empty without reverting to local or sample data", async () => {
     setup(null, { code: "PGRST" });
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
-    try { expect((await getDiscoveryCatalog()).businesses).toEqual([]); }
+    try {
+      const catalog = await getDiscoveryCatalog();
+      expect(catalog.businesses).toEqual([]);
+      expect(catalog).toHaveProperty("status", "unavailable");
+    }
     finally { log.mockRestore(); }
+  });
+  it("distinguishes a successful empty catalog from an unavailable catalog", async () => {
+    setup([]);
+    expect(await getDiscoveryCatalog()).toMatchObject({ businesses: [], shops: [], local: false, status: "ready" });
   });
   it("does not query the public database when the local adapter is explicitly active", async () => {
     mocks.local.mockResolvedValue([]);
-    expect(await getDiscoveryCatalog()).toEqual({ businesses: [], shops: [], local: true });
+    expect(await getDiscoveryCatalog()).toEqual({ businesses: [], shops: [], local: true, status: "ready" });
     expect(mocks.db).not.toHaveBeenCalled();
   });
 });

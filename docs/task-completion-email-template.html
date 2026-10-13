@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{TASK_TITLE}}</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f4f7f6;color:#172126;direction:rtl;text-align:right;font-family:Tahoma,Arial,sans-serif;">
+    <!--
+      Nazarato terminal-task email template.
+
+      Subject mapping:
+      COMPLETED: [نظراتو] ✅ انجام شد: {{TASK_TITLE}}
+      BLOCKED:   [نظراتو] ⏸ اقدام شما لازم است: {{TASK_TITLE}}
+      FAILED:    [نظراتو] ❌ انجام نشد: {{TASK_TITLE}}
+      NO_ACTION: [نظراتو] ℹ️ بدون تغییر: {{TASK_TITLE}}
+
+      Status palette:
+      COMPLETED: {{STATUS_BG}}=#e7f8f1, {{STATUS_COLOR}}=#08785d
+      BLOCKED:   {{STATUS_BG}}=#fff6dc, {{STATUS_COLOR}}=#8a5a00
+      FAILED:    {{STATUS_BG}}=#fdecec, {{STATUS_COLOR}}=#b42318
+      NO_ACTION: {{STATUS_BG}}=#edf2f7, {{STATUS_COLOR}}=#45556c
+
+      Optional sections must be removed when empty. Never paste raw logs.
+    -->
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
+      {{PREHEADER}}
+    </div>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#f4f7f6;">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:640px;background:#ffffff;border:1px solid #e0e8e5;border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(17,38,34,.08);">
+            <tr>
+              <td style="padding:20px 24px;background:#102821;color:#ffffff;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="font-size:22px;font-weight:700;line-height:1.4;">نظراتو</td>
+                    <td align="left" style="font-size:12px;line-height:1.5;color:#b8d1c9;">گزارش اجرای تسک</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:28px 24px 18px;">
+                <span style="display:inline-block;padding:7px 12px;border-radius:999px;background:{{STATUS_BG}};color:{{STATUS_COLOR}};font-size:13px;font-weight:700;line-height:1.4;">
+                  {{STATUS_ICON}} {{STATUS_LABEL}}
+                </span>
+                <h1 style="margin:14px 0 8px;font-size:25px;line-height:1.6;color:#102821;">{{TASK_TITLE}}</h1>
+                <p style="margin:0;font-size:16px;line-height:1.9;color:#41514d;">{{OUTCOME_SUMMARY}}</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:0 24px 20px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f1f8f5;border:1px solid #d9ebe4;border-radius:14px;">
+                  <tr>
+                    <td style="padding:16px 18px;">
+                      <div style="font-size:12px;font-weight:700;color:#517068;margin-bottom:6px;">کاری که از تو می‌خواهم</div>
+                      <div style="font-size:16px;font-weight:700;line-height:1.8;color:#102821;">{{USER_ACTION}}</div>
+                      <div style="margin-top:4px;font-size:13px;line-height:1.7;color:#5c6f69;">{{USER_ACTION_DETAIL}}</div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:0 24px 22px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="font-size:14px;font-weight:700;color:#102821;padding-bottom:8px;">پیشرفت MVP</td>
+                    <td align="left" style="font-size:13px;color:#5c6f69;padding-bottom:8px;">{{PROGRESS_TEXT}}</td>
+                  </tr>
+                </table>
+                <div style="height:9px;background:#e6eeeb;border-radius:999px;overflow:hidden;">
+                  <div style="height:9px;width:{{PROGRESS_PERCENT}}%;background:#19a77e;border-radius:999px;"></div>
+                </div>
+                <p style="margin:10px 0 0;font-size:13px;line-height:1.8;color:#5c6f69;">{{PROJECT_POSITION}}</p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:0 24px 22px;">
+                <h2 style="margin:0 0 10px;font-size:17px;line-height:1.6;color:#102821;">چه چیزی تحویل شد؟</h2>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fafcfb;border:1px solid #e4ebe8;border-radius:14px;">
+                  {{DELIVERABLE_ROWS}}
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:0 24px 22px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1px solid #e4ebe8;border-radius:14px;">
+                  <tr>
+                    <td style="padding:14px 16px;border-bottom:1px solid #e4ebe8;">
+                      <div style="font-size:12px;color:#70807b;margin-bottom:4px;">قدم بعدی</div>
+                      <div style="font-size:15px;font-weight:700;line-height:1.7;color:#172126;">{{NEXT_TASK}}</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:14px 16px;">
+                      <div style="font-size:12px;color:#70807b;margin-bottom:4px;">زمان یا هزینه‌ای که از تو لازم است</div>
+                      <div style="font-size:14px;line-height:1.7;color:#41514d;">{{FOUNDER_COST}}</div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Remove this entire row when there is no material risk. -->
+            <tr>
+              <td style="padding:0 24px 22px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#fff8e8;border:1px solid #f0d897;border-radius:14px;">
+                  <tr>
+                    <td style="padding:15px 17px;">
+                      <div style="font-size:12px;font-weight:700;color:#8a5a00;margin-bottom:5px;">ریسک یا محدودیت مهم</div>
+                      <div style="font-size:14px;line-height:1.8;color:#604816;">{{RISK_SUMMARY}}</div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:0 24px 24px;">
+                <h2 style="margin:0 0 10px;font-size:15px;line-height:1.6;color:#41514d;">جزئیات و مدرک</h2>
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="font-size:13px;line-height:1.8;color:#5c6f69;">
+                  <tr><td style="padding:3px 0;width:100px;color:#70807b;">بررسی‌ها</td><td style="padding:3px 0;">{{CHECKS_SUMMARY}}</td></tr>
+                  <tr><td style="padding:3px 0;color:#70807b;">Git</td><td style="padding:3px 0;">{{GIT_SUMMARY}}</td></tr>
+                  <tr><td style="padding:3px 0;color:#70807b;">Trello</td><td style="padding:3px 0;"><a href="{{TRELLO_CARD_URL}}" style="color:#08785d;text-decoration:none;font-weight:700;">دیدن کارت و شواهد</a></td></tr>
+                  {{EXTRA_EVIDENCE_ROWS}}
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:16px 24px;background:#f7faf9;border-top:1px solid #e4ebe8;font-size:11px;line-height:1.8;color:#7b8985;">
+                این ایمیل پس از رسیدن تسک به یک وضعیت نهایی ارسال شده است. برای هر تسک فقط یک گزارش نهایی می‌گیری؛ نه ایمیل برای هر قدم داخلی.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

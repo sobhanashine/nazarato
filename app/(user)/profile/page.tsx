@@ -12,13 +12,13 @@ export const metadata: Metadata = {
 const faNum = (n: number) => n.toLocaleString("fa-IR");
 
 /** Default avatar tint when the account has no `avatar_color` set. */
-const FALLBACK_COLOR = "#5BBB7B";
+const FALLBACK_COLOR = "#20584B";
 
 const quickLinks = [
   {
     href: "/profile/reviews",
-    title: "نظرات من",
-    desc: "نظرهایی که نوشتی و وضعیت انتشارشان",
+    title: "تجربه‌های من",
+    desc: "تجربه‌هایی که نوشتی و وضعیت انتشارشان",
   },
   {
     href: "/saved",
@@ -61,7 +61,7 @@ export default async function ProfilePage() {
       {/* Identity card */}
       <section className={`${GLASS} flex items-center gap-4 p-5 sm:p-6`}>
         <div
-          className="grid h-[68px] w-[68px] shrink-0 place-items-center rounded-full text-2xl font-black text-white shadow-[0_6px_18px_-4px_rgba(0,0,0,0.5)] sm:h-20 sm:w-20"
+          className="grid h-[68px] w-[68px] shrink-0 place-items-center rounded-lg text-2xl font-bold text-white sm:h-20 sm:w-20"
           style={{ background: user.avatar_color ?? FALLBACK_COLOR }}
           aria-hidden
         >
@@ -69,11 +69,11 @@ export default async function ProfilePage() {
         </div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="truncate text-[1.15rem] font-black text-strong sm:text-[1.3rem]">
+            <h2 className="truncate text-[1.15rem] font-bold text-strong sm:text-[1.3rem]">
               {user.display_name}
             </h2>
             {user.role === "admin" && (
-              <span className="inline-flex items-center rounded-full bg-rose-500/15 px-2 py-0.5 text-[0.7rem] font-bold text-rose-400 border border-rose-500/30">
+              <span className="inline-flex items-center rounded-lg bg-rose-500/15 px-2 py-0.5 text-[0.7rem] font-bold text-pomegr border border-rose-500/30">
                 مدیر سیستم
               </span>
             )}
@@ -95,7 +95,7 @@ export default async function ProfilePage() {
             key={s.key}
             className={`${GLASS} flex flex-col items-center gap-1 p-4 text-center`}
           >
-            <span className="text-[1.4rem] font-black tabular-nums text-strong sm:text-[1.7rem]">
+            <span className="text-[1.4rem] font-bold tabular-nums text-strong sm:text-[1.7rem]">
               {faNum(s.value)}
             </span>
             <span className="text-[0.75rem] text-muted sm:text-[0.8rem]">

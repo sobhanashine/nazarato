@@ -59,8 +59,9 @@ export default async function AdminOverviewPage() {
       <Container>
         <main className="space-y-6 py-8">
           <header className="space-y-1">
-            <h1 className="text-[1.7rem] font-black text-strong">پنل مدیریت</h1>
+            <h1 className="text-[1.7rem] font-bold text-strong">پنل مدیریت</h1>
             <p className="text-[0.85rem] text-muted">نمای کلی و دسترسی سریع</p>
+            <Link href="/admin/businesses/osm-review" className="inline-flex min-h-11 items-center text-base text-forest">بررسی منبع و مجوز انتشار</Link>
           </header>
 
           <section
@@ -71,7 +72,7 @@ export default async function AdminOverviewPage() {
               <Link
                 key={t.href}
                 href={t.href}
-                className={`${GLASS} flex flex-col justify-between gap-4 p-5 transition-colors hover:border-mint/40 ${
+                className={`inline-flex min-h-11 items-center ${GLASS} flex flex-col justify-between gap-4 p-5 transition-colors hover:border-mint/40 ${
                   t.urgent ? "border-mint/30" : ""
                 }`}
               >
@@ -80,7 +81,7 @@ export default async function AdminOverviewPage() {
                 </span>
                 <div>
                   <div
-                    className={`text-[2rem] font-black ${t.urgent ? "text-mint" : "text-strong"}`}
+                    className={`text-[2rem] font-bold ${t.urgent ? "text-mint" : "text-strong"}`}
                   >
                     {faNum(t.count)}
                   </div>
@@ -101,7 +102,7 @@ export default async function AdminOverviewPage() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="rounded-full border border-glass-border bg-glass px-4 py-2 text-[0.82rem] font-semibold text-muted transition-colors hover:border-mint/40 hover:text-mint"
+                className="inline-flex min-h-11 items-center rounded-lg border border-glass-border bg-glass px-4 py-2 text-[0.82rem] font-semibold text-muted transition-colors hover:border-mint/40 hover:text-mint"
               >
                 {l.label}
               </Link>

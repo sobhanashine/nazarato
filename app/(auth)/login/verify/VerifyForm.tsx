@@ -9,7 +9,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
+import { BTN_PRIMARY } from "@/components/ui/styles";
 import { setFlash } from "@/lib/flash";
 import { completeProfile, resendOtp, verifyOtp, type FormState } from "../actions";
 
@@ -25,7 +25,7 @@ const onlyDigits = (s: string) => toAscii(s).replace(/\D/g, "");
 const toFa = (s: string) => s.replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
 
 const LABEL = "text-[13px] font-bold text-muted";
-const ERR_TEXT = "text-[12px] font-bold text-pomegr";
+const ERR_TEXT = "text-[13px] font-medium text-pomegr";
 
 /**
  * The `/login/verify` UI. Two phases in one client island:
@@ -169,8 +169,8 @@ function CodeStep({
   if (state.reason) {
     const expired = state.reason === "expired";
     return (
-      <div className={`${GLASS} p-6 text-center sm:p-8`}>
-        <h1 className="text-[1.3rem] font-black text-strong">
+      <div className="border-y border-glass-border py-6 text-center sm:rounded-lg sm:border sm:bg-paper sm:p-8">
+        <h1 className="text-[1.3rem] font-bold text-strong">
           {expired ? "کد منقضی شده است" : "حساب موقتاً قفل شد"}
         </h1>
         <p className="mt-2 text-[14px] leading-[1.9] text-muted">
@@ -180,7 +180,7 @@ function CodeStep({
         </p>
         <Link
           href="/login"
-          className={`${BTN_PRIMARY} mt-5 w-full py-3 text-[14px]`}
+          className={`${BTN_PRIMARY} mt-5 w-full min-h-12 py-3 text-[14px]`}
         >
           بازگشت به ورود
         </Link>
@@ -194,21 +194,21 @@ function CodeStep({
     : "/login";
 
   return (
-    <div className={`${GLASS} p-6 sm:p-8`}>
-      <h1 className="text-[1.4rem] font-black tracking-tight text-strong">
+    <div className="border-y border-glass-border py-6 sm:rounded-lg sm:border sm:bg-paper sm:p-8">
+      <h1 className="text-[1.4rem] font-bold text-strong">
         کد تأیید را وارد کن
       </h1>
       <p className="mt-2 text-[14px] leading-[1.9] text-muted">
-        کد ۶ رقمی به شمارهٔ{" "}
+        کد تأیید ورود برای شمارهٔ{" "}
         <span dir="ltr" className="font-bold text-strong">
           {toFa(phone)}
         </span>{" "}
-        پیامک شد.
+        را وارد کن.
       </p>
 
       {devCode && (
         <p className="mt-3 rounded-lg border border-saffron/30 bg-saffron/[0.07] px-3 py-2 text-[12.5px] text-saffron">
-          حالت توسعه — کد ثابت است:{" "}
+          حالت آزمایشی؛ بدون ارسال پیامک. کد:{" "}
           <span dir="ltr" className="font-bold">
             {toFa(devCode)}
           </span>
@@ -219,7 +219,7 @@ function CodeStep({
         <input type="hidden" name="code" value={code} />
         <input type="hidden" name="next" value={next} />
 
-        <div dir="ltr" className="flex justify-center gap-2">
+        <div dir="ltr" className="grid grid-cols-6 gap-1">
           {cells.map((cell, i) => (
             <input
               key={i}
@@ -236,7 +236,7 @@ function CodeStep({
               aria-label={`رقم ${fa(i + 1)} کد تأیید`}
               autoFocus={i === 0}
               disabled={verifying}
-              className={`h-14 w-12 rounded-xl border bg-white/[0.03] text-center text-[20px] font-bold text-white outline-none transition-colors disabled:opacity-60 ${
+              className={`h-14 min-w-0 w-full rounded-lg border bg-paper text-center text-[20px] font-bold text-strong outline-none transition-colors disabled:opacity-60 ${
                 inlineError
                   ? "border-pomegr/55"
                   : "border-glass-border focus:border-mint focus:bg-mint/[0.06]"
@@ -254,7 +254,7 @@ function CodeStep({
         <button
           type="submit"
           disabled={verifying || code.length !== OTP_LEN}
-          className={`${BTN_PRIMARY} w-full py-3.5 text-[15px] disabled:cursor-not-allowed disabled:opacity-50`}
+          className={`${BTN_PRIMARY} w-full min-h-12 py-3.5 text-[15px] disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {verifying ? "در حال بررسی…" : "تأیید و ورود"}
         </button>
@@ -270,13 +270,13 @@ function CodeStep({
             <button
               type="submit"
               disabled={resending}
-              className="font-bold text-mint hover:underline disabled:opacity-50"
+              className="inline-flex min-h-11 items-center font-bold text-forest hover:underline disabled:opacity-50"
             >
               {resending ? "در حال ارسال…" : "ارسال مجدد کد"}
             </button>
           </form>
         )}
-        <Link href={changeNumberHref} className="text-muted hover:text-strong">
+        <Link href={changeNumberHref} className="inline-flex min-h-11 items-center text-muted hover:text-strong">
           تغییر شماره
         </Link>
       </div>
@@ -303,13 +303,12 @@ function NameStep({ next }: { next: string }) {
   }, [state.ok, state.redirectUrl, router]);
 
   return (
-    <div className={`${GLASS} p-6 sm:p-8`}>
-      <h1 className="text-[1.4rem] font-black tracking-tight text-strong">
-        یک قدم تا پایان
+    <div className="border-y border-glass-border py-6 sm:rounded-lg sm:border sm:bg-paper sm:p-8">
+      <h1 className="text-[1.4rem] font-bold text-strong">
+        نام نمایشی تو
       </h1>
       <p className="mt-2 text-[14px] leading-[1.9] text-muted">
-        یک نام نمایشی انتخاب کن — همین نام کنار نظرهایت دیده می‌شود، نه نام
-        قانونی‌ات.
+        یک نام نمایشی انتخاب کن. همین نام کنار تجربه‌های تو دیده می‌شود؛ شمارهٔ موبایلت نمایش داده نمی‌شود.
       </p>
 
       <form action={action} noValidate className="mt-6 space-y-4">
@@ -331,8 +330,8 @@ function NameStep({ next }: { next: string }) {
             minLength={2}
             maxLength={40}
             autoFocus
-            placeholder="مثلاً: سبحان"
-            className={`w-full rounded-xl border bg-white/[0.03] px-4 py-3.5 text-[16px] text-white placeholder:text-white/25 outline-none backdrop-blur-md transition-colors ${
+            placeholder="نامی که می‌خواهی نمایش داده شود"
+            className={`w-full rounded-lg border bg-paper px-4 py-3.5 text-[16px] text-strong placeholder:text-muted outline-none transition-colors ${
               nameError
                 ? "border-pomegr/55 bg-pomegr/[0.05]"
                 : "border-glass-border focus:border-mint focus:bg-mint/[0.06]"
@@ -341,7 +340,7 @@ function NameStep({ next }: { next: string }) {
         </div>
 
         {formError && (
-          <div className="flex items-start gap-3 rounded-xl border border-pomegr/30 bg-pomegr/10 p-3.5 text-[13.5px] font-medium text-white">
+          <div className="flex items-start gap-3 rounded-lg border border-pomegr/30 bg-pomegr/5 p-3.5 text-[13.5px] font-medium text-pomegr">
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pomegr/20 text-pomegr">
               !
             </span>
@@ -352,7 +351,7 @@ function NameStep({ next }: { next: string }) {
         <button
           type="submit"
           disabled={pending}
-          className={`${BTN_PRIMARY} w-full py-3.5 text-[15px] disabled:cursor-not-allowed disabled:opacity-50`}
+          className={`${BTN_PRIMARY} w-full min-h-12 py-3.5 text-[15px] disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {pending ? "در حال ورود…" : "ورود به نظراتو"}
         </button>

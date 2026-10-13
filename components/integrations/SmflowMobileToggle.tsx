@@ -35,7 +35,7 @@ export function SmflowMobileToggle() {
       aria-controls="smflow-widget-container"
       onClick={() => setOpen((v) => !v)}
       style={{ bottom: "calc(104px + env(safe-area-inset-bottom))" }}
-      className="md:hidden fixed right-0 z-[2147483646] w-7 h-14 grid place-items-center rounded-l-xl bg-[rgba(10,13,22,0.85)] backdrop-blur-md border border-glass-border border-r-0 text-mint shadow-[0_8px_24px_rgba(0,0,0,0.4)] active:scale-95 transition-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-mint focus-visible:outline-offset-2"
+      className="min-h-11 min-w-11 md:hidden fixed right-0 z-[2147483646] w-11 h-14 grid place-items-center rounded-l-xl bg-paper  border border-glass-border border-r-0 text-mint   transition-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-mint focus-visible:outline-offset-2"
     >
       <svg
         viewBox="0 0 24 24"

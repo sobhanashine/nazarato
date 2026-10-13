@@ -1,32 +1,23 @@
-import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { Container } from "@/components/ui/Container";
 
-const block = "rounded-glass border border-glass-border bg-glass";
-
-export default function SearchLoading() {
+export default function Loading() {
   return (
     <>
       <Header />
-      <Container>
-        <div className="animate-pulse py-8" aria-hidden>
-          <div className={`${block} h-12 w-full rounded-2xl`} />
-          <div className="mt-6 flex gap-2">
-            <div className={`${block} h-9 w-20 !rounded-full`} />
-            <div className={`${block} h-9 w-28 !rounded-full`} />
-            <div className={`${block} h-9 w-28 !rounded-full`} />
+      <main aria-busy="true" className="py-8 md:py-12">
+        <Container>
+          <h1 className="text-[28px] font-bold leading-10 text-strong">جستجوی مکان</h1>
+          <p role="status" className="mt-3 text-[14px] leading-7 text-muted">در حال دریافت فهرست مکان‌ها…</p>
+          <div aria-hidden className="mt-6 divide-y divide-glass-border border-y border-glass-border">
+            {[0, 1, 2].map(row => <div key={row} className="flex min-h-28 flex-col justify-center gap-3 py-5">
+              <div className="h-5 w-2/3 max-w-xs rounded-sm bg-line/65" />
+              <div className="h-3 w-1/3 max-w-40 rounded-sm bg-line/65" />
+            </div>)}
           </div>
-          <div className="mt-6 grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-            <div className={`${block} hidden h-72 lg:block`} />
-            <div className="grid gap-4 sm:grid-cols-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className={`${block} h-[100px]`} />
-              ))}
-            </div>
-          </div>
-        </div>
-        <span className="sr-only">در حال بارگذاری نتایج…</span>
-      </Container>
+        </Container>
+      </main>
       <Footer />
     </>
   );

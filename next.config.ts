@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
+const isStaging = process.env.NEXT_PUBLIC_NAZARATO_ENV === "staging";
 
 function wpImagePattern() {
   const raw = process.env.WP_API_URL;
@@ -42,8 +43,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/:path+",
-        headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }],
+        source: isStaging ? "/:path*" : "/:path+",
+        headers: [{ key: "X-Robots-Tag", value: isStaging ? "noindex, nofollow, noarchive" : "noindex, follow" }],
       },
       {
         source: "/(.*)",

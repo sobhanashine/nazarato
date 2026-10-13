@@ -1,0 +1,40 @@
+﻿trello_card_number,task_title_verbatim,observed_list,card_url,audit_disposition,finding
+1,02 — Set up Trello tracking and completion email notifications,Done,https://trello.com/c/wwJzG6bM,Implementation retained on older branch; notification/template contract not consistently in main. Email excluded from current audit scope.,F1;F7
+2,03 — Build source-aware schema and importer,Done,https://trello.com/c/j1dg0fQD,Nabz schema/importer recoverable on feature branch; main lacks defining migrations.,F1;F3
+3,00 — Strategy revised: Rasht-first MVP and legal data sources,Done,https://trello.com/c/yeXSvWke,Current strategic decision: Rasht-first customer-voice intelligence.,F1;F7
+4,08 — Harden Claim and OTP for pilot owners,Needs You,https://trello.com/c/zGCZvVVC,Real SMS remains an external gate; hardened implementation exists on older branch; main deliberately disables production auth.,F1
+5,01 — Audit legacy nest-nazarato repository,Done,https://trello.com/c/U1UKBhSp,Historical completed audit only; legacy repository not opened in this audit.,Scope
+6,04 — Build 50-source Rasht candidate dataset,Done,https://trello.com/c/cWV7J3IC,50 OSM candidates and provenance exist on feature branch; candidate completion is not public publication.,F3
+7,09 — Build owner action insights and change measurement,Ready,https://trello.com/c/zCCz7ZOn,Cited owner/action implementation recoverable; follow-up application path still missing.,F5
+8,RISK — Google Maps cannot be the Iran product data backbone,Risks,https://trello.com/c/BEg4j7Xh,Retain source-policy risk; no external Google service or legal review performed.,Preserve
+9,10 — Pilot QA and knowledge-based evidence pack,Ready,https://trello.com/c/MvsJW6x9,Technical evidence pack recoverable; whole pilot remains incomplete.,F1;F8
+10,RISK — Neshan and Basalam bulk reuse requires written permission,Risks,https://trello.com/c/5KBy4EIn,Retain permission boundary; no Neshan/Basalam external resources opened.,Preserve
+11,PILOT — Introduce three Rasht businesses and obtain data consent,Ready,https://trello.com/c/c72f0wYV,Owner outreach deferred by latest description; not a blocker to independent development.,Preserve
+12,06 — Build Persian customer-voice intelligence baseline,Ready,https://trello.com/c/XycHMQQC,Versioned deterministic baseline recoverable; real labelled pilot remains open.,F1
+13,"05 — Build Nabz Rasht, Duels, and micro-reviews",Review,https://trello.com/c/8HfC9Mtp,"Duel/vote implementation is on divergent branch, not main; real recommendation bridge incomplete.",F1;F4
+14,RISK — Upgrade Next.js before public deployment,Risks,https://trello.com/c/Ep0cE7CG,Main is Next 16.3.8; dated risk updates exist. No fresh dependency vulnerability audit performed.,F7
+15,DISCOVERY — Evaluate a Bilbooard-inspired entertainment layer,Done,https://trello.com/c/r5WFrFfi,Recorded local product loop; broad directory/generic-chat/reward work excluded from 14-day MVP.,F7
+16,ROADMAP — Lock Nabz Rasht product spec and replan the 14-day MVP,Done,https://trello.com/c/qy0wEf4I,Locked Nabz specification exists on older branch and is absent from main.,F1;F7
+17,07 — Build Taste Graph and AI Concierge,Ready,https://trello.com/c/nMChR3oe,Demo taste save/restore and ranking recoverable; real-evidence wiring unfinished.,F4
+18,11 — Add explainable OSM pre-screening,Done,https://trello.com/c/AbK4vWv7,OSM pre-screening recoverable from older branch; not integrated in main.,F3
+19,12 — Add source-backed OSM completion proposals,Done,https://trello.com/c/QpMQFsI4,Source-backed completion workflow recoverable; main lacks route and related schema.,F3
+20,NO_ACTION — مسیر پارک علم و فناوری فعلاً متوقف شد,Done,https://trello.com/c/ssjC58sO,Explicit NO_ACTION decision retained; no park/application work performed.,Preserve
+21,نقشه ثبت سهامی خاص و مسیر دانش‌بنیان — نظراتو,اطلاعات,https://trello.com/c/wD5C3BsL,Board description reviewed only; linked corporate document and personal records not opened.,Scope
+22,13 — Prepare first OSM publication shortlist,Done,https://trello.com/c/NUrYLeAH,"Internal ready_for_approval decision, not public authorization; source workflow absent from main.",F3
+23,14 — Add admin pre-publication profile preview,Done,https://trello.com/c/83PvqAQu,Admin publication preview recoverable on feature branch; absent in main.,F3
+24,15 — Close review-intake provenance bypass,Done,https://trello.com/c/K6fhqXdo,Done branch-level provenance fix is absent from main review-write boundary.,F2
+25,16 — Align Playwright with approved real-data contracts,In Progress,https://trello.com/c/job8zU14,Still In Progress; browser specs retain fixture assumptions; original dirty checkout preserved.,F8
+26,COMPLETED — Founder decisions approved and documented,Done,https://trello.com/c/8qAQCZKo,Founder decisions recorded; later same-Supabase update retained; linked Google Doc not opened.,Preserve
+27,POST-MVP — مهاجرت کامل اپ و دیتابیس به سرور خودمان,Ready,https://trello.com/c/4c7Wp0No,Post-MVP self-hosting intentionally deferred; no VPS/provider work done.,Preserve
+28,17 — Secure test environment and prove deployment state,Ready,https://trello.com/c/kVEDYZgx,Release/JWT progress recorded; rotation and test separation remain recorded open; no secrets/DB inspected.,Preserve
+29,18 — آزمایش رایگان Google Maps Scraper برای کسب‌وکارهای رشت,Review,https://trello.com/c/KuRf1xal,Private research delivery recorded; external artifacts/Apify not opened; no publication inferred.,Scope
+30,19 — پیش‌نمایش محلی کافه‌های گلسار؛ جست‌وجو تا ثبت تجربه,Review,https://trello.com/c/uh5LuT0W,Local preview behavior represented in later main adapters; no private source data inspected.,Preserve
+31,20 — جلوگیری از خواب خودکار هنگام کار Codex,Done,https://trello.com/c/3SmyzemZ,Non-product completed setting task; no device-setting inspection/change in this audit.,Scope
+32,21 — نمایش دادهٔ گلسار با طراحی موجود محصول در dev,Review,https://trello.com/c/lhdnrbHC,Native dev preview integration present in later main code; Review does not mean public pilot data.,Preserve
+33,22 — انتشار dev به main و بررسی Worker نظراتو,Done,https://trello.com/c/KR1tlMCp,Historical release evidence reviewed; current main inspected separately.,Verification
+34,23 — اتصال دامنهٔ اصلی و شروع ایندکس نظراتو,Done,https://trello.com/c/0TqROnKn,Domain/indexing setup recorded and source configuration present; actual current indexing not checked.,Verification
+35,24 — سئو: ثبت Search Console و محتوای اولیهٔ واقعی,Ready,https://trello.com/c/Pesv0Z9S,Setup portion recorded complete; actual-content work still pending; no Search Console access.,Preserve
+36,25 — پاک‌سازی دیتای عمومی و آماده‌سازی کاتالوگ گلسار,Ready,https://trello.com/c/q4gxsCCZ,Catalog cleanup/publication pending; zero approved sources is dated board evidence only.,F3
+37,از اینجا شروع کن — نقشهٔ کارهای محصول و سئو,اطلاعات,https://trello.com/c/j9EZSh93,Latest released-discovery summary; needs integration status alongside the wider product strategy.,F7
+38,26 — کشف محلی، حذف ویس و انتشار روی دامنهٔ اصلی,Done,https://trello.com/c/88hqk2xw,Current main corresponds to delivered local-discovery/voice-removal slice; retain changes.,Preserve
+39,27 — بازطراحی موبایل‌فرست بر اساس مسیر محصول نظراتو,In Progress,https://trello.com/c/cqeDNvLy,Existing mobile redesign is uncommitted local WIP; no PR; preserve and review before new redesign.,F6
