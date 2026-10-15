@@ -4,21 +4,28 @@ import { useMemo, useState } from "react";
 import { CategoryCard } from "@/components/ui/CategoryCard";
 import { CloseIcon, SearchIcon } from "@/components/icons";
 import { GLASS } from "@/components/ui/styles";
-import { categories } from "@/lib/data/categories";
+import { localDiscoveryCategories, type Category } from "@/lib/data/categories";
+import Link from "next/link";
+import { AREAS, type SearchArea } from "@/lib/local-area";
 
-export function CategoryBrowser({ items = categories, local = false }: { items?: typeof categories; local?: boolean }) {
+export function CategoryBrowser({ items, local = false, area = "rasht" }: { items?: Category[]; local?: boolean; area?: SearchArea }) {
+  const categories = useMemo(() => items ?? localDiscoveryCategories(area), [items, area]);
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter(
+    if (!q) return categories;
+    return categories.filter(
       (c) => c.title.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q),
     );
-  }, [query, items]);
+  }, [query, categories]);
 
   return (
     <div className="relative">
+      <nav aria-label="انتخاب محدوده" className="mb-6 flex flex-wrap gap-2">
+        {AREAS.map(option => <Link key={option.id} href={`/categories?area=${option.id}`} aria-current={area === option.id ? "page" : undefined} className={`inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-sm font-bold ${area === option.id ? "border-mint/55 bg-mint/15 text-mint" : "border-glass-border bg-glass text-muted hover:text-strong"}`}>{option.label}</Link>)}
+      </nav>
+      {local && <p className="mb-5 text-sm leading-7 text-muted">پیش‌نمایش خصوصی؛ اطلاعات اولیهٔ مکان، تجربهٔ منتشرشده نیست.</p>}
       {/* Search Section */}
       <div className="mb-10 md:mb-14">
         <div className="relative mx-auto w-full max-w-2xl p-4 md:p-6 bg-glass border border-glass-border-hi rounded-glass shadow-[var(--shadow-sm)] backdrop-blur-[18px] backdrop-saturate-[160%]">
@@ -34,7 +41,8 @@ export function CategoryBrowser({ items = categories, local = false }: { items?:
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={local ? "جستجوی محدوده (مثلاً: توحید)…" : "جستجوی دسته‌بندی (مثلاً: پوشاک)..."}
+              placeholder="جستجوی دسته‌بندی (کافه، رستوران)…"
+              aria-label="جستجوی دسته‌بندی"
               className="w-full h-[58px] md:h-[64px] ps-14 pe-14 text-base md:text-[17px] font-medium text-strong placeholder:text-muted/60 bg-glass-strong/30 border border-glass-border rounded-2xl outline-none transition-all duration-300 focus:border-mint/60 focus:bg-glass-strong/50 focus:shadow-[0_0_0_5px_rgba(91,230,178,0.12)]"
             />
             {query && (
@@ -51,8 +59,8 @@ export function CategoryBrowser({ items = categories, local = false }: { items?:
 
           {/* Popular Search Tags */}
           <div className="mt-4 flex flex-wrap items-center gap-2 px-1">
-            <span className="text-[12px] font-semibold text-muted/80 ml-2">جستجوهای داغ:</span>
-            {(local ? ["توحید", "امام علی", "گلسار"] : ["پوشاک", "زیبایی", "خوراکی", "دیجیتال"]).map((tag) => (
+            <span className="text-[12px] font-semibold text-muted/80 ml-2">دسته‌های شروع:</span>
+            {["کافه", "رستوران"].map((tag) => (
               <button
                 key={tag}
                 type="button"
@@ -72,7 +80,7 @@ export function CategoryBrowser({ items = categories, local = false }: { items?:
             {query.trim() ? "نتایج جستجو" : "همه دسته‌بندی‌ها"}
           </h3>
           <p className="text-[13px] text-muted" aria-live="polite">
-            نمایش {filtered.length} دسته‌بندی از مجموع {items.length} مورد
+            نمایش {filtered.length} دسته‌بندی از مجموع {categories.length} مورد
           </p>
         </div>
         {query.trim() && (

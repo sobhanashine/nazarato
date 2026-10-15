@@ -45,7 +45,7 @@ export function ChatClient() {
   // Set mounted state
   useEffect(() => {
     setMounted(true);
-    
+
     // Load sessions from localStorage
     const saved = localStorage.getItem("nzr_chat_sessions");
     if (saved) {
@@ -87,10 +87,10 @@ export function ChatClient() {
   const handleDeleteSession = (sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    
+
     const filtered = sessions.filter((s) => s.id !== sessionId);
     setSessions(filtered);
-    
+
     if (activeSessionId === sessionId) {
       if (filtered.length > 0) {
         setActiveSessionId(filtered[0].id);
@@ -207,7 +207,7 @@ export function ChatClient() {
           for (const line of lines) {
             const trimmed = line.trim();
             if (!trimmed.startsWith("data: ")) continue;
-            
+
             const jsonStr = trimmed.slice(6).trim();
             try {
               const data = JSON.parse(jsonStr);
@@ -235,7 +235,7 @@ export function ChatClient() {
       console.error("[chat-client] Error sending message:", err);
       const errMsg = err instanceof Error ? err.message : "خطای نامشخص رخ داد.";
       setError(errMsg);
-      
+
       setSessions((prev) =>
         prev.map((s) => {
           if (s.id === currentSessionId) {
@@ -380,7 +380,7 @@ export function ChatClient() {
 
   return (
     <div className="flex flex-row w-full h-full overflow-hidden relative">
-      
+
       {/* Sidebar - Collapsible drawer on mobile, fixed list on desktop */}
       <aside
         className={`fixed md:relative top-0 bottom-0 right-0 z-40 w-[260px] shrink-0 h-full border-l border-glass-border bg-[rgba(8,11,20,0.92)] backdrop-blur-[24px] flex flex-col transition-transform duration-300 ease-out md:translate-x-0 ${
@@ -467,7 +467,7 @@ export function ChatClient() {
 
       {/* Main Chat Workspace */}
       <div className="flex-1 h-full flex flex-col overflow-hidden bg-[rgba(6,8,15,0.2)]">
-        
+
         {/* Workspace Mobile Header */}
         <header className="flex items-center justify-between px-4 py-3 border-b border-glass-border bg-[rgba(8,11,20,0.6)] backdrop-blur-md md:hidden shrink-0">
           <button
@@ -497,7 +497,7 @@ export function ChatClient() {
           className="flex-1 overflow-y-auto px-4 py-6 scroll-smooth"
         >
           <div className="max-w-3xl mx-auto w-full space-y-6">
-            
+
             {messages.length === 0 ? (
               /* Welcome Greeting Screen */
               <div className="h-[50vh] flex flex-col items-center justify-center text-center max-w-[550px] mx-auto">
@@ -608,7 +608,7 @@ export function ChatClient() {
                     </div>
                   );
                 })}
-                
+
                 {/* Generation loader */}
                 {isGenerating && messages[messages.length - 1]?.role === "user" && (
                   <div className="flex justify-start w-full">
@@ -654,7 +654,7 @@ export function ChatClient() {
               <div className="absolute right-4 text-muted pointer-events-none">
                 <SearchIcon className="w-4 h-4" />
               </div>
-              
+
               {/* Premium Redesigned Send Button */}
               <button
                 type="submit"
@@ -669,7 +669,7 @@ export function ChatClient() {
                 <SendIcon className="w-4 h-4 transform rotate-180" />
               </button>
             </form>
-            
+
             {/* Grounding and Data Provenance Disclaimer */}
             <p className="text-[10px] text-muted text-center leading-relaxed select-none">
               اطلاعات ارائه شده توسط هوش مصنوعی بر اساس خریدهای واقعی و نتایج جستجوی زنده در وب فارسی (توسط گوگل) استخراج می‌شوند. احتمال خطا وجود دارد.

@@ -3,15 +3,7 @@ import type { BlogPost, ContentBlock } from "@/lib/data/blog-posts";
 import { BlogMeta } from "@/components/blog/BlogMeta";
 import { Container } from "@/components/ui/Container";
 import { TAG_BADGE } from "@/components/ui/styles";
-import {
-  FacebookIcon,
-  InstagramIcon,
-  LinkedInIcon,
-  TwitterIcon,
-} from "@/components/icons";
-
-const socBtnLight =
-  "flex items-center justify-center w-10 h-10 rounded-full text-muted transition-colors duration-200 hover:bg-glass-hover hover:text-mint";
+import { SharePostButton } from "./SharePostButton";
 
 function Block({ block }: { block: ContentBlock }) {
   switch (block.type) {
@@ -113,22 +105,22 @@ export function PostContent({ post }: { post: BlogPost }) {
   return (
     <>
       <Container className="mb-8 md:mb-12">
-        <h2 className="text-[1.6rem] font-extrabold text-strong leading-[1.35] mb-4 -tracking-[0.02em] md:text-[2.1rem] lg:mb-6">
+        <h1 className="text-[1.6rem] font-extrabold text-strong leading-[1.35] mb-4 -tracking-[0.02em] md:text-[2.1rem] lg:mb-6">
           {post.title}
-        </h2>
+        </h1>
         <BlogMeta post={post} />
       </Container>
 
       <Container>
         <div className="relative w-full h-80 rounded-[1.25rem] overflow-hidden mb-8 border border-glass-border shadow-[var(--shadow-lg)] md:h-auto md:aspect-[16/7] md:mb-12">
-          <Image
+          {post.image ? <Image
             src={post.image}
             alt={post.title}
             fill
             priority
             sizes="(min-width: 1024px) 1200px, 100vw"
             className="object-cover"
-          />
+          /> : <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-mint/15 to-lapis/15" />}
         </div>
       </Container>
 
@@ -144,12 +136,7 @@ export function PostContent({ post }: { post: BlogPost }) {
             <p className="text-[15px] font-medium leading-[1.75] text-strong">
               این مطلب‌رو برای بقیه بفرست!
             </p>
-            <div className="flex gap-[0.2rem]">
-              <a href="#" className={socBtnLight} aria-label="اینستاگرام"><InstagramIcon /></a>
-              <a href="#" className={socBtnLight} aria-label="توییتر"><TwitterIcon /></a>
-              <a href="#" className={socBtnLight} aria-label="فیسبوک"><FacebookIcon /></a>
-              <a href="#" className={socBtnLight} aria-label="لینکدین"><LinkedInIcon /></a>
-            </div>
+            <SharePostButton title={post.title} />
           </div>
           <div className="flex flex-wrap items-center gap-2 mx-auto w-fit md:mx-0">
             {post.tags.map((t) => (

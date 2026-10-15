@@ -77,7 +77,7 @@ const FAQ = [
   },
   {
     q: "تأیید مالکیت چقدر طول می‌کشد؟",
-    a: "معمولاً بین ۲۴ تا ۷۲ ساعت کاری. بستگی به نوع مدرکی که ارائه می‌کنی و حجم درخواست‌ها دارد.",
+    a: "در این مرحله، زمان تأیید به بررسی انسانی مدارک بستگی دارد؛ زمان تضمین‌شده‌ای اعلام نمی‌کنیم.",
   },
   {
     q: "اگر کسب‌وکار من اینجا ثبت نشده باشد چه؟",
@@ -134,7 +134,7 @@ export default function ForBusinessPage() {
                   ادعای مالکیت کسب‌وکار
                 </Link>
                 <Link
-                  href="/contact"
+                  href="/contact#contact-form"
                   className="inline-flex items-center justify-center rounded-full border border-glass-border bg-glass px-7 py-3.5 text-[0.95rem] font-bold text-strong transition-colors duration-200 hover:border-mint/40"
                 >
                   ثبت کسب‌وکار جدید
@@ -243,6 +243,12 @@ export default function ForBusinessPage() {
             </div>
           </section>
 
+          <section className={`${GLASS} my-8 p-6 sm:p-8`} aria-label="صدای مشتری و اقدام مالک">
+            <h2 className="text-xl font-extrabold text-strong">از صدای مشتری تا یک اقدام مشخص</h2>
+            <p className="mt-3 text-sm leading-8 text-muted">تجربه‌های دست‌اول، شاهد هر نکته را روشن می‌کنند. یک مسئله را انتخاب کن، اصلاح خودت را ثبت کن و نتیجهٔ اقدام را در دو بازهٔ جدا بررسی کن. دادهٔ کم به نتیجهٔ قطعی تبدیل نمی‌شود.</p>
+            <Link href="/business/insights" className={`${BTN_PRIMARY} mt-5 min-h-11 px-6 py-3 text-sm`}>ورود به فضای مالک</Link>
+          </section>
+
           {/* ── CTA ── */}
           <section className="py-14 lg:py-20">
             <div className="relative mx-auto max-w-[900px] overflow-hidden rounded-[2rem] border border-mint/30 bg-[linear-gradient(135deg,rgba(91,230,178,0.08),rgba(63,191,146,0.04))] p-10 text-center sm:p-14">
@@ -252,8 +258,7 @@ export default function ForBusinessPage() {
                   آماده‌ی شروعی؟
                 </h2>
                 <p className="mx-auto mt-4 max-w-[50ch] text-[14px] leading-[2] text-muted sm:text-[16px]">
-                  نام کسب‌وکارت را جستجو کن، صفحه‌اش را پیدا کن و ادعای مالکیت بده. تأیید معمولاً
-                  در کمتر از یک روز کاری انجام می‌شود.
+                  نام کسب‌وکارت را جستجو کن و درخواست مالکیت بده. پس از بررسی مدارک، مسیر پاسخ‌گویی و تحلیل برای مالک تأییدشده قابل دسترسی است.
                 </p>
                 <Link
                   href="/search?q="

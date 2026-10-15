@@ -7,15 +7,29 @@
  * pressing Enter (or the icon button) runs the full search.
  */
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SearchIcon } from "@/components/icons";
 import { SearchSuggestions } from "@/components/search/SearchSuggestions";
+import type { SearchArea } from "@/lib/local-area";
 import { suggestBusinesses } from "@/lib/search";
 
-export function HeroSearch({ businesses }: { businesses?: import("@/lib/data/businesses").Business[] }) {
+export function HeroSearch({ businesses, area }: { businesses?: import("@/lib/data/businesses").Business[]; area: SearchArea }) {
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  const suggestionPointer = useRef(false);
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !formRef.current?.contains(event.target)) {
+        suggestionPointer.current = false;
+        setOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    return () => { suggestionPointer.current = false; document.removeEventListener("pointerdown", closeOutside); };
+  }, [open]);
 
   const suggestions = useMemo(() => suggestBusinesses(value, 6, businesses), [value, businesses]);
   const showDropdown = open && value.trim().length >= 2;
@@ -29,9 +43,10 @@ export function HeroSearch({ businesses }: { businesses?: import("@/lib/data/bus
       className="relative w-full max-w-[620px] h-[60px] mt-2 sm:h-16"
       onBlur={(e) => {
         // Stay open while focus moves into the dropdown or the submit button.
-        if (!formRef.current?.contains(e.relatedTarget)) setOpen(false);
+        if (!suggestionPointer.current && !formRef.current?.contains(e.relatedTarget)) setOpen(false);
       }}
     >
+      <input type="hidden" name="area" value={area} />
       {/* Soft gradient glow behind the input */}
       <div
         aria-hidden
@@ -52,7 +67,7 @@ export function HeroSearch({ businesses }: { businesses?: import("@/lib/data/bus
         autoComplete="off"
         placeholder="کسب و کار، فروشگاه یا دسته‌بندی..."
         aria-label="جستجو"
-        className="w-full h-full pr-7 pl-[3.25rem] bg-[rgba(13,17,28,0.65)] backdrop-blur-[18px] backdrop-saturate-[180%] border border-glass-border-hi rounded-full text-[15px] text-strong outline-none transition-[box-shadow,border-color] duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] placeholder:text-[#6b7385] focus:border-mint/55 focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_4px_rgba(91,230,178,0.18),0_12px_40px_rgba(0,0,0,0.45)]"
+        className="w-full h-full pr-7 pl-[3.25rem] bg-[rgba(13,17,28,0.65)] backdrop-blur-[18px] backdrop-saturate-[180%] border border-glass-border-hi rounded-full text-[16px] text-strong outline-none transition-[box-shadow,border-color] duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] placeholder:text-[#6b7385] focus:border-mint/55 focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_4px_rgba(91,230,178,0.18),0_12px_40px_rgba(0,0,0,0.45)]"
       />
       <button
         type="submit"
@@ -61,7 +76,7 @@ export function HeroSearch({ businesses }: { businesses?: import("@/lib/data/bus
       >
         <SearchIcon />
       </button>
-      {showDropdown && <SearchSuggestions suggestions={suggestions} />}
+      {showDropdown && <div onPointerDownCapture={() => { suggestionPointer.current = true; }} onClickCapture={() => { suggestionPointer.current = false; }} onPointerCancel={() => { suggestionPointer.current = false; setOpen(false); }}><SearchSuggestions suggestions={suggestions} /></div>}
 
       <span aria-live="polite" className="sr-only">
         {showDropdown

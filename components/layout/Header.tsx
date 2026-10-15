@@ -6,17 +6,18 @@ import { Container } from "@/components/ui/Container";
 
 // Desktop top-nav — kept short to fit the pill.
 const navItems = [
+  { href: "/nabz", label: "نبض رشت" },
   { href: "/chat", label: "دستیار هوشمند" },
   { href: "/blog", label: "بلاگ" },
   { href: "/categories", label: "دسته‌بندی‌ها" },
   { href: "/about", label: "درباره ما" },
-  { href: "/contact", label: "تماس با ما" },
 ];
 
 // Mobile hamburger menu — has room for every primary page, so it also
 // surfaces جستجو, نوشتن نظر, and the owner-acquisition page (which desktop
 // reaches via the hero / tab bar / standalone header CTA).
 const mobileNavItems = [
+  { href: "/nabz", label: "نبض رشت" },
   { href: "/search", label: "جستجو" },
   { href: "/write-review", label: "نوشتن نظر" },
   { href: "/chat", label: "گفتگو با هوش مصنوعی" },
@@ -25,6 +26,7 @@ const mobileNavItems = [
   { href: "/categories", label: "دسته‌بندی‌ها" },
   { href: "/about", label: "درباره ما" },
   { href: "/contact", label: "تماس با ما" },
+  { href: "/help", label: "راهنما" },
 ];
 
 const brandMark =

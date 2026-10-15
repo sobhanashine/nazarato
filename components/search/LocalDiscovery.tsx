@@ -27,7 +27,7 @@ export function LocalDiscovery({ query, categories, home = false }: { query: Sea
         <label className="flex shrink-0 items-center gap-3 text-[13px] text-muted">
           محدوده
           <select aria-label="محدودهٔ جستجو" value={area}
-            className="min-h-11 rounded-xl border border-glass-border-hi bg-[#111725] px-3 py-2 text-[14px] text-strong focus:outline-2 focus:outline-mint"
+            className="min-h-11 rounded-xl border border-glass-border-hi bg-[#111725] px-3 py-2 text-base text-strong focus:outline-2 focus:outline-mint"
             onChange={event => {
               const next = parseArea(event.target.value);
               if (!next) return;
@@ -44,7 +44,7 @@ export function LocalDiscovery({ query, categories, home = false }: { query: Sea
           href={searchHref(query, { area, q: "", type: "biz", categories: [category], minRating: 0, reviewedOnly: false, verifiedOnly: false })}
           onClick={() => rememberArea(area)}
           aria-current={query.categories.includes(category) ? "page" : undefined}
-          className="inline-flex min-h-11 items-center rounded-full border border-mint/35 bg-mint/10 px-5 py-2 text-[14px] font-bold text-mint transition-colors hover:bg-mint/20 focus-visible:outline-2 focus-visible:outline-mint">
+          className="inline-flex min-h-11 items-center rounded-full border border-mint/35 bg-mint/10 px-5 py-2 text-base font-bold text-mint transition-colors hover:bg-mint/20 focus-visible:outline-2 focus-visible:outline-mint">
           {category}
         </Link>)}
       </nav>

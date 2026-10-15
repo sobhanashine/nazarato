@@ -17,7 +17,7 @@ type Props = {
 
 export function BookmarkButton({ businessSlug, initialIsBookmarked, className = "", label, localOnly = false }: Props) {
   const [isPending, startTransition] = useTransition();
-  
+
   // React 19 useOptimistic
   const [optimisticBookmarked, addOptimisticBookmark] = useOptimistic(
     initialIsBookmarked,
@@ -31,7 +31,7 @@ export function BookmarkButton({ businessSlug, initialIsBookmarked, className = 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation(); // prevent card clicks
-    
+
     if (localOnly) {
       try {
         if (localSaved) window.localStorage.removeItem(localKey);
@@ -44,7 +44,7 @@ export function BookmarkButton({ businessSlug, initialIsBookmarked, className = 
     startTransition(async () => {
       const nextState = !optimisticBookmarked;
       addOptimisticBookmark(nextState);
-      
+
       const result = await toggleBookmark(businessSlug);
       if (!result.ok) {
         toast.error(result.error);
@@ -66,11 +66,13 @@ export function BookmarkButton({ businessSlug, initialIsBookmarked, className = 
       type="button"
       onClick={handleClick}
       disabled={isPending}
+      data-active={bookmarked}
+      aria-pressed={bookmarked}
       className={`flex items-center justify-center gap-2 rounded-full transition-colors ${className}`}
       aria-label={bookmarked ? "حذف از ذخیره‌ها" : "ذخیره"}
     >
       {bookmarked ? (
-        <BookmarkFilledIcon className="w-5 h-5 text-mint-400" />
+        <BookmarkFilledIcon className="w-5 h-5 text-mint" />
       ) : (
         <BookmarkIcon className="w-5 h-5 text-white/70 hover:text-white" />
       )}

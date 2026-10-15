@@ -21,6 +21,12 @@ describe("native search with an explicit local catalog", () => {
       expect(runSearch(parseSearchParams(filter, [wok]), [wok]).total).toBe(0);
     }
   });
+  it("interprets Persian decimal ratings without inflating them", () => {
+    const lower = { ...wok, score: "۳٫۲", reviewCount: 5, reviews: "۵" };
+    const higher = { ...wok, slug: "higher", score: "۴٫۱", reviewCount: 5, reviews: "۵" };
+    const supply = [lower, higher];
+    expect(runSearch(parseSearchParams({ rating: "4" }, supply), supply).hits).toEqual([{ kind: "company", business: higher }]);
+  });
   it("paginates all 22 candidates without mixing sample businesses", () => {
     const cafes = Array.from({ length: 22 }, (_, i) => ({ ...wok, slug: `place-${i}` }));
     const result = runSearch(parseSearchParams({ page: "3" }, cafes), cafes);
@@ -66,5 +72,11 @@ describe("location and category together", () => {
     expect(query.categories).toEqual(["کافه"]);
     expect(query.area).toBe("golsar");
     expect(runSearch(query, []).total).toBe(0);
+  });
+  it("does not silently widen a restaurant link to cafes when no restaurants are published", () => {
+    const query = parseSearchParams({ category: "رستوران", area: "rasht" }, [wok]);
+    expect(query.categories).toEqual(["رستوران"]);
+    expect(runSearch(query, [wok]).total).toBe(0);
+    expect(parseSearchParams({ category: "رستوران" }, []).categories).toEqual(["رستوران"]);
   });
 });

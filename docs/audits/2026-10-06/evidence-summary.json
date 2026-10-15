@@ -1,0 +1,152 @@
+{
+  "audit_date": "2026-10-06",
+  "timezone": "Asia/Tehran",
+  "allowed_resources": [
+    "https://github.com/sobhanashine/nazarato",
+    "https://trello.com/b/eHnJFMki/nazarato-14-day-mvp"
+  ],
+  "audit_card": "https://trello.com/c/z9QRURg7",
+  "snapshots": {
+    "main": "86b70d41d2fb93c690a3d8d9d42aa9cd692b5b45",
+    "dev": "db36aae0c8a484a1ad8d1c450939688897d74713",
+    "recovery_branch": "codex/review-intake-provenance",
+    "recovery_sha": "73500d5d7117c940d932655cecb5cb7d01f88de0",
+    "recovery_ahead_main": 35,
+    "recovery_behind_main": 12,
+    "dev_behind_main": 4,
+    "dev_main_changed_files": 0,
+    "open_pull_requests": 0,
+    "main_next_version": "16.3.8",
+    "recovery_next_version": "16.3.4"
+  },
+  "coverage": {
+    "existing_trello_cards": 39,
+    "comments": 54,
+    "lists": 7,
+    "checklist_objects": 0,
+    "open_github_issue_summaries": 38
+  },
+  "verification": {
+    "main_units": {
+      "files": 22,
+      "passed": 127,
+      "failed": 0
+    },
+    "main_typecheck": "pass; --noEmit --incremental false",
+    "main_lint": "pass",
+    "recovery_units": {
+      "files": 56,
+      "passed": 278,
+      "failed": 0
+    },
+    "transferred_review_contract_tests": {
+      "snapshot_only": true,
+      "passed": 3,
+      "failed": 2,
+      "failure": "global and user review queries lack business_sources!inner"
+    },
+    "main_github_build_check": {
+      "name": "Workers Builds: nazarato",
+      "conclusion": "success",
+      "completed_at": "2026-10-02T17:15:58Z"
+    },
+    "dependency_setup": "existing local node_modules symlinked into temporary immutable snapshots; no fresh install",
+    "not_run": [
+      "browser QA",
+      "full E2E",
+      "full build",
+      "live production probe",
+      "database query or mutation",
+      "migration apply",
+      "SMS",
+      "AI inference",
+      "dependency vulnerability audit"
+    ]
+  },
+  "recovery_commits": [
+    {
+      "commit": "c882662",
+      "purpose": "locked Nabz specification"
+    },
+    {
+      "commit": "de2d78b",
+      "purpose": "source-aware data foundation; use final migration versions"
+    },
+    {
+      "commit": "84f7acf",
+      "purpose": "fictional interactive Nabz prototype"
+    },
+    {
+      "commit": "eef3f5f",
+      "purpose": "guarded comparison vote API"
+    },
+    {
+      "commit": "faa06c7",
+      "purpose": "versioned Persian analysis baseline"
+    },
+    {
+      "commit": "985b0ab",
+      "purpose": "demo taste and concierge"
+    },
+    {
+      "commit": "0991399",
+      "purpose": "OTP/Claim hardening; preserve current production lock"
+    },
+    {
+      "commit": "4722f06",
+      "purpose": "cited owner insight and improvement creation"
+    },
+    {
+      "commit": "236de7b",
+      "purpose": "provenance, attribution, bookmarks"
+    },
+    {
+      "commit": "fe045a7",
+      "purpose": "historical migration naming reconciliation"
+    },
+    {
+      "commit": "7575d43",
+      "purpose": "account-backed taste hydration"
+    },
+    {
+      "commit": "6404af0",
+      "purpose": "public review-feed provenance"
+    },
+    {
+      "commit": "bf70ff5",
+      "purpose": "eligible real-business pool"
+    },
+    {
+      "commit": "67c917e",
+      "purpose": "real Duel read API"
+    },
+    {
+      "commit": "6579713",
+      "purpose": "live Duel interface"
+    },
+    {
+      "commit": "0ec382c",
+      "purpose": "explicit per-record publication gate"
+    },
+    {
+      "commit": "16973d2",
+      "purpose": "admin publication preview"
+    },
+    {
+      "commit": "73500d5",
+      "purpose": "review-write provenance"
+    }
+  ],
+  "changes_by_audit": [
+    "new audit documentation only",
+    "one scoped Trello audit card"
+  ],
+  "preserved": [
+    "application code",
+    "existing uncommitted work",
+    "existing Trello cards",
+    "docs/PROJECT.md",
+    "all external runtime and data state"
+  ],
+  "email": "not accessed or sent; current resource restriction overrides standing email rule"
+}

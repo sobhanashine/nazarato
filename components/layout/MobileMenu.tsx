@@ -6,11 +6,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import {
   CloseIcon,
-  FacebookIcon,
-  InstagramIcon,
-  LinkedInIcon,
   MenuIcon,
-  TwitterIcon,
 } from "@/components/icons";
 import { BTN_PRIMARY } from "@/components/ui/styles";
 import { useReviewSheet } from "@/components/review/ReviewSheetProvider";
@@ -173,23 +169,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         >
           {status?.loggedIn ? "پروفایل من" : "ورود"}
         </Link>
-        <div className="flex items-center justify-center gap-3">
-          {[
-            { Icon: InstagramIcon, label: "اینستاگرام" },
-            { Icon: TwitterIcon, label: "توییتر" },
-            { Icon: FacebookIcon, label: "فیسبوک" },
-            { Icon: LinkedInIcon, label: "لینکدین" },
-          ].map(({ Icon, label }) => (
-            <a
-              key={label}
-              href="#"
-              aria-label={label}
-              className="grid place-items-center w-11 h-11 rounded-full bg-glass-strong border border-glass-border text-strong transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi [&_svg]:w-4 [&_svg]:h-4"
-            >
-              <Icon />
-            </a>
-          ))}
-        </div>
+        <Link href="/help" onClick={() => setOpen(false)} className="inline-flex min-h-11 items-center justify-center rounded-full border border-glass-border bg-glass px-4 text-sm text-muted hover:text-mint">راهنمای نظراتو</Link>
       </div>
     </div>
   );

@@ -63,7 +63,7 @@ export default async function SearchPage({
 }: {
   searchParams: Promise<RawParams>;
 }) {
-  const { businesses, shops } = await getDiscoveryCatalog();
+  const { businesses, shops, status } = await getDiscoveryCatalog();
   const raw = await searchParams;
   const area = await getPreferredArea(raw.area);
   const query = parseSearchParams({ ...raw, area }, businesses);
@@ -244,10 +244,10 @@ export default async function SearchPage({
                     <SearchIcon />
                   </span>
                   <p className="mb-1.5 text-[16px] font-bold text-strong">
-                    چیزی پیدا نشد
+                    {status === "unavailable" ? "فهرست فعلاً در دسترس نیست" : "چیزی پیدا نشد"}
                   </p>
                   <p className="mb-7 max-w-[42ch] text-[13px] leading-[1.8] text-muted">
-                    {businesses.length === 0
+                    {status === "unavailable" ? "دریافت اطلاعات مکان‌ها ممکن نشد. کمی بعد دوباره تلاش کن." : businesses.length === 0
                       ? "فهرست عمومی کسب‌وکارها در حال آماده‌سازی است. به‌زودی اطلاعات واقعی اینجا اضافه می‌شود."
                       : `در محدودهٔ ${areaLabel(query.area)} نتیجه‌ای برای این انتخاب نداریم. محدوده یا فیلترها را تغییر بده.`}
                   </p>

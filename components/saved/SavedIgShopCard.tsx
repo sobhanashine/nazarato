@@ -10,7 +10,7 @@ type SavedIgShopCardProps = {
 export function SavedIgShopCard({ shop: s }: SavedIgShopCardProps) {
   return (
     <div className="group relative flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 rounded-2xl border border-glass-border bg-glass/60 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-fuchsia-500/40 hover:bg-glass-hover hover:shadow-[0_8px_30px_-4px_rgba(214,41,118,0.15)]">
-      
+
       {/* Clickable Area */}
       <Link href={s.href} className="absolute inset-0 z-0 rounded-2xl" aria-label={`مشاهده پروفایل ${s.name}`} />
 
@@ -24,7 +24,7 @@ export function SavedIgShopCard({ shop: s }: SavedIgShopCardProps) {
             {s.initial}
           </div>
         </div>
-        
+
         <div className="flex min-w-0 flex-col gap-1">
           <div className="flex items-center gap-1.5">
             <span className="truncate text-[1.05rem] font-bold text-strong transition-colors group-hover:text-fuchsia-400">
@@ -40,7 +40,7 @@ export function SavedIgShopCard({ shop: s }: SavedIgShopCardProps) {
               </svg>
             </span>
           </div>
-          
+
           <span className="text-[0.85rem] text-muted/90 ltr text-right opacity-90 truncate" dir="ltr">
             {s.handle}
           </span>
@@ -61,9 +61,9 @@ export function SavedIgShopCard({ shop: s }: SavedIgShopCardProps) {
 
         {/* The remove bookmark button */}
         <div className="relative z-20 shrink-0">
-          <BookmarkButton 
-            businessSlug={s.slug} 
-            initialIsBookmarked={true} 
+          <BookmarkButton
+            businessSlug={s.slug}
+            initialIsBookmarked={true}
             className="group/btn relative flex h-10 w-10 items-center justify-center rounded-xl border border-glass-border bg-glass transition-all hover:border-rose-500/40 hover:bg-rose-500/15"
           />
         </div>

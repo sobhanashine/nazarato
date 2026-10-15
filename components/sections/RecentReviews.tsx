@@ -6,7 +6,7 @@ import { ArrowLeftIcon } from "@/components/icons";
 import { Container } from "@/components/ui/Container";
 import { ReviewCard } from "@/components/ui/ReviewCard";
 import { HIDE_SCROLL } from "@/components/ui/styles";
-import { getReviewsFromDb, recentReviews } from "@/lib/data/reviews";
+import { getReviewsFromDb } from "@/lib/data/reviews";
 import { getSession } from "@/lib/auth/session";
 
 export async function RecentReviews({ cafes }: { cafes?: Business[] } = {}) {
@@ -14,7 +14,7 @@ export async function RecentReviews({ cafes }: { cafes?: Business[] } = {}) {
   if (cafes === undefined) {
     const viewer = await getSession();
     const { reviews } = await getReviewsFromDb({ sort: "newest", page: 1, limit: 6, viewerId: viewer?.id });
-    list = reviews.length > 0 ? reviews : recentReviews;
+    list = reviews;
   }
 
   return (
@@ -25,7 +25,7 @@ export async function RecentReviews({ cafes }: { cafes?: Business[] } = {}) {
             <h2 className="text-[0.98rem] sm:text-[1.35rem] lg:text-[1.7rem] font-extrabold text-strong leading-[1.3] -tracking-[0.015em] min-w-0">
               {cafes ? "کافه‌های" : "نظرات"}{" "}
               <strong className="font-[inherit] bg-[linear-gradient(135deg,#5BE6B2_0%,#7B89FF_100%)] bg-clip-text text-transparent">
-                {cafes ? "گلسار" : "اخیر"}
+                {cafes ? "رشت" : "اخیر"}
               </strong>{" "}
               {cafes ? "و اطراف" : "فروشگاه‌های آنلاین"}
             </h2>
@@ -38,7 +38,7 @@ export async function RecentReviews({ cafes }: { cafes?: Business[] } = {}) {
             </Link>
           </div>
           <p className="text-[13px] sm:text-[14.5px] text-muted leading-[1.6]">
-            {cafes ? "با سایه، وک و آوند شروع کن؛ اطلاعات اولیهٔ کافه‌ها." : "ثبت‌شده توسط کاربران."}
+            {cafes ? "فهرست مکان‌ها با اطلاعات پایه و منبع مشخص." : "ثبت‌شده توسط کاربران."}
           </p>
         </div>
 

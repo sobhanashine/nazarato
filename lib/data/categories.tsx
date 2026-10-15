@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { SearchArea } from "@/lib/local-area";
 
 export type Category = {
   href: string;
@@ -7,10 +8,9 @@ export type Category = {
   icon: ReactNode;
 };
 
-const ICON_CLASS =
-  "relative z-[2] w-8 h-8 text-mint [filter:drop-shadow(0_0_8px_rgba(91,230,178,0.5))]";
+const ICON_CLASS = "h-7 w-7 text-mint";
 
-/** Build a 24×24 Material-style icon with the shared mint glow styling. */
+/** Build a 24×24 icon with the shared foreground color. */
 function icon(path: string): ReactNode {
   return (
     <svg
@@ -22,6 +22,28 @@ function icon(path: string): ReactNode {
       <path d={path} />
     </svg>
   );
+}
+
+export function localDiscoveryCategories(area: SearchArea = "rasht"): Category[] {
+  const searchHref = (category: string) => {
+    const params = new URLSearchParams({ area, type: "biz", category });
+    return `/search?${params.toString()}`;
+  };
+
+  return [
+    {
+      href: searchHref("کافه"),
+      title: "کافه",
+      desc: "محدوده، راه ارتباط و اطلاعات کافه‌ها را بررسی کن.",
+      icon: icon("M18 3H4v9a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4h1a4 4 0 0 0 0-8h-1V3zm0 3h1a2 2 0 0 1 0 4h-1V6zM2 18h20v2H2v-2z"),
+    },
+    {
+      href: searchHref("رستوران"),
+      title: "رستوران",
+      desc: "اطلاعات رستوران‌های محدوده را برای انتخاب بعدی ببین.",
+      icon: icon("M3 2h2v5h1V2h2v5h1V2h2v6a3 3 0 0 1-3 3v11H6V11a3 3 0 0 1-3-3V2zm17 0v20h-2v-8h-3V8a6 6 0 0 1 5-6z"),
+    },
+  ];
 }
 
 export const categories: Category[] = [

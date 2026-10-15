@@ -7,7 +7,6 @@ import { Header } from "@/components/layout/Header";
 import { PostCard } from "@/components/blog/PostCard";
 import { BlogSidebar } from "@/components/blog/BlogSidebar";
 import { Pagination } from "@/components/blog/Pagination";
-import { FilterIcon } from "@/components/icons";
 import { blogPosts as fallbackPosts } from "@/lib/data/blog-posts";
 import type { BlogPost } from "@/lib/data/blog-posts";
 import { fetchPostsFromWp, isWpEnabled } from "@/lib/wp";
@@ -60,16 +59,6 @@ export default async function BlogListPage({
       <Container>
         <div className="flex flex-col gap-8 mb-16 lg:flex-row-reverse lg:justify-between lg:gap-12 lg:mb-20">
           <main className="w-full lg:w-[58%]">
-            <div className="mb-6 lg:hidden">
-              <button
-                className="inline-flex items-center gap-2 py-[0.65rem] px-4 bg-glass border border-glass-border rounded-xl shadow-[var(--shadow-sm)] backdrop-blur-[18px] backdrop-saturate-[160%] text-strong text-sm font-medium cursor-pointer transition-[background,border-color] duration-200 hover:bg-glass-hover hover:border-glass-border-hi [&_svg]:w-4 [&_svg]:h-4 [&_svg]:text-mint"
-                type="button"
-              >
-                <span>فیلترها</span>
-                <FilterIcon />
-              </button>
-            </div>
-
             <div className="flex flex-col gap-8">
               {visible.map((post) => (
                 <PostCard key={post.slug} post={post} />

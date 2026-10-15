@@ -12,6 +12,7 @@ import { IgAvatar } from "@/components/ui/IgAvatar";
 import { BookmarkButton } from "@/components/ui/BookmarkButton";
 import { IgVerifiedBadge } from "@/components/ui/IgVerifiedBadge";
 import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
+import { BusinessSourceNotice } from "@/components/company/BusinessSourceNotice";
 import type { BusinessDetail } from "@/lib/data/businesses";
 import type { InstagramShop } from "@/lib/data/instagram-shops";
 import type { Review } from "@/lib/data/reviews";
@@ -93,6 +94,7 @@ export function ShopProfile({ business, reviews, stats, averageLabel, similar, i
 
   return (
     <div className="pb-12">
+      <BusinessSourceNotice attributions={business.attributions ?? []} className="mb-6" />
       {/* ── Cover ── */}
       <div
         className="h-36 w-full rounded-glass border border-glass-border sm:h-52"

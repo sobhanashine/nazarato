@@ -37,13 +37,13 @@ export function Blog() {
               className={`${GLASS} group flex flex-col w-[280px] shrink-0 overflow-hidden transition-[transform,border-color] duration-300 hover:-translate-y-[3px] hover:border-glass-border-hi lg:w-auto lg:shrink`}
             >
               <div className="relative w-full aspect-[4/3] overflow-hidden after:content-[''] after:absolute after:inset-0 after:bg-[linear-gradient(180deg,transparent_50%,rgba(6,8,15,0.55)_100%)] after:pointer-events-none">
-                <Image
+                {b.image ? <Image
                   src={b.image}
                   alt={b.title}
                   width={400}
                   height={300}
                   className="w-full h-full object-cover transition-transform duration-500 ease-out [filter:saturate(1.05)] group-hover:scale-[1.08]"
-                />
+                /> : <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-mint/15 to-lapis/15" />}
               </div>
               <div className="px-6 pt-5 pb-7">
                 <p className="tabular-nums text-[0.78rem] text-muted mb-2">{b.date}</p>

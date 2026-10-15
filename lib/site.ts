@@ -1,4 +1,8 @@
-export const SITE_URL = "https://nazarato.ir";
-export const HOME_TITLE = "نظراتو | تجربه‌های واقعی و نظرات درباره کسب‌وکارها";
+// This public flag is fixed at build time, so staging needs its own build.
+export const IS_STAGING = process.env.NEXT_PUBLIC_NAZARATO_ENV === "staging";
+export const SITE_URL = IS_STAGING
+  ? "https://staging.nazarato.ir"
+  : "https://nazarato.ir";
+export const HOME_TITLE = "نظراتو | تجربه‌های محلی، انتخاب‌های بهتر در رشت";
 export const HOME_DESCRIPTION =
-  "نظراتو در حال ساخت فضایی مستقل برای تجربه‌های واقعی درباره کسب‌وکارهای ایرانی است. با مسیر نظراتو برای انتخاب آگاهانه‌تر آشنا شوید.";
+  "کافه و رستوران‌های رشت را پیدا کن؛ نظراتو را برای انتخاب با اطلاعات روشن، تجربهٔ دست اول و بهتر شدن کسب‌وکارها می‌سازیم.";

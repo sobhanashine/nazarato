@@ -18,7 +18,6 @@ export function SearchSuggestions({
 }) {
   return (
     <div
-      onMouseDown={(e) => e.preventDefault()}
       className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-2xl border border-glass-border-hi bg-[#10141f] text-right shadow-[var(--shadow-lg)]"
     >
       {suggestions.length > 0 ? (

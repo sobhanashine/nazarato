@@ -19,6 +19,7 @@ import { ReviewCard } from "@/components/ui/ReviewCard";
 import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
 import type { Business, BusinessDetail } from "@/lib/data/businesses";
 import type { Review } from "@/lib/data/reviews";
+import { BusinessSourceNotice } from "./BusinessSourceNotice";
 
 type Stats = {
   count: number;
@@ -34,6 +35,7 @@ type Props = {
   similar: Business[];
   isBookmarked: boolean;
   localPreview?: boolean;
+  initialReviewsTab?: boolean;
 };
 
 const TABS = [
@@ -73,9 +75,22 @@ function ShareIcon() {
   );
 }
 
-export function CompanyProfile({ business, reviews, stats, averageLabel, similar, isBookmarked, localPreview = false }: Props) {
+function webHref(value?: string): string | undefined {
+  if (!value) return;
+  try {
+    const url = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+    if (url.protocol === "https:" || url.protocol === "http:") return url.href;
+  } catch { /* Show the supplied value as text when it is not a valid URL. */ }
+}
+function phoneHref(value?: string): string | undefined {
+  if (!value) return;
+  const digits = value.replace(/[۰-۹]/g, digit => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit))).replace(/[٠-٩]/g, digit => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))).replace(/[\s()-]/g, "");
+  if (/^\+?\d{7,15}$/.test(digits)) return `tel:${digits}`;
+}
+
+export function CompanyProfile({ business, reviews, stats, averageLabel, similar, isBookmarked, localPreview = false, initialReviewsTab = false }: Props) {
   const { openReviewSheet } = useReviewSheet();
-  const [tab, setTab] = useState<TabId>("overview");
+  const [tab, setTab] = useState<TabId>(initialReviewsTab ? "reviews" : "overview");
   const [ratingFilter, setRatingFilter] = useState<Rating | 0>(0);
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
   const [shareNote, setShareNote] = useState("");
@@ -93,25 +108,16 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
   async function handleShare() {
     const url = window.location.href;
     if (navigator.share) {
-      try {
-        await navigator.share({ title: business.name, url });
-      } catch {
-        /* user dismissed the share sheet */
-      }
-      return;
+      try { await navigator.share({ title: business.name, url }); return; }
+      catch (error) { if (error instanceof DOMException && error.name === "AbortError") return; }
     }
-    try {
-      await navigator.clipboard.writeText(url);
-      setShareNote("لینک کپی شد");
-      setTimeout(() => setShareNote(""), 2000);
-    } catch {
-      setShareNote("کپی نشد");
-      setTimeout(() => setShareNote(""), 2000);
-    }
+    try { await navigator.clipboard.writeText(url); setShareNote("لینک کپی شد"); }
+    catch { setShareNote("کپی نشد؛ لینک را از نوار نشانی بردار"); }
   }
 
   return (
     <div className="pb-12">
+      <BusinessSourceNotice attributions={business.attributions ?? []} className="mb-6" />
       {/* ── Cover ── */}
       <div
         className="h-36 w-full rounded-glass border border-glass-border sm:h-52"
@@ -229,6 +235,8 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
         </div>
       </div>
 
+      {shareNote && <p role="status" className="mt-2 text-sm text-muted">{shareNote}</p>}
+
       {localPreview && <LocalExperiencePanel slug={business.slug} name={business.name} />}
 
       {/* ── Tabs ── */}
@@ -237,13 +245,23 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
         aria-label="بخش‌های پروفایل"
         className="mt-7 flex gap-1 overflow-x-auto border-b border-glass-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {TABS.map((t) => {
+        {TABS.map((t, index) => {
           const active = tab === t.id;
           return (
             <button
               key={t.id}
               role="tab"
               type="button"
+              id={`place-tab-${t.id}`}
+              aria-controls="place-panel"
+              tabIndex={active ? 0 : -1}
+              onKeyDown={event => {
+                const next = event.key === "ArrowLeft" ? (index + 1) % TABS.length : event.key === "ArrowRight" ? (index + TABS.length - 1) % TABS.length : event.key === "Home" ? 0 : event.key === "End" ? TABS.length - 1 : null;
+                if (next === null) return;
+                event.preventDefault();
+                setTab(TABS[next].id);
+                document.getElementById(`place-tab-${TABS[next].id}`)?.focus();
+              }}
               aria-selected={active}
               onClick={() => setTab(t.id)}
               className={`shrink-0 border-b-2 px-4 py-2.5 text-[0.88rem] font-bold transition-colors duration-200 ${
@@ -260,7 +278,7 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
 
       {/* ── Overview ── */}
       {tab === "overview" && (
-        <div role="tabpanel" className="mt-6 flex flex-col gap-5 lg:grid lg:grid-cols-3">
+        <div role="tabpanel" id="place-panel" aria-labelledby={`place-tab-${tab}`} tabIndex={0} className="mt-6 flex flex-col gap-5 lg:grid lg:grid-cols-3">
           {/* On mobile the columns collapse via `contents` so each card is a
               direct flex child — letting `order-*` interleave them (rating
               distribution above recent reviews). The grid restores from lg. */}
@@ -351,7 +369,7 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
 
       {/* ── Reviews ── */}
       {tab === "reviews" && (
-        <div role="tabpanel" className="mt-6">
+        <div role="tabpanel" id="place-panel" aria-labelledby={`place-tab-${tab}`} tabIndex={0} className="mt-6">
           <h2 className={SECTION_H2}>نظرات کاربران</h2>
           {hasReviews ? (
             <>
@@ -405,7 +423,7 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
 
       {/* ── Info ── */}
       {tab === "info" && (
-        <div role="tabpanel" className="mt-6">
+        <div role="tabpanel" id="place-panel" aria-labelledby={`place-tab-${tab}`} tabIndex={0} className="mt-6">
           <h2 className={SECTION_H2}>اطلاعات کسب‌وکار</h2>
           <dl className="mt-4 grid gap-px overflow-hidden rounded-glass border border-glass-border bg-glass-border sm:grid-cols-2">
             {[
@@ -433,7 +451,7 @@ export function CompanyProfile({ business, reviews, stats, averageLabel, similar
 
       {/* ── Similar ── */}
       {tab === "similar" && (
-        <div role="tabpanel" className="mt-6">
+        <div role="tabpanel" id="place-panel" aria-labelledby={`place-tab-${tab}`} tabIndex={0} className="mt-6">
           <h2 className={SECTION_H2}>کسب‌وکارهای مشابه</h2>
           {similar.length > 0 ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -493,18 +511,18 @@ function ContactCard({
             icon={<MailIcon />}
             label="وب‌سایت"
             value={website}
-            href={`https://${website}`}
+            href={webHref(website)}
           />
         )}
         {phone && (
-          <ContactRow icon={<PhoneIcon />} label="تلفن" value={phone} />
+          <ContactRow icon={<PhoneIcon />} label="تلفن" value={phone} href={phoneHref(phone)} />
         )}
         {instagram && (
           <ContactRow
             icon={<InstagramIcon />}
             label="اینستاگرام"
-            value={`@${instagram}`}
-            href={`https://instagram.com/${instagram}`}
+            value={`@${instagram.replace(/^@/, "")}`}
+            href={/^[a-zA-Z0-9_.]{1,30}$/.test(instagram.replace(/^@/, "")) ? `https://instagram.com/${instagram.replace(/^@/, "")}` : undefined}
           />
         )}
       </div>
@@ -545,7 +563,7 @@ function ContactRow({
   return href ? (
     <a
       href={href}
-      target="_blank"
+      target={href.startsWith("tel:") ? undefined : "_blank"}
       rel="noopener noreferrer"
       className={`${base} transition-colors duration-200 hover:border-mint/40`}
     >

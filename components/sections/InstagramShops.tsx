@@ -6,14 +6,14 @@ import { ArrowLeftIcon } from "@/components/icons";
 import { Container } from "@/components/ui/Container";
 import { IgShopCard } from "@/components/ui/IgShopCard";
 import { HIDE_SCROLL } from "@/components/ui/styles";
-import { instagramShops, nicheTabs, type Niche } from "@/lib/data/instagram-shops";
+import { nicheTabs, type Niche, type InstagramShop } from "@/lib/data/instagram-shops";
 
-export function InstagramShops() {
+export function InstagramShops({ shops }: { shops: InstagramShop[] }) {
   const [active, setActive] = useState<Niche>("all");
 
   const visible = useMemo(
-    () => instagramShops.filter((s) => active === "all" || s.niche === active),
-    [active],
+    () => shops.filter((s) => active === "all" || s.niche === active),
+    [active, shops],
   );
 
   return (
@@ -36,7 +36,7 @@ export function InstagramShops() {
             </Link>
           </div>
           <p className="text-[13px] sm:text-[14.5px] text-muted leading-[1.6]">
-            بهترین فروشگاه‌های اینستاگرامی بر اساس نظرات واقعی.
+            فروشگاه‌های دارای منبع تأییدشده؛ اطلاعات اولیه، تجربهٔ مشتری نیست.
           </p>
         </div>
 

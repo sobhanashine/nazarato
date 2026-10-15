@@ -38,10 +38,13 @@ export async function generateMetadata({
 
 export default async function CompanyPage({
   params,
+  searchParams,
 }: {
   params: Promise<Params>;
+  searchParams: Promise<{ review?: string }>;
 }) {
   const { slug } = await params;
+  const { review } = await searchParams;
   const session = await getSession();
   const cafes = await getLocalGolsarCafes();
   const candidate = cafes?.find(cafe => cafe.id === slug);
@@ -68,6 +71,7 @@ export default async function CompanyPage({
             similar={cafes ? cafes.filter(cafe => cafe.id !== slug).slice(0, 4).map(toGolsarBusiness) : await getSimilarBusinesses(business)}
             isBookmarked={isBookmarked}
             localPreview={cafes !== null}
+            initialReviewsTab={typeof review === "string" && /^[0-9a-f-]{36}$/i.test(review)}
           />
         </main>
       </Container>

@@ -72,13 +72,13 @@ function RelatedCard({ post }: { post: BlogPost }) {
       "
     >
       <div className="relative w-full aspect-[16/10] overflow-hidden">
-        <Image
+        {post.image ? <Image
           src={post.image}
           alt=""
           fill
           sizes="(min-width: 768px) 320px, 78vw"
           className="object-cover transition-transform duration-300 group-hover:scale-105"
-        />
+        /> : <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-mint/15 to-lapis/15" />}
         <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(6,8,15,0.7))] pointer-events-none" />
         <span className="absolute top-3 right-3 text-[11px] font-medium text-mint bg-[rgba(6,8,15,0.7)] border border-mint/30 backdrop-blur-sm rounded-full px-2.5 py-1">
           {post.category}

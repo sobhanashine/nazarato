@@ -94,6 +94,7 @@ export default async function AdminOverviewPage() {
             {[
               { href: "/admin/users", label: "کاربران" },
               { href: "/admin/businesses", label: "کسب‌وکارها" },
+              { href: "/admin/businesses/osm-review", label: "بررسی و انتشار منابع" },
               { href: "/admin/moderation", label: "صف بررسی نظرات" },
               { href: "/admin/reports", label: "گزارش‌ها" },
               { href: "/admin/claims", label: "مالکیت‌ها" },

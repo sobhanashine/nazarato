@@ -48,7 +48,7 @@ export default function PrivacyPage() {
 
           {/* ── Page Layout: Sidebar + Content ── */}
           <div className="grid gap-8 lg:grid-cols-[280px_1fr] items-start">
-            
+
             {/* Sidebar Navigation */}
             <aside className={`hidden lg:block sticky top-24 p-6 ${GLASS}`}>
               <h4 className="mb-4 text-[15px] font-black text-white border-b border-glass-border pb-3">
@@ -69,7 +69,7 @@ export default function PrivacyPage() {
 
             {/* Main Content Card */}
             <article className={`p-6 sm:p-10 ${GLASS} space-y-10 text-[15px] leading-[2.1] text-muted-more font-medium`}>
-              
+
               {/* Section 1 */}
               <section id="collection" className="scroll-mt-24 space-y-4">
                 <h2 className="text-[20px] font-black text-white flex items-center gap-2 border-b border-glass-border pb-2">

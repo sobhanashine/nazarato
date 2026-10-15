@@ -3,9 +3,9 @@ import { ArrowLeftIcon } from "@/components/icons";
 import { CategoryCard } from "@/components/ui/CategoryCard";
 import { Container } from "@/components/ui/Container";
 import { HIDE_SCROLL } from "@/components/ui/styles";
-import { categories } from "@/lib/data/categories";
+import { localDiscoveryCategories, type Category } from "@/lib/data/categories";
 
-export function Categories({ items = categories.slice(0, 4), local = false }: { items?: typeof categories; local?: boolean } = {}) {
+export function Categories({ items = localDiscoveryCategories(), local = false }: { items?: Category[]; local?: boolean } = {}) {
   return (
     <section className="py-10 pt-12 md:pt-16 lg:pt-20">
       <Container>
@@ -23,11 +23,11 @@ export function Categories({ items = categories.slice(0, 4), local = false }: { 
             </Link>
           </div>
           <p className="text-[13px] sm:text-[14.5px] text-muted leading-[1.6]">
-            {local ? "کافه‌ها را با محدودهٔ نشانی پیدا کن." : "مشاهده دسته‌بندی‌های پربازدید."}
+            {local ? "کافه‌ها را با محدودهٔ نشانی پیدا کن." : "از کافه‌ها و رستوران‌های رشت شروع کن."}
           </p>
         </div>
 
-        <div className={`flex gap-4 overflow-x-auto px-5 pt-2 pb-3 -mx-5 [scroll-snap-type:x_mandatory] [scroll-padding-inline:1.25rem] ${HIDE_SCROLL} [&>*]:flex-[0_0_78%] [&>*]:max-w-[280px] [&>*]:[scroll-snap-align:start] sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:p-0 sm:m-0 sm:[&>*]:flex-initial sm:[&>*]:max-w-none lg:grid-cols-4`}>
+        <div className={`flex gap-4 overflow-x-auto px-5 pt-2 pb-3 -mx-5 [scroll-snap-type:x_mandatory] [scroll-padding-inline:1.25rem] ${HIDE_SCROLL} [&>*]:flex-[0_0_78%] [&>*]:max-w-[280px] [&>*]:[scroll-snap-align:start] sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:p-0 sm:m-0 sm:[&>*]:flex-initial sm:[&>*]:max-w-none lg:grid-cols-2`}>
           {items.map((c) => (
             <CategoryCard key={c.href} category={c} />
           ))}

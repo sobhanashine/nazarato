@@ -11,13 +11,13 @@ export function PostCard({ post }: { post: BlogPost }) {
   return (
     <article className={`${GLASS} flex flex-col gap-6 overflow-hidden`}>
       <div className="relative w-full aspect-[4/3] overflow-hidden md:aspect-[2/1] after:content-[''] after:absolute after:inset-0 after:pointer-events-none after:bg-[linear-gradient(180deg,transparent_60%,rgba(6,8,15,0.55))]">
-        <Image
+        {post.image ? <Image
           src={post.image}
           alt={post.title}
           fill
           sizes="(min-width: 1024px) 600px, 100vw"
           className="object-cover"
-        />
+        /> : <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-mint/15 to-lapis/15" />}
       </div>
       <div className="px-5 pb-7">
         <BlogMeta post={post} />

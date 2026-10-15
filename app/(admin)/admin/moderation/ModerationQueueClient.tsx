@@ -206,7 +206,7 @@ export function ModerationQueueClient({
                       >
                         برای: {review.business_name}
                       </Link>
-                      
+
                       {review.proof_status === "submitted" && review.proof_url ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-500/30 px-2.5 py-1 text-[0.72rem] font-bold text-blue-400">
                           <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
@@ -368,7 +368,7 @@ export function ModerationQueueClient({
                 </svg>
               </button>
             </div>
-            
+
             <div className="flex-1 overflow-auto bg-black/50 rounded-xl flex items-center justify-center p-3 min-h-[50vh] border border-glass-border/30 relative group">
               {viewingProof.url.toLowerCase().includes(".pdf") ? (
                 <iframe
@@ -385,7 +385,7 @@ export function ModerationQueueClient({
                 />
               )}
             </div>
-            
+
             <div className="mt-4 pt-4 border-t border-glass-border flex justify-between items-center gap-3">
               <span className="text-[10px] text-muted">نوع سند: {viewingProof.type ? PROOF_LABELS[viewingProof.type] || viewingProof.type : "نامشخص"}</span>
               <div className="flex gap-2">
@@ -422,7 +422,7 @@ export function ModerationQueueClient({
             className={`${GLASS} w-full max-w-md p-6 rounded-2xl border border-glass-border flex flex-col shadow-2xl`}
           >
             <h3 className="text-lg font-black text-strong mb-4">رد کردن نظر</h3>
-            
+
             <label className="text-xs text-muted mb-2 block font-medium">
               دلیل رد کردن نظر (اختیاری - در صفحه پروفایل کاربر نمایش داده می‌شود):
             </label>

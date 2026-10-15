@@ -7,6 +7,11 @@ vi.mock("@/lib/auth/session", () => ({
   getSession: vi.fn(),
 }));
 
+vi.mock("@/lib/data/businesses", () => ({
+  PUBLIC_BUSINESS_SOURCE_SELECT: "business_sources!inner(id)",
+  PUBLIC_BUSINESS_STATUSES: ["active", "merged"],
+}));
+
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
@@ -16,6 +21,7 @@ vi.mock("@/lib/supabase/server", () => {
     from: vi.fn().mockReturnThis(),
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
     maybeSingle: vi.fn().mockReturnThis(),
     delete: vi.fn().mockReturnThis(),
     insert: vi.fn().mockReturnThis(),
@@ -31,6 +37,7 @@ describe("toggleBookmark server action", () => {
     from: ReturnType<typeof vi.fn>;
     select: ReturnType<typeof vi.fn>;
     eq: ReturnType<typeof vi.fn>;
+    in: ReturnType<typeof vi.fn>;
     delete: ReturnType<typeof vi.fn>;
     insert: ReturnType<typeof vi.fn>;
     then: ReturnType<typeof vi.fn>;
@@ -47,6 +54,19 @@ describe("toggleBookmark server action", () => {
     const result = await toggleBookmark("biz-1");
 
     expect(result).toEqual({ ok: false, error: "برای ذخیره باید وارد شوید" });
+    expect(mockSupabaseClient.from).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid business slug before querying the database", async () => {
+    vi.mocked(getSession).mockResolvedValue({
+      id: "user-1",
+      name: "User",
+      phone: "0912",
+    });
+
+    const result = await toggleBookmark("../../pending business");
+
+    expect(result).toEqual({ ok: false, error: "کسب‌وکار پیدا نشد" });
     expect(mockSupabaseClient.from).not.toHaveBeenCalled();
   });
 

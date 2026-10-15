@@ -4,12 +4,6 @@ import { useEffect, useRef, useState } from "react";
 
 type Stat = { value: number; suffix?: string; label: string };
 
-const stats: Stat[] = [
-  { value: 12428, label: "نظر تایید شده" },
-  { value: 3420, label: "کسب‌وکار" },
-  { value: 98, suffix: "٪", label: "رضایت کاربران" },
-];
-
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
 function useCountUp(target: number, duration = 1800) {
@@ -52,7 +46,7 @@ function StatItem({ stat }: { stat: Stat }) {
   );
 }
 
-export function HeroStats({ items = stats }: { items?: Stat[] }) {
+export function HeroStats({ items = [] }: { items?: Stat[] }) {
   return (
     <ul
       className="grid grid-cols-3 gap-2 w-full max-w-[620px] mt-6 px-5 py-4 bg-glass border border-glass-border rounded-[18px] backdrop-blur-[14px] backdrop-saturate-[160%] list-none"

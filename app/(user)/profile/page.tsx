@@ -16,6 +16,11 @@ const FALLBACK_COLOR = "#5BBB7B";
 
 const quickLinks = [
   {
+    href: "/nabz",
+    title: "سلیقهٔ خصوصی من",
+    desc: "انتخاب‌های محلی و پیشنهادهایی که شاهدشان روشن است",
+  },
+  {
     href: "/profile/reviews",
     title: "نظرات من",
     desc: "نظرهایی که نوشتی و وضعیت انتشارشان",

@@ -69,7 +69,7 @@ const CYCLE_MS = 2600;
 const fa = (n: number) => n.toLocaleString("fa-IR");
 
 export function HowToReview({ businesses }: { businesses?: Business[] }) {
-  const steps = businesses === undefined ? STEPS : STEPS.map(step => step.key === "done" ? { ...step, hint: "تجربه‌ات در همین مرورگر ذخیره می‌شود.", title: "تجربه‌ات ذخیره شد!", subtitle: "این تجربه هنوز منتشر نشده است." } : step);
+  const steps = businesses === undefined ? STEPS : STEPS.map(step => step.key === "done" ? { ...step, hint: "تجربه‌ات برای بررسی ارسال می‌شود.", title: "تجربه‌ات ذخیره شد!", subtitle: "این تجربه هنوز منتشر نشده است." } : step);
   const { openReviewSheet } = useReviewSheet();
   const [active, setActive] = useState(0);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -117,7 +117,7 @@ export function HowToReview({ businesses }: { businesses?: Business[] }) {
               </h2>
               <p className="mb-5 max-w-[560px] text-[13.5px] leading-[1.85] text-muted sm:mb-7 sm:text-[15.5px]">
                 لازم نیست فرم طولانی پر کنی. در چهار قدم ساده تجربه‌ی خریدت رو ثبت کن
-                و به هزاران خریدار دیگه کمک کن انتخاب بهتری داشته باشن.
+                و به دیگران کمک کن انتخاب بهتری داشته باشن.
               </p>
 
               <ol className="mb-6 w-full max-w-[520px] space-y-2 sm:mb-8">

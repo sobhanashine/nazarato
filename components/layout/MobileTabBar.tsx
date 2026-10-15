@@ -45,7 +45,7 @@ function IconPen() {
 
 const tabs: Tab[] = [
   { href: "/", label: "خانه", icon: <IconHome /> },
-  { href: "/categories", label: "دسته‌ها", icon: <IconGrid /> },
+  { href: "/nabz", label: "نبض رشت", icon: <IconGrid /> },
   { href: "/saved", label: "ذخیره", icon: <IconBookmark /> },
   { href: "/profile", label: "پروفایل", icon: <IconUser /> },
 ];

@@ -31,51 +31,51 @@ const TONE: Record<Accent, { text: string; border: string; glow: string; grad: s
 };
 
 const stats = [
-  { value: 12428, suffix: "+", label: "نظر ثبت‌شده", tone: "mint" as const, desc: "تجربه‌های تأییدشده توسط کاربران واقعی" },
-  { value: 3420, suffix: "+", label: "کسب‌وکار", tone: "lapis" as const, desc: "تحت پوشش و بررسی مداوم" },
-  { value: 98, suffix: "٪", label: "رضایت کاربران", tone: "saffron" as const, desc: "از شفافیت و بی‌طرفی پلتفرم" },
+  { value: 5, suffix: "", label: "انتخاب در نبض رشت", tone: "mint" as const, desc: "شروع شناخت سلیقه؛ پیشنهاد فقط وقتی شواهد کافی داریم" },
+  { value: 1, suffix: "", label: "شهر برای شروع", tone: "lapis" as const, desc: "نسخهٔ اولیه با تمرکز بر رشت" },
+  { value: 1, suffix: "", label: "اقدام مشخص برای هر مسئله", tone: "saffron" as const, desc: "از تجربهٔ مشتری تا سنجش نتیجه در پنل مالک" },
 ];
 
 const verifySteps = [
   {
     icon: <PhoneIcon className="w-8 h-8" />,
     title: "ثبت با حساب واقعی",
-    text: "هر نظر به یک شماره موبایل تأییدشده گره خورده؛ حساب‌های یک‌بارمصرف و ربات‌ها در سیستم ما جایی ندارند.",
+    text: "ثبت نظر به حساب کاربری نیاز دارد. راه‌اندازی ورود پیامکی و بررسی هویت، بخشی از آماده‌سازی نسخهٔ عمومی است؛ داشتن حساب به‌تنهایی صحت تجربه را ثابت نمی‌کند.",
   },
   {
     icon: <SparklesIcon className="w-8 h-8" />,
     title: "بررسی هوشمند",
-    text: "الگوریتم اختصاصی ما الگوهای مشکوک، اسپم، نظرات تکراری و کلمات نامناسب را در صدم ثانیه شناسایی می‌کند.",
+    text: "تحلیل اولیهٔ فارسی، موضوع و حس تجربه را همراه شاهد متنی نشان می‌دهد. این تحلیل ممکن است خطا کند و اصلاح آن با حفظ نسخهٔ قبلی ثبت می‌شود.",
   },
   {
     icon: <UsersIcon className="w-8 h-8" />,
     title: "بازبینی انسانی",
-    text: "هیچ سیستمی کامل نیست. موارد خط‌قرمزدار و مشکوک مستقیماً روی میز تیم بازبینی ما قرار می‌گیرند تا یک انسان تصمیم نهایی را بگیرد.",
+    text: "نظر تازه ابتدا وارد صف بررسی می‌شود. انتشار عمومی به تأیید مدیر نیاز دارد؛ اطلاعات واردشده از منابع دیگر، تجربهٔ مشتری محسوب نمی‌شود.",
   },
   {
     icon: <ChatBubbleIcon className="w-8 h-8" />,
     title: "حق پاسخ‌گویی",
-    text: "ما صدای هر دو طرفیم. صاحب هر کسب‌وکار این حق را دارد که به نظرات پاسخ دهد تا شفافیت و گفت‌وگو دوطرفه بماند.",
+    text: "مالک تأییدشده می‌تواند به نظر پاسخ دهد و برای مسئلهٔ مشخص، اقدام و زمان پیگیری ثبت کند. نتیجهٔ سنجش، به‌تنهایی رابطهٔ علت و معلولی را ثابت نمی‌کند.",
   },
 ];
 
 const values = [
   {
     icon: <ShieldCheckIcon className="w-7 h-7" />,
-    title: "شفافیت مطلق",
-    text: "نظرات را نمی‌خریم و رتبه‌ها را دستکاری نمی‌کنیم. ما هیچ پولی برای تغییر نظر از هیچ کسب‌وکارهایی دریافت نمی‌کنیم. آنچه می‌بینی، دقیقاً همان چیزی است که رخ داده.",
+    title: "شفافیت دربارهٔ شواهد",
+    text: "منبع اطلاعات مکان را از تجربهٔ دست‌اول جدا می‌کنیم. وقتی شواهد کافی نیست، همان را می‌گوییم؛ اطلاعات اولیهٔ یک مکان، تأیید مالک یا رضایت مشتری نیست.",
     tone: "mint" as const,
   },
   {
     icon: <ScaleIcon className="w-7 h-7" />,
-    title: "بی‌طرفی کامل",
-    text: "نه طرف کاربریم، نه طرف کسب‌وکار. تنها معیار ما برای انتشار، صحت داده‌ها و تجربه‌های تأییدشده است. قضاوت نهایی با شماست.",
+    title: "امکان بررسی و اصلاح",
+    text: "پیشنهاد و تحلیل باید به تجربهٔ منتشرشده قابل ارجاع باشند. تحلیل‌ها قابل اصلاح‌اند و تاریخچهٔ نسخه‌ها حفظ می‌شود. قضاوت نهایی با شماست.",
     tone: "lapis" as const,
   },
   {
     icon: <StarIcon className="w-7 h-7" />,
     title: "جامعه‌محوری",
-    text: "اینجا فضایی است که با تجربه واقعی آدم‌ها، برای محافظت از سرمایه و وقت همان آدم‌ها ساخته می‌شود. ما تنها یک بستر امن ساخته‌ایم.",
+    text: "با تجربهٔ دست‌اول آدم‌ها، انتخاب بعدی روشن‌تر می‌شود. سلیقهٔ ذخیره‌شده خصوصی است و به‌صورت خودکار در پروفایل عمومی منتشر نمی‌شود.",
     tone: "saffron" as const,
   },
 ];
@@ -84,13 +84,13 @@ export default function AboutPage() {
   return (
     <>
       <Header />
-      
+
       {/* ── Background Atmosphere ── */}
       <div className="fixed inset-0 z-[-1] pointer-events-none bg-[#030706]">
         <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-mint/[0.04] blur-[150px]" aria-hidden />
         <div className="absolute top-[30%] right-[-10%] w-[50%] h-[70%] rounded-full bg-lapis/[0.04] blur-[150px]" aria-hidden />
         <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[50%] rounded-full bg-mint/[0.03] blur-[120px]" aria-hidden />
-        
+
         {/* Subtle noise texture */}
         <svg className="absolute inset-0 w-full h-full opacity-[0.015] mix-blend-overlay">
           <filter id="noiseFilter">
@@ -108,7 +108,7 @@ export default function AboutPage() {
         <main className="pb-24">
           {/* ── Hero Section ── */}
           <section className="relative pt-16 pb-24 text-center lg:pt-28 lg:pb-32">
-            <span 
+            <span
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[60%] text-[15vw] font-black tracking-tighter uppercase whitespace-nowrap select-none pointer-events-none text-white/[0.02]"
               aria-hidden
             >
@@ -125,16 +125,16 @@ export default function AboutPage() {
               </div>
 
               <h1 className="text-[3.5rem] font-black leading-[1.1] tracking-tight text-white sm:text-[4.5rem] lg:text-[6rem]">
-                حقیقت محض،
+                تجربهٔ روشن،
                 <br />
                 <span className="inline-block bg-gradient-to-l from-mint via-[#a8f0d3] to-lapis bg-clip-text pb-[0.1em] text-transparent drop-shadow-sm">
-                  بدون فیلتر.
+                  انتخاب آگاهانه.
                 </span>
               </h1>
 
               <p className="mx-auto mt-8 max-w-[60ch] text-[17px] leading-[2.2] text-muted sm:text-[20px] font-medium">
-                در فضایی که هر چیزی قابل خریدن است، ما یک پایگاه مستقل برای تجربه‌های
-                واقعی ساخته‌ایم. نظراتو تنها راهی تازه برای اعتماد نیست؛ نقطه‌ی پایان فریب است.
+                نظراتو در نسخهٔ اولیه، تجربه‌های محلی را به انتخاب بهتر و اقدام مشخص
+                برای کسب‌وکار وصل می‌کند. از رشت شروع می‌کنیم و محدودیت شواهد را روشن می‌گوییم.
               </p>
             </div>
           </section>
@@ -146,7 +146,7 @@ export default function AboutPage() {
               <div className="col-span-1 md:col-span-8 group relative overflow-hidden rounded-[2rem] border border-glass-border bg-glass p-8 md:p-12 backdrop-blur-xl transition-all duration-500 hover:border-mint/30">
                 <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-mint/[0.08] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-mint/10 blur-[80px] transition-transform duration-700 group-hover:scale-150 group-hover:bg-mint/20" aria-hidden />
-                
+
                 <div className="relative z-10 flex h-full flex-col justify-between">
                   <div>
                     <div className="mb-2 text-[16px] font-bold text-mint tracking-wider">{stats[0].label}</div>
@@ -169,7 +169,7 @@ export default function AboutPage() {
                   <div key={s.label} className="group relative flex-1 overflow-hidden rounded-[2rem] border border-glass-border bg-glass p-8 backdrop-blur-xl transition-all duration-500 hover:border-glass-border-hi">
                     <div className={`absolute top-0 right-0 w-full h-full bg-gradient-to-br ${TONE[s.tone].grad} to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100`} />
                     <div className={`absolute -bottom-12 -left-12 h-32 w-32 rounded-full ${TONE[s.tone].glow} blur-[50px] transition-transform duration-700 group-hover:scale-150`} aria-hidden />
-                    
+
                     <div className="relative z-10 flex h-full flex-col justify-between">
                       <div>
                         <div className={`mb-1 text-[15px] font-bold ${TONE[s.tone].text} tracking-wider`}>{s.label}</div>
@@ -210,7 +210,7 @@ export default function AboutPage() {
                   className="group relative overflow-hidden rounded-3xl border border-glass-border bg-glass p-8 backdrop-blur-xl transition-all duration-300 hover:-translate-y-2 hover:border-glass-border-hi"
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${TONE[v.tone].grad} to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-50`} aria-hidden />
-                  
+
                   <div className="relative z-10">
                     <div className={`mb-8 inline-flex h-16 w-16 items-center justify-center rounded-2xl border ${TONE[v.tone].border} ${TONE[v.tone].iconBg} ${TONE[v.tone].text} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3`}>
                       {v.icon}
@@ -244,7 +244,7 @@ export default function AboutPage() {
                   const isEven = i % 2 === 0;
                   return (
                     <div key={step.title} className={`relative flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-16 ${isEven ? 'md:flex-row-reverse' : ''}`}>
-                      
+
                       {/* Node point */}
                       <div className="absolute left-8 md:left-1/2 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border-4 border-[#030706] bg-mint shadow-[0_0_20px_rgba(91,230,178,0.4)] z-10" aria-hidden>
                         <div className="h-2 w-2 rounded-full bg-[#030706]" />
@@ -256,7 +256,7 @@ export default function AboutPage() {
                           <span className="absolute -right-4 -top-8 text-[8rem] font-black leading-none text-white/[0.03] select-none pointer-events-none transition-transform duration-500 group-hover:-translate-y-4" aria-hidden>
                             ۰{fa(i + 1)}
                           </span>
-                          
+
                           <div className="relative z-10">
                             <div className={`mb-6 inline-flex p-3 rounded-xl border border-mint/20 bg-mint/[0.08] text-mint ${isEven ? 'md:ml-auto' : ''}`}>
                               {step.icon}
@@ -279,19 +279,19 @@ export default function AboutPage() {
               {/* Editorial Ornaments */}
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-mint to-transparent opacity-50" />
               <div className="absolute -top-40 -right-40 h-[30rem] w-[30rem] rounded-full bg-mint/5 blur-[120px] pointer-events-none" aria-hidden />
-              
+
               <div className="relative z-10 flex flex-col lg:flex-row gap-12 lg:gap-20 items-center lg:items-start">
-                
+
                 <div className="flex-1 space-y-8">
                   <div className="flex items-center gap-4">
                     <span className="h-px w-12 bg-mint/50" />
                     <span className="text-[15px] font-bold tracking-widest text-mint uppercase">Founders Note</span>
                   </div>
-                  
+
                   <h2 className="text-[2.25rem] font-black leading-[1.3] text-white sm:text-[2.75rem]">
                     چرا همه‌چیز را فدای <span className="text-transparent bg-clip-text bg-gradient-to-r from-mint to-lapis">حقیقت</span> کردیم؟
                   </h2>
-                  
+
                   <div className="space-y-6 text-[17px] leading-[2.2] text-muted sm:text-[19px]">
                     <p>
                       نظراتو یک استارتاپ پر زرق‌وبرق با تزریق‌های مالی میلیاردی نیست. ما اینجا جمع نشدیم تا به کسب‌وکارها پکیج‌های «بهبود رتبه» بفروشیم. این پروژه دقیقاً از دل یک ناامیدی بزرگ متولد شد: <strong className="font-bold text-white">گم شدن صدای واقعی مردم زیر آوار تبلیغات.</strong>
@@ -326,7 +326,7 @@ export default function AboutPage() {
           <section className="pb-10 pt-10 lg:pb-20">
             <div className="relative overflow-hidden rounded-[2.5rem] border border-glass-border bg-glass px-8 py-20 text-center backdrop-blur-xl sm:px-16 sm:py-24">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(91,230,178,0.15),transparent_70%)]" aria-hidden />
-              
+
               <div className="relative z-10 flex flex-col items-center">
                 <h2 className="text-[2.5rem] font-black leading-[1.2] text-white sm:text-[3.5rem] lg:text-[4rem] tracking-tight">
                   جامعه به صدای شما <br className="hidden sm:block" /> نیاز دارد.
@@ -335,7 +335,7 @@ export default function AboutPage() {
                   سکوت شما مساوی است با تکرار یک تجربه بد برای نفر بعدی.
                   هر نظر، چه مثبت و چه منفی، آجری از بنای اعتماد است.
                 </p>
-                
+
                 <AboutWriteReview />
               </div>
             </div>

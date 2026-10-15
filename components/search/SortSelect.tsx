@@ -27,7 +27,7 @@ export function SortSelect({ query }: { query: SearchQuery }) {
           onChange={(e) =>
             router.push(searchHref(query, { sort: e.target.value as SortKey }))
           }
-          className="appearance-none cursor-pointer rounded-xl border border-glass-border bg-[#10141f] py-2 ps-3 pe-8 text-[13px] font-medium text-strong outline-none transition-colors hover:border-mint/40 focus-visible:border-mint/60"
+          className="appearance-none cursor-pointer rounded-xl border border-glass-border bg-[#10141f] py-2 ps-3 pe-8 text-base font-medium text-strong outline-none transition-colors hover:border-mint/40 focus-visible:border-mint/60"
         >
           {SORT_OPTIONS.map((o) => (
             <option key={o.id} value={o.id} className="bg-[#10141f] text-strong">

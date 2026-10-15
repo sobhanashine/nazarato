@@ -30,6 +30,10 @@
   --color-glass-hover:      var(--glass-bg-hover);
   --color-glass-border:     var(--glass-border);
   --color-glass-border-hi:  var(--glass-border-hi);
+  /* Recovered feature surfaces share main's Persian Aurora palette. */
+  --color-canvas:           #0B0F14;
+  --color-paper:            #111725;
+  --color-forest:           var(--mint);
   --radius-glass:           var(--radius);
   /* Drives Preflight's document font — Vazirmatn applies globally, no class needed */
   --font-sans:              var(--font-vazirmatn), sans-serif;
@@ -59,6 +63,15 @@
   --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.10);
 
   --radius: 14px;
+}
+
+@layer base {
+  :focus-visible { outline: 2px solid var(--mint); outline-offset: 4px; }
+  input, select, textarea { scroll-margin-block: 96px; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
 }
 
 /* ════════════════════════════════ KEYFRAMES ════════════════════════════════

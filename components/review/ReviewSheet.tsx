@@ -1,89 +1,45 @@
 "use client";
 
-/**
- * ReviewSheet — the animated bottom-sheet review wizard.
- *
- * Opened from the mobile tab-bar FAB (see `ReviewSheetProvider`). A guided,
- * one-thing-per-screen flow built for the fewest possible taps:
- *
- *   pick business → rate (auto-advances) → write → success
- *
- * There is no title field. The sheet slides up on mobile / scales in on
- * desktop, each step cross-fades, and submission ends on a celebratory
- * success screen. A fresh instance mounts per open (keyed in the provider),
- * so wizard + action state always start clean.
- */
-
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { STAR_PALETTES, STAR_PATH, type Rating } from "@/components/ui/RatingStars";
+import { STAR_PATH } from "@/components/ui/RatingStars";
 import { useSessionStatus } from "@/components/layout/useSessionStatus";
 import { BTN_PRIMARY } from "@/components/ui/styles";
 import type { Business } from "@/lib/data/businesses";
 import { submitQuickReview } from "./actions";
 
-/** A business the sheet can open with already selected (skips the picker). */
 export type ReviewPrefill = { slug: string; name: string };
 
-/** Supplied only by the gated local preview; normal callers use the server action. */
+/** Existing loopback-only adapter; public submissions keep the server action. */
 export type LocalReviewPreview = {
   initialValue?: { rating: number; body: string };
   submit: typeof submitQuickReview;
 };
 
-type Step = "pick" | "rate" | "write" | "done";
-
-/** Minimal business shape the wizard carries between steps. */
-type Selected = {
-  slug: string;
-  name: string;
-  initial: string;
-  color: string;
-  meta: string;
+/** Unsent text stays in provider memory, never in new browser storage. */
+export type ReviewDraft = {
+  business: ReviewPrefill;
+  rating: number;
+  body: string;
+  step: "rate" | "write";
 };
 
+type Step = "pick" | "rate" | "write" | "done";
+type Selected = ReviewPrefill & { meta: string };
 const BODY_MIN = 10;
 const BODY_MAX = 2000;
-const EXIT_MS = 400;
-const AUTO_ADVANCE_MS = 850;
-
 const RATING_LABELS = ["خیلی بد", "بد", "متوسط", "خوب", "عالی"];
+const SECONDARY = "inline-flex min-h-11 items-center justify-center rounded-xl border border-glass-border bg-canvas px-4 py-2 text-sm font-semibold text-strong transition-colors hover:border-mint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint";
+const fa = (value: number) => value.toLocaleString("fa-IR");
 
-const fa = (n: number) => n.toLocaleString("fa-IR");
-
-function toSelected(b: Business): Selected {
-  return {
-    slug: b.slug,
-    name: b.name,
-    initial: b.initial,
-    color: b.color,
-    meta: `${b.category} · ${b.city}`,
-  };
+function toSelected(business: Business): Selected {
+  return { slug: business.slug, name: business.name, meta: business.category + " · " + business.city };
 }
 
-function resolveSelected(
-  prefill: ReviewPrefill | null,
-  businesses: Business[],
-): Selected | null {
+function resolveSelected(prefill: ReviewPrefill | null, businesses: Business[]): Selected | null {
   if (!prefill) return null;
-  const full = businesses.find((b) => b.slug === prefill.slug);
-  if (full) return toSelected(full);
-  return {
-    slug: prefill.slug,
-    name: prefill.name,
-    initial: prefill.name.trim().charAt(0) || "؟",
-    color: "#7B89FF",
-    meta: "",
-  };
+  const business = businesses.find(item => item.slug === prefill.slug);
+  return business ? toSelected(business) : { ...prefill, meta: "" };
 }
 
 export function ReviewSheet({
@@ -92,686 +48,413 @@ export function ReviewSheet({
   prefill,
   businesses,
   localPreview,
+  initialDraft,
+  onDraftChange,
+  onDraftClear,
+  getDraft,
 }: {
   isOpen: boolean;
   onClose: () => void;
   prefill: ReviewPrefill | null;
   businesses: Business[];
   localPreview?: LocalReviewPreview;
+  initialDraft?: ReviewDraft;
+  onDraftChange?: (draft: ReviewDraft) => void;
+  onDraftClear?: (slug: string) => void;
+  getDraft?: (slug: string) => ReviewDraft | undefined;
 }) {
   const hasPicker = !prefill;
-
-  const [present, setPresent] = useState(true);
-  const [visible, setVisible] = useState(false);
-
-  const [step, setStep] = useState<Step>(hasPicker ? "pick" : "rate");
+  const [step, setStep] = useState<Step>(initialDraft?.step ?? (hasPicker ? "pick" : "rate"));
   const [selected, setSelected] = useState<Selected | null>(() =>
-    resolveSelected(prefill, businesses),
+    resolveSelected(initialDraft?.business ?? prefill, businesses),
   );
-  const [rating, setRating] = useState(localPreview?.initialValue?.rating ?? 0);
-  const [body, setBody] = useState(localPreview?.initialValue?.body ?? "");
-
-  // Submission state lives in plain useState — NOT useActionState. The latter
-  // ties `pending` to the form action's React transition, which Next 14+
-  // extends until the host route's RSC payload re-renders. On data-heavy
-  // pages like `/company/[slug]` and `/shop/[handle]`, that re-render takes
-  // 3–6s after the action returns — the button stays «در حال ثبت…» the
-  // entire time and users assume it crashed. Manual handling lets us flip
-  // to the success step the instant the server returns ok. (Issue #117.)
+  const [rating, setRating] = useState(initialDraft?.rating ?? localPreview?.initialValue?.rating ?? 0);
+  const [body, setBody] = useState(initialDraft?.body ?? localPreview?.initialValue?.body ?? "");
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | undefined>();
+  const [submitError, setSubmitError] = useState<string>();
+  const [confirmClose, setConfirmClose] = useState(false);
+  const [viewport, setViewport] = useState<{ height: number; top: number }>();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const session = useSessionStatus();
-  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Enter: flip to visible on the next frame so the CSS transition runs.
-  useEffect(() => {
-    const raf = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  // Exit: when the provider closes us, play the out-transition then unmount.
-  useEffect(() => {
-    if (!isOpen) {
-      setVisible(false);
-      const t = setTimeout(() => setPresent(false), EXIT_MS);
-      return () => clearTimeout(t);
-    }
-  }, [isOpen]);
-
-  // Lock body scroll while open; always restore on close / unmount. (The
-  // component renders null after the exit animation but stays mounted, so the
-  // restore must key off `isOpen`, not unmount alone.)
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
-
-  // Escape closes.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  useEffect(() => {
-    return () => {
-      if (advanceTimer.current) clearTimeout(advanceTimer.current);
-    };
-  }, []);
-
-  const handleSubmit = useCallback(async () => {
-    if (!selected || submitting) return;
-    setSubmitting(true);
-    setSubmitError(undefined);
-    const fd = new FormData();
-    fd.set("slug", selected.slug);
-    fd.set("rating", String(rating || ""));
-    fd.set("body", body);
-    try {
-      const res = await (localPreview?.submit ?? submitQuickReview)({ ok: false }, fd);
-      if (res.ok) {
-        setStep("done");
-      } else {
-        setSubmitError(res.error || "خطا در ثبت نظر. لطفاً دوباره تلاش کن.");
-        setSubmitting(false);
-      }
-    } catch (err) {
-      console.error("[ReviewSheet] submit failed", err);
-      setSubmitError("خطا در ثبت نظر. لطفاً دوباره تلاش کن.");
-      setSubmitting(false);
-    }
-  }, [selected, rating, body, submitting, localPreview]);
-
-  const flow: Step[] = useMemo(
-    () => (hasPicker ? ["pick", "rate", "write"] : ["rate", "write"]),
-    [hasPicker],
-  );
-  const stepIndex = flow.indexOf(step);
-
-  const pickRating = useCallback((n: number) => {
-    setRating(n);
-    if (advanceTimer.current) clearTimeout(advanceTimer.current);
-    advanceTimer.current = setTimeout(() => setStep("write"), AUTO_ADVANCE_MS);
-  }, []);
-
-  const canGoBack =
-    step === "write" || (step === "rate" && hasPicker);
-
-  const goBack = useCallback(() => {
-    if (step === "write") setStep("rate");
-    else if (step === "rate") setStep("pick");
-  }, [step]);
-
-  if (!present) return null;
-
   const localOnly = localPreview !== undefined;
   const loggedIn = localOnly || session?.loggedIn === true;
-  const showChrome = loggedIn && step !== "done";
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog || !isOpen) return;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousOverflow = document.body.style.overflow;
+    if (!dialog.open) dialog.showModal();
+    document.body.style.overflow = "hidden";
+    titleRef.current?.focus({ preventScroll: true });
+
+    return () => {
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const visualViewport = window.visualViewport;
+    const update = () => setViewport({
+      height: visualViewport?.height ?? window.innerHeight,
+      top: visualViewport?.offsetTop ?? 0,
+    });
+    update();
+    visualViewport?.addEventListener("resize", update);
+    visualViewport?.addEventListener("scroll", update);
+    window.addEventListener("resize", update);
+    return () => {
+      visualViewport?.removeEventListener("resize", update);
+      visualViewport?.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && dialogRef.current?.open) titleRef.current?.focus({ preventScroll: true });
+  }, [isOpen, step, confirmClose, loggedIn]);
+
+  useEffect(() => {
+    if (!isOpen || !selected || step === "done" || (rating === 0 && body.length === 0)) return;
+    onDraftChange?.({
+      business: { slug: selected.slug, name: selected.name },
+      rating,
+      body,
+      step: step === "write" ? "write" : "rate",
+    });
+  }, [isOpen, selected, rating, body, step, onDraftChange]);
+
+  const requestClose = useCallback(() => {
+    if (submitting) return;
+    if (step !== "done" && selected && (rating > 0 || body.length > 0)) {
+      setConfirmClose(true);
+    } else {
+      onClose();
+    }
+  }, [submitting, step, selected, rating, body, onClose]);
+
+  const discardAndClose = () => {
+    if (selected) onDraftClear?.(selected.slug);
+    setSelected(null);
+    setRating(0);
+    setBody("");
+    onClose();
+  };
+
+  const selectBusiness = (business: Business) => {
+    const saved = getDraft?.(business.slug);
+    setSelected(toSelected(business));
+    setRating(saved?.rating ?? 0);
+    setBody(saved?.body ?? "");
+    setSubmitError(undefined);
+    setStep(saved?.step ?? "rate");
+  };
+
+  const handleSubmit = async () => {
+    if (!selected || submitting || rating < 1 || rating > 5 || body.trim().length < BODY_MIN) return;
+    setSubmitting(true);
+    setSubmitError(undefined);
+    const formData = new FormData();
+    formData.set("slug", selected.slug);
+    formData.set("rating", String(rating));
+    formData.set("body", body);
+    try {
+      const result = await (localPreview?.submit ?? submitQuickReview)({ ok: false }, formData);
+      if (result.ok) {
+        onDraftClear?.(selected.slug);
+        setStep("done");
+      } else {
+        setSubmitError(result.error || "تجربه ثبت نشد. متن تو حفظ شده؛ دوباره تلاش کن.");
+      }
+    } catch (error: unknown) {
+      console.error("[ReviewSheet] submit failed", { slug: selected.slug, error });
+      setSubmitError("تجربه ثبت نشد. متن تو حفظ شده؛ دوباره تلاش کن.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const canGoBack = loggedIn && (step === "write" || (step === "rate" && hasPicker));
+  const title = confirmClose
+    ? "پیش‌نویست را نگه داریم؟"
+    : step === "done"
+      ? (localOnly ? "در این مرورگر ذخیره شد" : "تجربه‌ات ثبت شد")
+      : "ثبت تجربه";
+  const progress = hasPicker
+    ? ({ pick: "۱ از ۳", rate: "۲ از ۳", write: "۳ از ۳", done: "" } as const)[step]
+    : ({ pick: "", rate: "۱ از ۲", write: "۲ از ۲", done: "" } as const)[step];
 
   return (
-    <div
-      className="fixed inset-0 z-[300] flex items-end justify-center sm:items-center"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-label="ثبت نظر"
+      aria-describedby="review-context"
+      onKeyDown={event => {
+        if (event.key !== "Tab" || event.defaultPrevented) return;
+        const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex="0"]',
+        )).filter(element => element.tabIndex >= 0 && element.getClientRects().length > 0);
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (!first || !last) {
+          event.preventDefault();
+          titleRef.current?.focus();
+          return;
+        }
+        const active = document.activeElement;
+        const isControl = active instanceof HTMLElement && controls.includes(active);
+        if (event.shiftKey && (active === first || !isControl)) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && (active === last || !isControl)) {
+          event.preventDefault();
+          first.focus();
+        }
+      }}
+      onCancel={event => {
+        event.preventDefault();
+        if (confirmClose) setConfirmClose(false);
+        else requestClose();
+      }}
+      className="fixed inset-x-0 top-0 m-0 h-dvh max-h-none w-full max-w-none overflow-hidden border-0 bg-transparent p-0 text-strong backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+      style={viewport ? { height: viewport.height, top: viewport.top } : undefined}
     >
-      {/* Backdrop */}
-      <button
-        type="button"
-        aria-label="بستن"
-        tabIndex={-1}
-        onClick={onClose}
-        className={`absolute inset-0 cursor-default bg-black/65 backdrop-blur-sm transition-opacity duration-300 ${
-          visible ? "opacity-100" : "opacity-0"
-        }`}
-      />
-
-      {/* Panel — uses svh (not dvh) so the iOS keyboard appearing on the
-          autoFocused textarea doesn't reflow max-height mid-open and make the
-          card look like it's wobbling. */}
       <div
-        className={`relative flex max-h-[93svh] w-full flex-col overflow-hidden border border-glass-border bg-[#0b0f1a] shadow-[0_-24px_70px_rgba(0,0,0,0.65)] transition-[transform,opacity] duration-[420ms] ease-[cubic-bezier(0.32,0.72,0,1)] rounded-t-[26px] sm:max-w-[460px] sm:rounded-[26px] motion-reduce:transition-none ${
-          visible
-            ? "translate-y-0 opacity-100 sm:scale-100"
-            : "translate-y-full opacity-0 sm:translate-y-0 sm:scale-95"
-        }`}
+        className="flex h-full items-end justify-center p-2 sm:items-center sm:p-6"
+        onClick={event => {
+          if (event.target === event.currentTarget) requestClose();
+        }}
       >
-        {/* Header */}
-        <div className="shrink-0 px-5 pt-3">
-          <div
-            className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-white/15 sm:hidden"
-            aria-hidden
-          />
-          <div className="flex h-9 items-center justify-between gap-3">
-            {showChrome && canGoBack ? (
+        <div className="flex max-h-full min-h-0 w-full flex-col overflow-hidden rounded-[28px] border border-glass-border-hi bg-[#101623] shadow-[var(--shadow-lg)] sm:max-w-[520px]">
+          <div className="flex shrink-0 items-start gap-3 border-b border-glass-border px-4 py-3">
+            {canGoBack && !confirmClose ? (
               <button
                 type="button"
-                onClick={goBack}
                 aria-label="مرحله قبل"
-                className="flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-white/[0.07] hover:text-strong"
+                disabled={submitting}
+                onClick={() => setStep(step === "write" ? "rate" : "pick")}
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-muted hover:bg-canvas focus-visible:outline-2 focus-visible:outline-mint disabled:opacity-50"
               >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M9 6l6 6-6 6" />
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <path d="m9 6 6 6-6 6" />
                 </svg>
               </button>
-            ) : (
-              <span className="w-9" aria-hidden />
-            )}
-
-            {showChrome ? (
-              <div className="flex items-center gap-1.5" aria-hidden>
-                {flow.map((s, i) => (
-                  <span
-                    key={s}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === stepIndex
-                        ? "w-5 bg-mint"
-                        : i < stepIndex
-                          ? "w-1.5 bg-mint/55"
-                          : "w-1.5 bg-white/15"
-                    }`}
-                  />
-                ))}
-              </div>
-            ) : (
-              <span aria-hidden />
-            )}
-
+            ) : null}
+            <div className="min-w-0 flex-1 py-1">
+              <h2 ref={titleRef} tabIndex={-1} className="text-lg font-bold leading-7 focus:outline-none">{title}</h2>
+              <p id="review-context" className="mt-1 text-sm leading-6 text-muted">
+                {selected ? selected.name : "کافه یا رستورانی را که تجربه کرده‌ای انتخاب کن."}
+              </p>
+            </div>
             <button
               type="button"
-              onClick={onClose}
+              onClick={requestClose}
               aria-label="بستن"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-muted transition-colors hover:bg-white/[0.07] hover:text-strong"
+              disabled={submitting}
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl text-muted hover:bg-canvas focus-visible:outline-2 focus-visible:outline-mint disabled:opacity-50"
             >
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
-                <path d="M6 6l12 12M18 6L6 18" />
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="m6 6 12 12M18 6 6 18" />
               </svg>
             </button>
           </div>
-        </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-3">
-          {!localOnly && session === null ? (
-            <LoadingState />
-          ) : !loggedIn ? (
-            <AuthGate />
-          ) : (
-            <div
-              key={step}
-              className="animate-[review-step_0.32s_ease-out] motion-reduce:animate-none"
-            >
-              {step === "pick" && (
-                <PickStep
-                  businesses={businesses}
-                  onPick={(b) => {
-                    setSelected(toSelected(b));
-                    setStep("rate");
-                  }}
-                />
-              )}
-
-              {step === "rate" && selected && (
-                <RateStep
-                  selected={selected}
-                  rating={rating}
-                  onPick={pickRating}
-                />
-              )}
-
-              {step === "write" && selected && (
-                <WriteStep
-                  selected={selected}
-                  body={body}
-                  setBody={setBody}
-                  onSubmit={handleSubmit}
-                  pending={submitting}
-                  error={submitError}
-                  localOnly={localOnly}
-                />
-              )}
-
-              {step === "done" && (
-                <DoneStep name={selected?.name ?? ""} onClose={onClose} localOnly={localOnly} />
-              )}
-            </div>
-          )}
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+            {confirmClose ? (
+              <div>
+                <p className="text-sm leading-7 text-muted">می‌توانی بعداً در همین صفحه ادامه بدهی. پیش‌نویس ارسال نشده و با تازه‌کردن صفحه یا بستن این تب از بین می‌رود.</p>
+                <div className="mt-5 flex flex-col gap-3">
+                  <button type="button" onClick={() => setConfirmClose(false)} className={BTN_PRIMARY + " min-h-11 w-full justify-center px-4 py-3"}>ادامه نوشتن</button>
+                  <button type="button" onClick={onClose} className={SECONDARY}>بستن و نگه‌داشتن پیش‌نویس</button>
+                  <button type="button" onClick={discardAndClose} className="min-h-11 rounded-xl px-4 py-2 text-sm font-semibold text-pomegr underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-pomegr">حذف پیش‌نویس</button>
+                </div>
+              </div>
+            ) : !localOnly && session === null ? (
+              <p role="status" className="py-8 text-sm text-muted">در حال بررسی ورود…</p>
+            ) : !loggedIn ? (
+              <AuthGate />
+            ) : (
+              <>
+                {step !== "done" ? <p className="mb-4 text-xs font-semibold text-muted" aria-live="polite">مرحلهٔ {progress}</p> : null}
+                {step === "pick" ? <PickStep businesses={businesses} onPick={selectBusiness} /> : null}
+                {step === "rate" && selected ? (
+                  <RateStep rating={rating} onPick={setRating} onContinue={() => setStep("write")} />
+                ) : null}
+                {step === "write" && selected ? (
+                  <WriteStep
+                    rating={rating}
+                    body={body}
+                    onChange={setBody}
+                    onSubmit={handleSubmit}
+                    pending={submitting}
+                    error={submitError}
+                    localOnly={localOnly}
+                  />
+                ) : null}
+                {step === "done" ? (
+                  <div>
+                    <div role="status" className="rounded-xl border border-mint/25 bg-mint/5 p-4 text-sm leading-7 text-strong">
+                      {localOnly
+                        ? "این تجربه فقط در همین مرورگر ذخیره شده و نظر عمومی نیست."
+                        : "تجربه‌ات دریافت شد و در انتظار بررسی است. هنوز منتشر نشده."}
+                    </div>
+                    <button type="button" onClick={onClose} className={BTN_PRIMARY + " mt-5 min-h-11 w-full justify-center px-4 py-3"}>بازگشت به صفحه</button>
+                  </div>
+                ) : null}
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────── sub-views ─────────────────────────── */
-
-function LoadingState() {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 py-16">
-      <span
-        className="h-8 w-8 animate-spin rounded-full border-2 border-white/15 border-t-mint"
-        aria-hidden
-      />
-      <p className="text-[13px] text-muted">یک لحظه…</p>
-    </div>
+    </dialog>
   );
 }
 
 function AuthGate() {
-  // Return the user to the current page with `?review=1` so
-  // `ReviewSheetAutoOpen` re-opens the sheet after login — works for every
-  // entry point (FAB, `/company/[slug]`, `/shop/[handle]`, etc.) without the
-  // wizard needing to know which kind of business it has.
   const [returnPath, setReturnPath] = useState("/?review=1");
   useEffect(() => {
-    setReturnPath(`${window.location.pathname}?review=1`);
+    const url = new URL(window.location.href);
+    url.searchParams.set("review", "1");
+    setReturnPath(url.pathname + url.search + url.hash);
   }, []);
-
+  const publicLoginClosed = process.env.NODE_ENV === "production";
   return (
-    <div className="flex flex-col items-center py-8 text-center">
-      <span
-        className="grid h-16 w-16 place-items-center rounded-2xl bg-mint/12 text-mint"
-        aria-hidden
-      >
-        <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4z" />
-        </svg>
-      </span>
-      <h2 className="mt-5 text-[1.15rem] font-black text-strong">
-        برای ثبت نظر وارد شو
-      </h2>
-      <p className="mt-2 text-[13.5px] leading-[2] text-muted">
-        با شماره موبایلت در چند ثانیه وارد می‌شوی و بعد می‌توانی تجربه‌ات را
-        ثبت کنی.
+    <div>
+      <h3 className="text-base font-bold text-strong">ثبت تجربه با ورود</h3>
+      <p className="mt-2 text-sm leading-7 text-muted">
+        {publicLoginClosed
+          ? "در نسخهٔ عمومی در حال آماده‌سازی است. می‌توانی اطلاعات کافه‌ها را بدون ورود ببینی."
+          : "برای ثبت تجربه وارد حساب شو؛ بعد به همین صفحه برمی‌گردی."}
       </p>
-      <Link
-        href={`/login?next=${encodeURIComponent(returnPath)}`}
-        className={`${BTN_PRIMARY} mt-6 w-full py-3.5 text-[15px]`}
-      >
-        ورود به حساب
-      </Link>
+      <Link href={"/login?next=" + encodeURIComponent(returnPath)} className={SECONDARY + " mt-5 w-full"}>ورود به حساب</Link>
     </div>
   );
 }
 
-function PickStep({
-  businesses,
-  onPick,
-}: {
-  businesses: Business[];
-  onPick: (b: Business) => void;
-}) {
+function PickStep({ businesses, onPick }: { businesses: Business[]; onPick: (business: Business) => void }) {
   const [query, setQuery] = useState("");
-  const q = query.trim().toLowerCase();
-
   const results = useMemo(() => {
-    if (!q) return businesses.slice(0, 8);
-    return businesses.filter((b) =>
-      `${b.name} ${b.category} ${b.city}`.toLowerCase().includes(q),
-    );
-  }, [q, businesses]);
-
+    const normalized = query.trim().toLowerCase();
+    return normalized
+      ? businesses.filter(business => (business.name + " " + business.category + " " + business.city).toLowerCase().includes(normalized))
+      : businesses.slice(0, 8);
+  }, [query, businesses]);
+  if (businesses.length === 0) {
+    return <p className="rounded-xl border border-glass-border bg-canvas p-4 text-sm leading-7 text-muted">هنوز کسب‌وکاری برای ثبت تجربه در فهرست عمومی نداریم. بعد از انتشار اطلاعات، این بخش فعال می‌شود.</p>;
+  }
   return (
     <div>
-      <h2 className="text-[1.2rem] font-black tracking-tight text-strong">
-        کجا خرید کردی؟
-      </h2>
-      <p className="mt-1.5 text-[13px] leading-[1.9] text-muted">
-        کسب‌وکاری که می‌خوای نقدش کنی رو پیدا کن.
-      </p>
-
-      <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-glass-border bg-white/[0.03] px-3.5 transition-colors focus-within:border-mint focus-within:bg-mint/[0.06]">
-        <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] shrink-0 text-muted" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-          <circle cx="11" cy="11" r="7" />
-          <path d="M21 21l-4.3-4.3" />
-        </svg>
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="مثلاً: دیجی‌کالا"
-          aria-label="جست‌وجوی کسب‌وکار"
-          autoFocus
-          className="w-full bg-transparent py-3 text-[16px] text-white placeholder:text-white/25 outline-none [&::-webkit-search-cancel-button]:appearance-none"
-        />
-      </div>
-
+      <label htmlFor="review-business" className="block text-sm font-semibold text-strong">نام کافه یا رستوران</label>
+      <input
+        id="review-business"
+        type="search"
+        value={query}
+        onChange={event => setQuery(event.target.value)}
+        placeholder="نام جایی که رفتی"
+        aria-label="جست‌وجوی کسب‌وکار"
+        className="mt-2 min-h-12 w-full rounded-xl border border-glass-border bg-canvas px-3 py-3 text-base text-strong placeholder:text-muted focus:outline-2 focus:outline-mint"
+      />
       {results.length > 0 ? (
         <ul className="mt-3 flex flex-col gap-2">
-          {results.map((b) => (
-            <li key={b.slug}>
-              <button
-                type="button"
-                onClick={() => onPick(b)}
-                className="group flex w-full items-center gap-3 rounded-xl border border-glass-border bg-white/[0.02] p-2.5 text-right transition-colors hover:border-mint/40 hover:bg-mint/[0.06]"
-              >
-                <span
-                  className="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-[1rem] font-bold text-white"
-                  style={{ background: b.color }}
-                  aria-hidden
-                >
-                  {b.initial}
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="truncate text-[0.92rem] font-bold text-strong">
-                    {b.name}
-                  </span>
-                  <span className="truncate text-[0.76rem] text-muted">
-                    {b.category} · {b.city}
-                  </span>
-                </span>
-                <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-muted transition-[color,transform] group-hover:translate-x-[-3px] group-hover:text-mint" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M15 6l-6 6 6 6" />
-                </svg>
+          {results.map(business => (
+            <li key={business.slug}>
+              <button type="button" onClick={() => onPick(business)} className="flex min-h-14 w-full flex-col items-start rounded-xl border border-glass-border px-4 py-3 text-start hover:bg-canvas focus-visible:outline-2 focus-visible:outline-mint">
+                <span className="break-words text-sm font-bold text-strong">{business.name}</span>
+                <span className="mt-1 text-sm text-muted">{business.category} · {business.city}</span>
               </button>
             </li>
           ))}
         </ul>
       ) : (
-        <div className="mt-3 rounded-xl border border-dashed border-glass-border bg-white/[0.02] px-4 py-8 text-center">
-          <p className="text-[0.9rem] font-bold text-strong">کسب‌وکاری پیدا نشد</p>
-          <p className="mt-1.5 text-[12.5px] leading-[1.9] text-muted">
-            با نام «{query.trim()}» نتیجه‌ای نبود — املای دیگری را امتحان کن.
-          </p>
-        </div>
+        <p role="status" className="mt-4 text-sm leading-7 text-muted">با این نام چیزی پیدا نشد؛ نام کوتاه‌تر یا املای دیگری را امتحان کن.</p>
       )}
     </div>
   );
 }
 
-function BusinessChip({ selected }: { selected: Selected }) {
+function RateStep({ rating, onPick, onContinue }: { rating: number; onPick: (rating: number) => void; onContinue: () => void }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-full border border-glass-border bg-white/[0.03] py-1.5 pr-1.5 pl-4">
-      <span
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[0.85rem] font-bold text-white"
-        style={{ background: selected.color }}
-        aria-hidden
-      >
-        {selected.initial}
-      </span>
-      <span className="truncate text-[13px] font-bold text-strong">
-        {selected.name}
-      </span>
-    </div>
-  );
-}
-
-function RateStep({
-  selected,
-  rating,
-  onPick,
-}: {
-  selected: Selected;
-  rating: number;
-  onPick: (n: number) => void;
-}) {
-  const [hover, setHover] = useState(0);
-  const shown = hover || rating;
-  const palette = shown ? STAR_PALETTES[shown as Rating] : null;
-
-  return (
-    <div className="flex flex-col items-center text-center">
-      <BusinessChip selected={selected} />
-
-      <h2 className="mt-6 text-[1.2rem] font-black tracking-tight text-strong">
-        چه‌قدر راضی بودی؟
-      </h2>
-      <p className="mt-1.5 text-[13px] text-muted">
-        روی ستاره‌ها بزن — همین یک ضربه کافیه.
-      </p>
-
-      <div
-        key={rating}
-        dir="ltr"
-        role="radiogroup"
-        aria-label="امتیاز"
-        className="mt-5 flex items-center justify-center gap-1"
-      >
-        {[1, 2, 3, 4, 5].map((n) => {
-          const lit = n <= shown;
-          const litPalette = STAR_PALETTES[(shown || 1) as Rating];
-          return (
-            <button
-              key={n}
-              type="button"
-              role="radio"
-              aria-checked={rating === n}
-              aria-label={`${fa(n)} ستاره`}
-              onClick={() => onPick(n)}
-              onMouseEnter={() => setHover(n)}
-              onMouseLeave={() => setHover(0)}
-              className="flex h-[58px] w-[58px] items-center justify-center rounded-xl transition-transform duration-150 hover:scale-110 active:scale-95"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-11 w-11"
-                style={
-                  lit && rating >= n
-                    ? {
-                        filter: `drop-shadow(0 0 8px ${litPalette.glow})`,
-                        animation: `review-star 0.4s ease-out ${(n - 1) * 0.06}s both`,
-                      }
-                    : lit
-                      ? { filter: `drop-shadow(0 0 8px ${litPalette.glow})` }
-                      : { opacity: 0.32 }
-                }
-                aria-hidden
-              >
-                {lit ? (
-                  <>
-                    <defs>
-                      <linearGradient id={`rs-grad-${n}`} x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor={litPalette.light} />
-                        <stop offset="55%" stopColor={litPalette.mid} />
-                        <stop offset="100%" stopColor={litPalette.dark} />
-                      </linearGradient>
-                    </defs>
-                    <path d={STAR_PATH} fill={`url(#rs-grad-${n})`} />
-                  </>
-                ) : (
-                  <path
-                    d={STAR_PATH}
-                    fill="none"
-                    stroke="rgba(255,255,255,0.35)"
-                    strokeWidth="1.2"
-                    strokeLinejoin="round"
-                  />
-                )}
-              </svg>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="mt-4 h-8">
-        {shown > 0 && (
-          <span
-            key={shown}
-            className="inline-block animate-[review-pop_0.3s_ease-out] text-[1.35rem] font-black motion-reduce:animate-none"
-            style={{ color: palette?.mid }}
+    <div>
+      <h3 className="text-base font-bold text-strong">چقدر راضی بودی؟</h3>
+      <p className="mt-2 text-sm leading-7 text-muted">امتیاز تجربهٔ خودت را انتخاب کن. قبل از ثبت می‌توانی آن را تغییر بدهی.</p>
+      <div dir="ltr" role="radiogroup" aria-label="امتیاز" className="mt-5 flex justify-center gap-1 min-[360px]:gap-2">
+        {[1, 2, 3, 4, 5].map(value => (
+          <button
+            key={value}
+            type="button"
+            role="radio"
+            aria-checked={rating === value}
+            aria-label={fa(value) + " ستاره"}
+            tabIndex={rating === value || (!rating && value === 1) ? 0 : -1}
+            onClick={() => onPick(value)}
+            onKeyDown={event => {
+              let next = value;
+              if (event.key === "ArrowRight" || event.key === "ArrowDown") next = value === 5 ? 1 : value + 1;
+              else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = value === 1 ? 5 : value - 1;
+              else if (event.key === "Home") next = 1;
+              else if (event.key === "End") next = 5;
+              else return;
+              event.preventDefault();
+              onPick(next);
+              event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"]')[next - 1]?.focus();
+            }}
+            className={"grid h-12 w-12 shrink-0 place-items-center rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint " + (value <= rating ? "bg-mint/10 text-mint" : "bg-canvas text-muted")}
           >
-            {RATING_LABELS[shown - 1]}
-          </span>
-        )}
+            <svg viewBox="0 0 24 24" className="h-8 w-8" aria-hidden>
+              <path d={STAR_PATH} fill={value <= rating ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+            </svg>
+          </button>
+        ))}
       </div>
+      <p aria-live="polite" className="mt-4 min-h-7 text-center text-sm font-semibold text-strong">
+        {rating ? fa(rating) + " از ۵ · " + RATING_LABELS[rating - 1] : "هنوز امتیازی انتخاب نشده"}
+      </p>
+      <button type="button" onClick={onContinue} disabled={!rating} className={BTN_PRIMARY + " mt-5 min-h-11 w-full justify-center px-4 py-3 disabled:opacity-50"}>ادامه</button>
     </div>
   );
 }
 
 function WriteStep({
-  selected,
-  body,
-  setBody,
-  onSubmit,
-  pending,
-  error,
-  localOnly,
+  rating, body, onChange, onSubmit, pending, error, localOnly,
 }: {
-  selected: Selected;
+  rating: number;
   body: string;
-  setBody: Dispatch<SetStateAction<string>>;
+  onChange: (body: string) => void;
   onSubmit: () => void;
   pending: boolean;
   error?: string;
   localOnly: boolean;
 }) {
-  const len = body.trim().length;
-  const ready = len >= BODY_MIN;
-  const progress = Math.min(len / BODY_MIN, 1) * 100;
-
+  const length = body.trim().length;
+  const ready = length >= BODY_MIN && length <= BODY_MAX;
   return (
-    <div>
-      <div className="flex justify-center">
-        <BusinessChip selected={selected} />
-      </div>
-
-      <h2 className="mt-5 text-center text-[1.2rem] font-black tracking-tight text-strong">
-        تجربه‌ات رو تعریف کن
-      </h2>
-      <p className="mt-1.5 text-center text-[13px] leading-[1.9] text-muted">
-        هرچی دقیق‌تر بنویسی، برای بقیه مفیدتره.
+    <form onSubmit={event => { event.preventDefault(); onSubmit(); }} aria-busy={pending}>
+      <p className="mb-4 text-sm font-semibold text-strong">امتیاز تو: {fa(rating)} از ۵ · {RATING_LABELS[rating - 1]}</p>
+      <label htmlFor="review-body" className="block text-base font-bold text-strong">تجربه‌ات را تعریف کن</label>
+      <p id="review-body-hint" className="mt-2 text-sm leading-7 text-muted">برای چه کاری رفتی؟ برخورد، کیفیت یا فضای آنجا چطور بود؟ اطلاعات شخصی خودت یا دیگران را ننویس.</p>
+      <textarea
+        id="review-body"
+        name="body"
+        aria-label="متن تجربه"
+        aria-describedby="review-body-hint review-body-count"
+        aria-invalid={error ? true : undefined}
+        value={body}
+        disabled={pending}
+        onChange={event => onChange(event.target.value)}
+        maxLength={BODY_MAX}
+        rows={5}
+        className="mt-3 w-full resize-y rounded-xl border border-glass-border bg-canvas px-3 py-3 text-base leading-8 text-strong placeholder:text-muted focus:outline-2 focus:outline-mint"
+      />
+      <p id="review-body-count" className="mt-2 text-sm text-muted" aria-live="polite">
+        {length < BODY_MIN ? "حداقل " + fa(BODY_MIN) + " نویسه؛ " + fa(BODY_MIN - length) + " نویسهٔ دیگر بنویس." : fa(length) + " از " + fa(BODY_MAX) + " نویسه"}
       </p>
-
-      <form
-        className="mt-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSubmit();
-        }}
-      >
-        <textarea
-          name="body"
-          aria-label="متن تجربه"
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          maxLength={BODY_MAX}
-          rows={6}
-          autoFocus
-          placeholder="مثلاً: کیفیت محصول عالی بود، ارسال سریع و بسته‌بندی تمیز…"
-          className="w-full resize-none rounded-xl border border-glass-border bg-white/[0.03] px-4 py-3.5 text-[16px] leading-[2] text-white placeholder:text-white/25 outline-none transition-colors focus:border-mint focus:bg-mint/[0.05]"
-        />
-
-        <div className="mt-2.5 flex items-center gap-3">
-          <span aria-live="polite" className={`shrink-0 text-[11px] font-bold ${ready ? "text-mint" : "text-muted"}`}>
-            {ready ? "آماده‌ی ثبت" : `${fa(len)} از ${fa(BODY_MIN)}`}
-          </span>
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-            <div className={`h-full rounded-full transition-[width,background-color] duration-300 ${ready ? "bg-mint" : "bg-saffron"}`} style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-
-        {error && (
-          <div role="alert" className="mt-3 flex items-start gap-2.5 rounded-xl border border-pomegr/30 bg-pomegr/10 p-3 text-[13px] font-medium text-white">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pomegr/20 text-pomegr">
-              !
-            </span>
-            {error}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={pending || !ready}
-          className={`${BTN_PRIMARY} relative z-[1] mt-4 w-full py-3.5 text-[15px] disabled:cursor-not-allowed disabled:opacity-45`}
-        >
-          {pending ? "در حال ثبت…" : "ثبت نظر"}
-        </button>
-        <p className="mt-2.5 text-center text-[11.5px] leading-[1.9] text-muted">
-          {localOnly ? "این تجربه فقط در همین مرورگر ذخیره می‌شه." : "نظرت بعد از یک بررسی کوتاه منتشر می‌شه."}
-        </p>
-      </form>
-    </div>
-  );
-}
-
-const SPARKS: { sx: string; sy: string; delay: string; color: string }[] = [
-  { sx: "-46px", sy: "-34px", delay: "0.05s", color: "#5BE6B2" },
-  { sx: "48px", sy: "-30px", delay: "0.12s", color: "#F5B544" },
-  { sx: "-54px", sy: "20px", delay: "0.09s", color: "#7B89FF" },
-  { sx: "52px", sy: "26px", delay: "0.16s", color: "#5BE6B2" },
-  { sx: "0px", sy: "-56px", delay: "0.2s", color: "#F5B544" },
-  { sx: "-12px", sy: "52px", delay: "0.14s", color: "#7B89FF" },
-];
-
-function DoneStep({ name, onClose, localOnly }: { name: string; onClose: () => void; localOnly: boolean }) {
-  useEffect(() => {
-    const t = setTimeout(onClose, 3400);
-    return () => clearTimeout(t);
-  }, [onClose]);
-
-  return (
-    <div className="flex flex-col items-center py-6 text-center">
-      <div className="relative grid h-28 w-28 place-items-center">
-        {/* expanding ring */}
-        <span
-          className="absolute h-20 w-20 rounded-full border-2 border-mint animate-[review-ring_0.9s_ease-out] motion-reduce:hidden"
-          aria-hidden
-        />
-        {/* sparkles */}
-        {SPARKS.map((s, i) => (
-          <span
-            key={i}
-            aria-hidden
-            className="absolute h-2 w-2 rounded-full motion-reduce:hidden"
-            style={
-              {
-                background: s.color,
-                "--sx": s.sx,
-                "--sy": s.sy,
-                animation: `review-spark 0.85s ease-out ${s.delay} forwards`,
-              } as CSSProperties
-            }
-          />
-        ))}
-        {/* check badge */}
-        <div className="grid h-20 w-20 place-items-center rounded-full bg-mint/15 animate-[review-pop_0.5s_cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:animate-none">
-          <svg viewBox="0 0 52 52" className="h-11 w-11" aria-hidden>
-            <path
-              d="M14 27l8 8 16-18"
-              fill="none"
-              stroke="#5BE6B2"
-              strokeWidth="5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{
-                strokeDasharray: 56,
-                strokeDashoffset: 56,
-                animation: "review-check 0.45s 0.3s ease-out forwards",
-              }}
-            />
-          </svg>
-        </div>
-      </div>
-
-      <h2 className="mt-5 text-[1.3rem] font-black text-strong">
-        {localOnly ? "تجربه‌ات در این مرورگر ذخیره شد!" : "نظرت ثبت شد!"}
-      </h2>
-      <p className="mt-2 text-[13.5px] leading-[2] text-muted">
-        {localOnly ? (
-          "این ذخیرهٔ آزمایشی فقط در همین مرورگر قابل مشاهده است."
-        ) : name ? (
-          <>
-            نظرت درباره‌ی{" "}
-            <span className="font-bold text-strong">«{name}»</span> بعد از یک
-            بررسی کوتاه منتشر می‌شه.
-          </>
-        ) : (
-          "نظرت بعد از یک بررسی کوتاه منتشر می‌شه."
-        )}{" "}
-        ممنون که به بقیه کمک کردی.
-      </p>
-
-      <button
-        type="button"
-        onClick={onClose}
-        className={`${BTN_PRIMARY} mt-6 w-full py-3.5 text-[15px]`}
-      >
-        باشه
-      </button>
-    </div>
+      {error ? <p role="alert" className="mt-3 rounded-xl border border-pomegr/30 bg-pomegr/5 p-3 text-sm leading-7 text-pomegr">{error}</p> : null}
+      <button type="submit" disabled={pending || !ready} className={BTN_PRIMARY + " mt-5 min-h-11 w-full justify-center px-4 py-3 disabled:opacity-50"}>{pending ? "در حال ثبت…" : "ثبت نظر"}</button>
+      <p className="mt-3 text-sm leading-7 text-muted">{localOnly ? "فقط در این مرورگر ذخیره می‌شود؛ نظر عمومی نیست." : "پس از بررسی منتشر می‌شود؛ ثبت به معنای انتشار فوری نیست."}</p>
+    </form>
   );
 }

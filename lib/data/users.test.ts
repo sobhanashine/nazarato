@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { updateUserNotificationSettings, updateUserPrivacy, getUserByUsername } from "./users";
+import { createUser, updateUserNotificationSettings, updateUserPrivacy, getUserByUsername } from "./users";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 // Mock the server file that returns the supabaseAdmin client
@@ -7,6 +7,8 @@ vi.mock("@/lib/supabase/server", () => {
   const mockSupabase = {
     from: vi.fn().mockReturnThis(),
     update: vi.fn().mockReturnThis(),
+    insert: vi.fn().mockReturnThis(),
+    single: vi.fn().mockReturnThis(),
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
     maybeSingle: vi.fn().mockReturnThis(),
@@ -21,6 +23,8 @@ describe("Users Data Layer Settings Updates", () => {
   let mockSupabaseClient: {
     from: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
+    insert: ReturnType<typeof vi.fn>;
+    single: ReturnType<typeof vi.fn>;
     select: ReturnType<typeof vi.fn>;
     eq: ReturnType<typeof vi.fn>;
     maybeSingle: ReturnType<typeof vi.fn>;
@@ -30,6 +34,14 @@ describe("Users Data Layer Settings Updates", () => {
   beforeEach(() => {
     mockSupabaseClient = supabaseAdmin() as unknown as typeof mockSupabaseClient;
     vi.clearAllMocks();
+  });
+
+  it("persists the verified phone needed for the next sign-in", async () => {
+    mockSupabaseClient.then.mockImplementation((callback: (value: unknown) => unknown) =>
+      Promise.resolve(callback({data: {id: "user-id", phone: "+989000000001", display_name: "نام آزمون", role: "consumer"}, error: null})),
+    );
+    await createUser({phone: "+989000000001", displayName: "نام آزمون"});
+    expect(mockSupabaseClient.insert).toHaveBeenCalledWith(expect.objectContaining({phone: "+989000000001", display_name: "نام آزمون"}));
   });
 
   describe("updateUserNotificationSettings", () => {
@@ -144,6 +156,11 @@ describe("Users Data Layer Settings Updates", () => {
       expect(result?.notification_bookmarks).toBe(false);
     });
 
+    it.each(["sara_ahmadi", "niloofar_h", "zahra_m"])("never fabricates a missing mock profile: %s", async (username) => {
+      mockSupabaseClient.then.mockImplementation((callback: (value: unknown) => unknown) => Promise.resolve(callback({data:null,error:null})));
+      expect(await getUserByUsername(username)).toBeNull();
+    });
+
     it("returns null if user is not found", async () => {
       mockSupabaseClient.then.mockImplementation((callback: (value: unknown) => unknown) =>
         Promise.resolve(callback({ data: null, error: null }))
@@ -162,4 +179,3 @@ describe("Users Data Layer Settings Updates", () => {
     });
   });
 });
-

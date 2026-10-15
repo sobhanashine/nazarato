@@ -33,9 +33,9 @@ export function PageBanner({ title, subtitle }: { title: string; subtitle?: stri
           alt=""
         />
         <div className="relative z-[2]">
-          <h2 className="text-[26px] md:text-[32px] font-extrabold text-strong mb-2 leading-[1.35] -tracking-[0.015em]">
+          <h1 className="text-[26px] md:text-[32px] font-extrabold text-strong mb-2 leading-[1.35] -tracking-[0.015em]">
             {title}
-          </h2>
+          </h1>
           {subtitle && (
             <p className="text-[15px] font-normal text-strong opacity-[0.86] leading-[1.75]">
               {subtitle}

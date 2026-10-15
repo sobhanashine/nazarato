@@ -1,3 +1,4 @@
+import type { SearchArea } from "@/lib/local-area";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { HeroSearch } from "@/components/sections/HeroSearch";
@@ -45,7 +46,7 @@ const auroraSweep =
   "conic-gradient(from 0deg, transparent 0deg, rgba(91, 230, 178, 0.08) 60deg, transparent 120deg, " +
   "rgba(123, 137, 255, 0.07) 180deg, transparent 240deg, rgba(245, 181, 68, 0.06) 300deg, transparent 360deg)";
 
-export function Hero({ businesses, earlyAccess = false, children }: { businesses?: import("@/lib/data/businesses").Business[]; earlyAccess?: boolean; children?: ReactNode }) {
+export function Hero({ businesses, area, earlyAccess = false, children }: { businesses?: import("@/lib/data/businesses").Business[]; earlyAccess?: boolean; area: SearchArea; children?: ReactNode }) {
   const searches = businesses && !earlyAccess ? ["سایه", "وک", "آوند", "توحید", "امام علی"] : popularSearches;
   return (
     <section className="relative overflow-hidden -top-[72px] -mb-[72px] pt-32 pb-12 sm:-top-20 sm:-mb-20 sm:pt-44 sm:pb-24 lg:pt-48 lg:pb-32">
@@ -97,7 +98,7 @@ export function Hero({ businesses, earlyAccess = false, children }: { businesses
             </span>
           </h1>
 
-          <HeroSearch businesses={businesses} />
+          <HeroSearch businesses={businesses} area={area} />
 
           {children}
           {!children && <div

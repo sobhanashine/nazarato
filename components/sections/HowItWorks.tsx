@@ -12,28 +12,28 @@ export function HowItWorks({ earlyAccess = false }: { earlyAccess?: boolean }) {
       <Container>
         {/* Outer Banner */}
         <div className="relative rounded-[28px] bg-gradient-to-r from-[#0b241c] via-[#09141b] to-glass/30 border border-glass-border backdrop-blur-xl p-6 sm:p-10 md:p-12 overflow-hidden shadow-lg hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-300">
-          
+
           {/* Accent Glow Background */}
           <div aria-hidden className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-mint/10 blur-3xl pointer-events-none" />
           <div aria-hidden className="absolute -bottom-16 -left-16 w-64 h-64 rounded-full bg-lapis/10 blur-3xl pointer-events-none" />
 
           {/* Grid Layout (2 columns on desktop) */}
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            
+
             {/* Right side (RTL): Platform explanation (7 cols) */}
             <div className="lg:col-span-7 flex flex-col items-start text-right">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-mint/10 border border-mint/20 text-[12.5px] font-bold text-mint tracking-wide mb-4">
                 ما نظراتو هستیم
               </span>
-              
+
               <h2 className="text-[1.8rem] sm:text-[2.2rem] md:text-[2.6rem] font-black text-strong leading-[1.25] -tracking-[0.015em] mb-5">
                 سکوی مستقل نظرات برای همه
               </h2>
-              
+
               <p className="text-[14px] sm:text-[15.5px] text-muted leading-[1.8] max-w-[620px] mb-8 font-normal">
                 نظراتو در حال ساخت فضایی مستقل برای اشتراک‌گذاری تجربه‌های واقعی درباره کسب‌وکارهای ایرانی است. می‌خواهیم انتخاب یک کافه، فروشگاه یا خدمت بر پایهٔ تجربهٔ آدم‌ها آسان‌تر شود و کسب‌وکارها بتوانند صدای مشتریانشان را بشنوند.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                 {!earlyAccess && <button
                   onClick={() => openReviewSheet()}
@@ -49,19 +49,19 @@ export function HowItWorks({ earlyAccess = false }: { earlyAccess?: boolean }) {
                 </Link>
               </div>
             </div>
-            
+
             {/* Left side (RTL): Trust/Verification card (5 cols) */}
             <div className="lg:col-span-5 w-full">
               <div className="group relative rounded-[22px] bg-[#032017]/85 border border-mint/20 p-6 sm:p-8 flex flex-col justify-between overflow-hidden shadow-2xl h-full min-h-[250px] hover:border-mint/35 hover:shadow-[0_10px_30px_rgba(91,230,178,0.08)] transition-all duration-300">
-                
+
                 {/* Micro glow inside the card */}
                 <div aria-hidden className="absolute -bottom-16 -right-16 w-36 h-36 rounded-full bg-mint/15 blur-2xl pointer-events-none" />
-                
+
                 <div className="relative z-10">
                   <h3 className="text-[1.2rem] sm:text-[1.3rem] font-extrabold text-strong mb-3">
                     {earlyAccess ? "نسخهٔ اولیه، در حال توسعه" : "مسیر بررسی تجربه‌های واقعی"}
                   </h3>
-                  
+
                   <p className="text-[12.5px] sm:text-[13.5px] text-muted leading-[1.7] mb-6">
                     {earlyAccess ? "این صفحه شروع مسیر نظراتو است. ثبت نظر با حساب واقعی و تأیید مالکیت کسب‌وکار هنوز آمادهٔ استفادهٔ عمومی نیستند. معرفی کسب‌وکارها و تجربه‌های واقعی را به‌تدریج به محصول اضافه می‌کنیم." : "تجربهٔ کاربران و تأیید مالکیت کسب‌وکار دو موضوع جدا هستند. قبل از انتشار هر نظر باید روشن باشد تجربه از کجا آمده و چه بررسی‌ای روی آن انجام شده است."}
                   </p>

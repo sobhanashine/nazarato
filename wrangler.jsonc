@@ -17,5 +17,21 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
+  },
+  "env": {
+    "staging": {
+      "name": "nazarato-staging",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [{ "pattern": "staging.nazarato.ir", "custom_domain": true }],
+      "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+      "vars": {
+        "NEXT_PUBLIC_NAZARATO_ENV": "staging",
+        "NAZARATO_DEPLOYMENT_ENV": "staging",
+        "NAZARATO_STAGING_DATABASE_MODE": "shared-main",
+        "NAZARATO_STAGING_SUPABASE_REF": "sdlmjdxrfyhuiegjysac",
+        "NEXT_PUBLIC_SMFLOW_ENABLED": "false"
+      }
+    }
   }
 }

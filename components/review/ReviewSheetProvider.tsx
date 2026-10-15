@@ -5,9 +5,9 @@
  *
  * Mounted once in the root layout. Exposes `openReviewSheet()` via context so
  * any client component (the mobile tab-bar FAB, a company page CTA, …) can
- * launch the wizard. Each open bumps a key so a fresh `<ReviewSheet>` mounts —
- * wizard + server-action state always start clean, and the enter animation
- * replays every time.
+ * launch the wizard. Reopening restores that business's unsent draft from
+ * provider memory. Reloading the page clears these drafts; no new storage or
+ * public submission path is introduced.
  */
 
 import {
@@ -15,11 +15,12 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { usePathname } from "next/navigation";
 import type { Business } from "@/lib/data/businesses";
-import { ReviewSheet, type LocalReviewPreview, type ReviewPrefill } from "./ReviewSheet";
+import { ReviewSheet, type LocalReviewPreview, type ReviewDraft, type ReviewPrefill } from "./ReviewSheet";
 import { experienceKey, parseLocalExperience, submitLocalPreviewReview } from "@/lib/preview/golsar";
 import { notifyLocalPreviewStorage } from "@/components/preview/useLocalPreviewStorage";
 
@@ -51,7 +52,23 @@ export function ReviewSheetProvider({
   const [prefill, setPrefill] = useState<ReviewPrefill | null>(null);
   const [sessionKey, setSessionKey] = useState(0);
   const pathname = usePathname();
+  const previousPathname = useRef(pathname);
   const [initialValue, setInitialValue] = useState<LocalReviewPreview["initialValue"]>();
+  const [initialDraft, setInitialDraft] = useState<ReviewDraft>();
+  const drafts = useRef(new Map<string, ReviewDraft>());
+  const lastDraftSlug = useRef<string | null>(null);
+
+  const rememberDraft = useCallback((draft: ReviewDraft) => {
+    drafts.current.set(draft.business.slug, draft);
+    lastDraftSlug.current = draft.business.slug;
+  }, []);
+
+  const clearDraft = useCallback((slug: string) => {
+    drafts.current.delete(slug);
+    if (lastDraftSlug.current === slug) lastDraftSlug.current = null;
+  }, []);
+
+  const getDraft = useCallback((slug: string) => drafts.current.get(slug), []);
 
   const submitLocal: LocalReviewPreview["submit"] = async (_previous, formData) => {
     const slug = formData.get("slug");
@@ -68,13 +85,19 @@ export function ReviewSheetProvider({
   };
 
   const openReviewSheet = useCallback((p?: ReviewPrefill) => {
+    const draft = drafts.current.get(p?.slug ?? lastDraftSlug.current ?? "");
+    const resumable = draft && (p || businesses.some(b => b.slug === draft.business.slug))
+      ? draft
+      : undefined;
+    const target = p ?? resumable?.business ?? null;
     let saved: LocalReviewPreview["initialValue"];
-    if (localPreview && p && businesses.some(b => b.slug === p.slug)) {
-      try { saved = parseLocalExperience(window.localStorage.getItem(experienceKey(p.slug)), p.slug) ?? undefined; }
+    if (localPreview && target && businesses.some(b => b.slug === target.slug)) {
+      try { saved = parseLocalExperience(window.localStorage.getItem(experienceKey(target.slug)), target.slug) ?? undefined; }
       catch { /* The form still opens when browser storage is unavailable. */ }
     }
     setInitialValue(saved);
-    setPrefill(p ?? null);
+    setInitialDraft(resumable);
+    setPrefill(target);
     setSessionKey((n) => n + 1);
     setIsOpen(true);
   }, [businesses, localPreview]);
@@ -84,6 +107,8 @@ export function ReviewSheetProvider({
   // A navigation (e.g. the login link) should never leave the sheet hanging
   // over the next page.
   useEffect(() => {
+    if (previousPathname.current === pathname) return;
+    previousPathname.current = pathname;
     setIsOpen(false);
   }, [pathname]);
 
@@ -98,6 +123,10 @@ export function ReviewSheetProvider({
           prefill={prefill}
           businesses={businesses}
           localPreview={localPreview ? { initialValue, submit: submitLocal } : undefined}
+          initialDraft={initialDraft}
+          onDraftChange={rememberDraft}
+          onDraftClear={clearDraft}
+          getDraft={getDraft}
         />
       )}
     </ReviewSheetContext.Provider>

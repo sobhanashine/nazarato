@@ -10,7 +10,7 @@ type SavedBusinessCardProps = {
 export function SavedBusinessCard({ business: b }: SavedBusinessCardProps) {
   return (
     <div className="group relative flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 rounded-2xl border border-glass-border bg-glass/60 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-mint/40 hover:bg-glass-hover hover:shadow-[0_8px_30px_-4px_rgba(91,230,178,0.15)]">
-      
+
       {/* Clickable Area covering the whole card except the explicit buttons */}
       <Link href={`/company/${b.slug}`} className="absolute inset-0 z-0 rounded-2xl" aria-label={`مشاهده پروفایل ${b.name}`} />
 
@@ -18,14 +18,14 @@ export function SavedBusinessCard({ business: b }: SavedBusinessCardProps) {
       <div className="relative z-10 flex items-center gap-4 min-w-0">
         <div
           className="flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-[18px] text-[1.4rem] font-bold text-white shadow-inner transition-transform duration-300 group-hover:scale-105"
-          style={{ 
+          style={{
             background: `linear-gradient(135deg, ${b.color}dd 0%, ${b.color} 100%)`,
             boxShadow: `0 8px 24px -6px ${b.color}80, inset 0 2px 4px rgba(255,255,255,0.2)`
           }}
         >
           {b.initial}
         </div>
-        
+
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="flex items-center gap-1.5">
             <span className="truncate text-[1.05rem] font-bold text-strong transition-colors group-hover:text-mint">
@@ -40,7 +40,7 @@ export function SavedBusinessCard({ business: b }: SavedBusinessCardProps) {
               </span>
             )}
           </div>
-          
+
           <div className="flex items-center gap-2 text-[0.82rem] text-muted opacity-90">
             <span className="inline-flex items-center gap-1 [&>svg]:h-[13px] [&>svg]:w-[13px] [&>svg]:opacity-80">
               <LocationIcon />
@@ -64,9 +64,9 @@ export function SavedBusinessCard({ business: b }: SavedBusinessCardProps) {
 
         {/* The remove bookmark button */}
         <div className="relative z-20 shrink-0">
-          <BookmarkButton 
-            businessSlug={b.slug} 
-            initialIsBookmarked={true} 
+          <BookmarkButton
+            businessSlug={b.slug}
+            initialIsBookmarked={true}
             className="group/btn relative flex h-10 w-10 items-center justify-center rounded-xl border border-glass-border bg-glass transition-all hover:border-rose-500/40 hover:bg-rose-500/15"
           />
         </div>
