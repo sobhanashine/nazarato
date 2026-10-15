@@ -14,7 +14,7 @@ export default function SearchError({
       error={error}
       reset={reset}
       logLabel="search"
-      message="نتایج جستجو دریافت نشد. دوباره تلاش کن."
+      message="نتونستیم نتایج جستجو رو بارگذاری کنیم. دوباره تلاش کن."
     />
   );
 }

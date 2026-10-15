@@ -14,7 +14,7 @@ export default function BlogPostError({
       error={error}
       reset={reset}
       logLabel="blog/[slug]"
-      message="این مطلب دریافت نشد. دوباره تلاش کن."
+      message="نتونستیم این مطلب رو بارگذاری کنیم. دوباره تلاش کن."
     />
   );
 }

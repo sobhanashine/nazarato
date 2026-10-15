@@ -46,7 +46,7 @@ export function ReportsAdminClient({
       <Container>
         <main className="space-y-6 py-8">
           <header className="space-y-1">
-            <h1 className="text-[1.6rem] font-bold text-strong">نظرات گزارش‌شده</h1>
+            <h1 className="text-[1.6rem] font-black text-strong">نظرات گزارش‌شده</h1>
             <p className="text-[0.85rem] text-muted">
               {faNum(reports.length)} نظر گزارش‌شده — بیشترین گزارش بالاتر
             </p>
@@ -66,16 +66,16 @@ export function ReportsAdminClient({
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <RatingStars rating={r.rating as Rating} />
-                        <span className="rounded-lg border border-pomegr/45 px-2 py-0.5 text-[0.72rem] font-bold text-pomegr">
+                        <span className="rounded-full border border-pomegr/45 px-2 py-0.5 text-[0.72rem] font-bold text-pomegr">
                           {faNum(r.report_count)} گزارش
                         </span>
                         {r.status !== "published" && (
-                          <span className="rounded-lg border border-glass-border px-2 py-0.5 text-[0.72rem] font-bold text-muted">
+                          <span className="rounded-full border border-glass-border px-2 py-0.5 text-[0.72rem] font-bold text-muted">
                             {r.status}
                           </span>
                         )}
                       </div>
-                      <Link href={href} className="inline-flex min-h-11 items-center text-[0.8rem] text-mint hover:underline">
+                      <Link href={href} className="text-[0.8rem] text-mint hover:underline">
                         {r.business_name}
                       </Link>
                     </div>
@@ -93,7 +93,7 @@ export function ReportsAdminClient({
                         type="button"
                         onClick={() => run(r.id, dismissReports, "گزارش‌ها رد شد")}
                         disabled={busy}
-                        className="min-h-11 min-w-11 rounded-lg border border-glass-border bg-paper px-3.5 py-2 text-[13px] font-bold text-strong transition-colors hover:bg-canvas disabled:opacity-50"
+                        className="rounded-lg border border-glass-border bg-white/5 px-3.5 py-2 text-[13px] font-bold text-white transition-colors hover:bg-white/10 disabled:opacity-50"
                       >
                         رد گزارش (نگه‌داشتن نظر)
                       </button>
@@ -101,7 +101,7 @@ export function ReportsAdminClient({
                         type="button"
                         onClick={() => run(r.id, removeReportedReview, "نظر حذف شد")}
                         disabled={busy}
-                        className="min-h-11 min-w-11 rounded-lg border border-pomegr/45 px-3.5 py-2 text-[13px] font-bold text-pomegr transition-colors hover:bg-pomegr/10 disabled:opacity-50"
+                        className="rounded-lg border border-pomegr/45 px-3.5 py-2 text-[13px] font-bold text-pomegr transition-colors hover:bg-pomegr/10 disabled:opacity-50"
                       >
                         حذف نظر
                       </button>

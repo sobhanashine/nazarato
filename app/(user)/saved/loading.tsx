@@ -1,12 +1,29 @@
-export default function Loading() {
+export default function SavedLoading() {
   return (
-    <div aria-busy="true">
-      <p role="status" className="text-[14px] leading-7 text-muted">در حال دریافت مکان‌های ذخیره‌شده…</p>
-      <div aria-hidden className="mt-5 divide-y divide-glass-border border-y border-glass-border">
-        {[0, 1, 2].map(row => <div key={row} className="flex min-h-24 flex-col justify-center gap-3 py-5">
-          <div className="h-5 w-2/3 max-w-xs rounded-sm bg-line/65" />
-          <div className="h-3 w-1/3 max-w-40 rounded-sm bg-line/65" />
-        </div>)}
+    <div className="flex flex-col gap-0 pb-8">
+      <div className="mb-6 animate-pulse">
+        <div className="h-8 w-48 rounded bg-glass-border"></div>
+        <div className="mt-2 h-4 w-64 rounded bg-glass-border"></div>
+      </div>
+
+      <div className="mb-6 flex gap-1 border-b border-glass-border">
+        <div className="h-10 w-24 rounded-t bg-glass-border"></div>
+        <div className="h-10 w-32 rounded-t bg-glass-border"></div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="flex h-[100px] items-center gap-4 rounded-[1.25rem] border border-glass-border bg-glass p-4 animate-pulse"
+          >
+            <div className="h-[60px] w-[60px] shrink-0 rounded-2xl bg-glass-border"></div>
+            <div className="flex flex-1 flex-col gap-2">
+              <div className="h-4 w-3/4 rounded bg-glass-border"></div>
+              <div className="h-3 w-1/2 rounded bg-glass-border"></div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

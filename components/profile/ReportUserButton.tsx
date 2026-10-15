@@ -13,7 +13,7 @@ export function ReportUserButton() {
   return (
     <button
       onClick={handleReport}
-      className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-glass-border bg-paper px-4 py-2.5 text-sm font-semibold text-muted transition-colors duration-150 hover:border-pomegr/40 hover:text-pomegr cursor-pointer"
+      className="inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-glass/40 px-3.5 py-1.5 text-xs font-semibold text-muted transition-[background,color,border-color] duration-200 hover:border-rose-500/40 hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"
     >
       <svg
         viewBox="0 0 24 24"

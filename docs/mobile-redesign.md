@@ -1,3 +1,7 @@
+> Superseded visual direction: on 2026-10-15 the founder selected the existing
+> dark/glass **main** design as canonical. Keep the behavioral/mobile fixes;
+> do not reapply the light visual redesign. See `main-design-dev-spec.md`.
+
 # نظراتو — تصمیم کارگروه بازطراحی
 
 تاریخ: ۴ اکتبر ۲۰۲۶. مبنای اجرا: `main@86b70d4` در یک worktree مستقل.

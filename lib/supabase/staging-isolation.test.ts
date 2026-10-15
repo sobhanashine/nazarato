@@ -19,3 +19,18 @@ describe("staging database isolation", () => {
     expect(() => assertStagingDatabaseIsolation(url, projectRef)).toThrow();
   });
 });
+
+
+describe("explicit shared-main staging database", () => {
+  const mainRef = "sdlmjdxrfyhuiegjysac";
+  it("allows the exact founder-approved main project only with explicit mode", () => {
+    expect(() => assertStagingDatabaseIsolation(`https://${mainRef}.supabase.co`, mainRef, "shared-main")).not.toThrow();
+  });
+  it("does not allow shared-main mode to select another project", () => {
+    expect(() => assertStagingDatabaseIsolation(`https://${ref}.supabase.co`, ref, "shared-main")).toThrow();
+  });
+  it("rejects misspelled modes and URL variants", () => {
+    expect(() => assertStagingDatabaseIsolation(`https://${mainRef}.supabase.co`, mainRef, "shared")).toThrow();
+    expect(() => assertStagingDatabaseIsolation(`https://${mainRef}.supabase.co/other`, mainRef, "shared-main")).toThrow();
+  });
+});

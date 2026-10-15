@@ -6,7 +6,7 @@ import { getLatestPosts } from "@/lib/data/blog-posts";
 export function BlogSidebar() {
   const guides = getLatestPosts(3);
   return (
-    <aside className="hidden min-w-0 flex-col gap-5 lg:flex" aria-label="راهنما و مسیرهای مرتبط">
+    <aside className="hidden min-w-0 flex-col gap-8 lg:flex lg:w-[33%]" aria-label="راهنما و مسیرهای مرتبط">
       <section className={`${GLASS} p-5`}>
         <h2 className="mb-4 text-lg font-bold text-strong">راهنماهای نظراتو</h2>
         <div className="divide-y divide-glass-border">
@@ -18,7 +18,7 @@ export function BlogSidebar() {
           ))}
         </div>
       </section>
-      <section className="border-t border-glass-border pt-5">
+      <section className={`${GLASS} p-5`}>
         <h2 className="text-base font-bold text-strong">صاحب یک کافه یا رستورانی؟</h2>
         <p className="mt-2 text-sm leading-7 text-muted">مسیر شنیدن تجربهٔ مشتری و گفت‌وگو دربارهٔ همکاری را ببین.</p>
         <Link href="/for-business" className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-forest">برای کسب‌وکارها ←</Link>

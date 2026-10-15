@@ -84,10 +84,10 @@ export function BusinessesAdminClient({
       <Container>
         <main className="space-y-6 py-8">
           <header className="space-y-1">
-            <h1 className="text-[1.6rem] font-bold text-strong">مدیریت کسب‌وکارها</h1>
+            <h1 className="text-[1.6rem] font-black text-strong">مدیریت کسب‌وکارها</h1>
             <p className="text-[0.85rem] text-muted">
               {faNum(items.length)} کسب‌وکار — وضعیت و تأیید.{" "}
-              <Link href="/admin/claims" className="inline-flex min-h-11 items-center text-mint hover:underline">
+              <Link href="/admin/claims" className="text-mint hover:underline">
                 درخواست‌های مالکیت
               </Link>
             </p>
@@ -99,11 +99,11 @@ export function BusinessesAdminClient({
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               placeholder="جستجو با نام، نشانی یا شهر…"
-              className="min-h-11 text-[16px] w-full rounded-lg border border-glass-border bg-paper px-4 py-2.5  text-strong outline-none transition-colors placeholder:text-muted focus:border-mint"
+              className="w-full rounded-xl border border-glass-border bg-white/[0.03] px-4 py-2.5 text-[15px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-mint"
             />
             <button
               type="submit"
-              className="min-h-11 min-w-11 shrink-0 rounded-lg border border-glass-border bg-paper px-5 py-2.5 text-[14px] font-bold text-strong transition-colors hover:bg-canvas"
+              className="shrink-0 rounded-xl border border-glass-border bg-white/5 px-5 py-2.5 text-[14px] font-bold text-white transition-colors hover:bg-white/10"
             >
               جستجو
             </button>
@@ -125,16 +125,16 @@ export function BusinessesAdminClient({
                   >
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Link href={href} className="inline-flex min-h-11 items-center font-bold text-strong hover:text-mint">
+                        <Link href={href} className="font-bold text-strong hover:text-mint">
                           {biz.name}
                         </Link>
                         {biz.verified && (
-                          <span className="rounded-lg border border-mint/40 px-2 py-0.5 text-[0.7rem] font-bold text-mint">
+                          <span className="rounded-full border border-mint/40 px-2 py-0.5 text-[0.7rem] font-bold text-mint">
                             تأییدشده
                           </span>
                         )}
                         {biz.claimed && (
-                          <span className="rounded-lg border border-lapis/40 px-2 py-0.5 text-[0.7rem] font-bold text-lapis">
+                          <span className="rounded-full border border-lapis/40 px-2 py-0.5 text-[0.7rem] font-bold text-lapis">
                             دارای مالک
                           </span>
                         )}
@@ -157,10 +157,10 @@ export function BusinessesAdminClient({
                           changeStatus(biz, e.target.value as AdminBusinessStatus)
                         }
                         aria-label="وضعیت کسب‌وکار"
-                        className="min-h-11 text-[16px] rounded-lg border border-glass-border bg-paper px-3 py-2  font-bold text-strong outline-none focus:border-mint disabled:opacity-50"
+                        className="rounded-lg border border-glass-border bg-white/5 px-3 py-2 text-[13px] font-bold text-white outline-none focus:border-mint disabled:opacity-50"
                       >
                         {STATUS_ORDER.map((s) => (
-                          <option key={s} value={s} className="bg-paper">
+                          <option key={s} value={s} className="bg-[#0a0e18]">
                             {STATUS_LABELS[s]}
                           </option>
                         ))}
@@ -169,9 +169,9 @@ export function BusinessesAdminClient({
                         type="button"
                         onClick={() => toggleVerified(biz)}
                         disabled={busy}
-                        className={`min-h-11 min-w-11 rounded-lg border px-3.5 py-2 text-[13px] font-bold transition-colors disabled:opacity-50 ${
+                        className={`rounded-lg border px-3.5 py-2 text-[13px] font-bold transition-colors disabled:opacity-50 ${
                           biz.verified
-                            ? "border-glass-border text-muted hover:bg-canvas"
+                            ? "border-glass-border text-muted hover:bg-white/10"
                             : "border-mint/40 text-mint hover:bg-mint/10"
                         }`}
                       >

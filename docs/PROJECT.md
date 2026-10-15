@@ -5,8 +5,9 @@ decisions behind it. It is maintained by the `project-loop` skill: every
 non-trivial task starts by reading this file and ends by updating it.
 
 Current product and delivery status: [product-status.md](product-status.md).
-The 2026-10-06 recovery is integrated and tested on `codex/product-recovery`,
-awaiting review. It is not a deployment or a remote migration apply.
+The recovery is integrated into `dev`; task 31 rebuilds its presentation from
+`main@86b70d4`. See `main-design-dev-verification.md` for checks and the
+remaining shared-database access dependency. Main promotion is not authorized.
 
 > If you are editing this file by hand, keep entries terse. One bullet, one
 > idea. Link to code with `path:line` so readers can jump in.
@@ -76,7 +77,7 @@ awaiting review. It is not a deployment or a remote migration apply.
 ### Cloudflare Workers deployment
 
 - The existing Worker is `nazarato`; its Git integration deploys `main`. OpenNext 1.20.7 adapts the regular Next build, and Wrangler 4.145.0 uploads `.open-next/worker.js` plus ASSETS. Run `npm run build:cloudflare`, then `npm run preview:cloudflare`; `npm run deploy:cloudflare` builds and publishes. Dashboard build command is `npm run build:cloudflare`, deploy command is `npx wrangler deploy`.
-- DEV review uses the separate `nazarato-staging` Worker and `staging.nazarato.ir`. `npm run deploy:staging` requires clean DEV source, builds with the staging flag, selects the explicit Wrangler environment and stamps the checkout SHA. It does not promote main. Staging blocks indexing and rejects the production Supabase target; database access stays unavailable until an isolated project and staging secrets are configured. See `docs/staging-release.md`.
+- DEV review uses the separate `nazarato-staging` Worker and `staging.nazarato.ir`. `npm run deploy:staging` requires clean DEV source, builds with the staging flag, selects the explicit Wrangler environment and stamps the checkout SHA. It does not promote main. Staging blocks indexing. On 2026-10-15 the founder explicitly authorized sharing the exact main Supabase project through `shared-main` mode. Runtime secrets/schema still need verification; automated mutation tests use loopback only. See `docs/staging-release.md`.
 - Dashboard variables are preserved with `keep_vars`. Supabase service-role and JWT signing key stay in Cloudflare Secrets. The alias to `cloudflare/runtime-env.mjs` prevents OpenNext from bundling `.env*` fallbacks into uploaded code; local Worker tests use ignored `.dev.vars`. See `docs/cloudflare-release.md` for settings and verification.
 - OTP start, resend, verification, and profile completion reject outside development. Per-challenge keyed digests, expiry/replay checks and Kavenegar integration code are recovered; public login stays closed pending real provider verification and launch approval. `GEMINI_API_KEY` is needed only for AI chat; missing configuration returns 503. Voice input is retired and `/api/transcribe` returns 410 without processing audio.
 
@@ -130,7 +131,7 @@ Set globally in `next.config.ts:31-40`:
   Prefer JSX utilities for app components.
 - Reused class bundles live in `components/ui/styles.ts` (`GLASS`, `CONTAINER`,
   `HIDE_SCROLL`, `BTN_PRIMARY`, `TAG_BADGE`); `<Container>` wraps the page gutter.
-  The recovered mobile design uses a warm light canvas and green actions.
+  The canonical design is main's Persian Aurora: navy `#0B0F14`, mint/lapis accents, glass cards, pill navigation and the original hero. The October light redesign is superseded; add features within main's existing visual system.
 - Animations: declare `@keyframes` in `globals.css`, apply via `animate-[name_…]`.
 - RTL is assumed; use `ms-*`/`me-*` (logical) over `ml-*`/`mr-*` when adding spacing.
 - Never interpolate Tailwind classes (`text-${tone}`) — the v4 scanner only
@@ -199,6 +200,7 @@ task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
 - **2026-10-14** — Prepared DEV staging with a separate Worker/domain, Persian review label, crawler exclusion, exact revision reporting and isolated-database enforcement; local checks passed, remote readiness is tracked separately. Files: `wrangler.jsonc`, `scripts/deploy-staging.mjs`, `lib/site.ts`, `lib/supabase/staging-isolation.ts`, `docs/staging-release.md`.
+- **2026-10-15** — Rebuilt DEV presentation from main@86b70d4 while preserving recovery history and product/backend behavior. Added Nabz entry/scenario links, restored glass mobile/desktop UI, retained review drafts/focus/receipts, attribution, private taste and owner action/correction/measurement flows. Added explicit shared-main DB mode per founder request; no remote migration applied (admin access Forbidden, keys deferred by user). Verified 378 unit tests, 19 isolated browser passes (no skips), tsc and lint; see `main-design-dev-verification.md` for release gates.
 - **2026-10-06** — Integrated the recovered Nabz/intelligence/owner/source workflows and existing mobile redesign on `codex/product-recovery`; completed real five-choice results/private save, owner measurement/cancellation, first-party origin/counters, shared public/privacy gates and visible licence credit. Added canonical migration/rollback reconciliation, current product/status docs and default isolated browser/SQL harnesses. Gates: 363 unit tests (71 files), TypeScript, full lint, 13 browser passes (two private-catalog skips), 22 fresh local migrations/four rollback checks and Next/OpenNext Cloudflare build. Review delivery only: no remote SQL, provider activation, merge/deployment or real pilot.
 - **2026-10-02** — Fixed the Worker-only DYNAMIC_SERVER_USAGE failure on unpublished company profiles by removing static parameter generation from session-aware company/shop pages. Files: `app/company/[slug]/page.tsx`, `app/shop/[handle]/page.tsx`, `scripts/check-public-profiles.mjs`. The runtime regression failed with company HTTP 500 before the fix; both profile types now render branded not-found/noindex. Gates: 127 unit tests, TypeScript, lint, Cloudflare build, runtime smoke test and browser verification.
 - **2026-10-02** — Added explicit local area selection, remembered preference and one-click cafe discovery to the existing design; public search/profile supply now requires approved sources and eligible status with no sample fallback. Removed voice input and retired audio submissions with 410. Files: `lib/local-area*.ts`, `lib/data/discovery.ts`, `components/search/LocalDiscovery.tsx`, `app/{page,search/page}.tsx`, `components/review/ReviewSheet.tsx`, `app/api/transcribe/route.ts`. Gates: 127 tests, TypeScript, full lint, Cloudflare build, mobile/desktop discovery and text-review browser checks. Same Supabase, repository blog and remaining service inputs documented in `docs/production-readiness.md`.

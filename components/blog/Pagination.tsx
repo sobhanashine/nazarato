@@ -7,8 +7,8 @@ import {
 } from "@/components/icons";
 
 const pageBtn =
-  "min-w-11 h-11 rounded-xl inline-flex items-center justify-center text-[0.95rem] tabular-nums " +
-  "border bg-glass transition-colors duration-150 " +
+  "w-10 h-10 rounded-full inline-flex items-center justify-center text-[0.95rem] tabular-nums " +
+  "border bg-glass backdrop-blur-[10px] transition-all duration-200 " +
   "[&_svg]:w-3.5 [&_svg]:h-3.5";
 
 const pageBtnIdle =
@@ -17,7 +17,8 @@ const pageBtnIdle =
 const pageBtnDisabled = "opacity-40 pointer-events-none cursor-not-allowed";
 
 const pageBtnActive =
-  "border-forest font-bold bg-forest text-white";
+  "border-transparent font-bold text-[#06231b] bg-[linear-gradient(135deg,#5BE6B2_0%,#3FBF92_100%)] " +
+  "shadow-[0_6px_18px_-4px_rgba(91,230,178,0.55),inset_0_1px_0_rgba(255,255,255,0.45)]";
 
 /**
  * URL-driven pagination. Generates Links keyed off `basePath` and the page
@@ -46,7 +47,7 @@ export function Pagination({
 
   return (
     <nav
-      className="flex flex-wrap items-center justify-center gap-2 mt-10 md:gap-3"
+      className="flex items-center justify-center gap-2 mt-10 md:gap-3"
       aria-label="ناوبری صفحات"
     >
       <NavLink

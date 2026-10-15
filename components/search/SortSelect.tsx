@@ -19,7 +19,7 @@ export function SortSelect({ query }: { query: SearchQuery }) {
   const router = useRouter();
 
   return (
-    <label className="inline-flex items-center gap-2 text-sm text-muted">
+    <label className="inline-flex items-center gap-2 text-[13px] text-muted">
       <span className="whitespace-nowrap">مرتب‌سازی:</span>
       <span className="relative">
         <select
@@ -27,10 +27,10 @@ export function SortSelect({ query }: { query: SearchQuery }) {
           onChange={(e) =>
             router.push(searchHref(query, { sort: e.target.value as SortKey }))
           }
-          className="min-h-11 appearance-none cursor-pointer rounded-lg border border-glass-border bg-paper py-2 ps-3 pe-8 text-base font-medium text-strong transition-colors hover:border-mint/40 focus-visible:border-mint"
+          className="appearance-none cursor-pointer rounded-xl border border-glass-border bg-[#10141f] py-2 ps-3 pe-8 text-base font-medium text-strong outline-none transition-colors hover:border-mint/40 focus-visible:border-mint/60"
         >
           {SORT_OPTIONS.map((o) => (
-            <option key={o.id} value={o.id}>
+            <option key={o.id} value={o.id} className="bg-[#10141f] text-strong">
               {o.label}
             </option>
           ))}

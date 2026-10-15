@@ -81,3 +81,14 @@ Sobhan is the only developer, designer, and PM on this project.
   from deployment and pilot validation; do not paste raw logs.
 - If Trello/Gmail is unavailable, finish safe local work, report the integration
   failure and leave the task in the appropriate non-Done state.
+
+## Authoritative visual baseline
+
+- The founder selected `main`'s Persian Aurora design on 2026-10-15: dark
+  navy, mint/lapis accents, glass cards, existing header/hero/navigation.
+- Build DEV features by extending that design. Preserve behavior and data
+  guards while integrating; do not replace the theme with the superseded
+  light redesign. Verify mobile and desktop against main before staging.
+- The founder authorized this project's staging to share main's Supabase
+  project explicitly. Follow `docs/staging-release.md`; automated test
+  mutations still use the isolated loopback fixture, never the shared DB.

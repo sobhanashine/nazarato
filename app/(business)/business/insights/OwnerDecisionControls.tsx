@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { BTN_PRIMARY } from "@/components/ui/styles";
 import {
   ASPECT_LABELS,
   ISSUE_CLUSTER_LABELS,
@@ -303,7 +304,7 @@ function ImprovementForm({
             <button
               type="submit"
               disabled={pending}
-              className="mt-4 min-h-11 w-full rounded-xl bg-forest px-4 text-sm font-black text-white transition hover:brightness-105 disabled:cursor-wait disabled:opacity-60"
+              className={`${BTN_PRIMARY} mt-4 min-h-11 w-full px-4 text-sm disabled:cursor-wait disabled:opacity-60`}
             >
               {pending ? "در حال ساخت چرخه…" : "ثبت اقدام و خط پایه"}
             </button>

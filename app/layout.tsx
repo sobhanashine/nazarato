@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { SmflowWidget } from "@/components/integrations/SmflowWidget";
 import { MobileTabBar } from "@/components/layout/MobileTabBar";
+import { Backdrop } from "@/components/layout/Backdrop";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { RegisterSW } from "@/components/pwa/RegisterSW";
 import { ToastProvider } from "@/components/providers/ToastProvider";
@@ -23,7 +24,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#F6F4ED",
+  themeColor: "#0B0F14",
 };
 
 export const metadata: Metadata = {
@@ -65,11 +66,12 @@ export default async function RootLayout({
       lang="fa"
       dir="rtl"
       data-scroll-behavior="smooth"
-      className={`${vazirmatn.variable} scroll-smooth scheme-light`}
+      className={`${vazirmatn.variable} scroll-smooth scheme-dark`}
     >
-      <body className="relative min-h-screen bg-canvas text-strong antialiased [text-rendering:optimizeLegibility] selection:bg-mint/15 selection:text-strong pb-[calc(72px+env(safe-area-inset-bottom))] md:pb-0">
+      <body className="relative min-h-screen bg-[#0B0F14] text-strong antialiased [text-rendering:optimizeLegibility] selection:bg-mint/25 selection:text-strong pb-[calc(88px+env(safe-area-inset-bottom))] md:pb-0">
+        <Backdrop />
         {IS_STAGING && (
-          <aside aria-label="محیط آزمایشی" className="border-b border-forest/20 bg-mint/20 px-4 py-2 text-center text-sm leading-6 text-forest">
+          <aside aria-label="محیط آزمایشی" className="relative z-[101] border-b border-mint/20 bg-[#10251f] px-4 py-2 text-center text-xs leading-6 text-mint">
             محیط آزمایشی نظراتو — برای بررسی پیش از انتشار
           </aside>
         )}

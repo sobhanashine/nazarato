@@ -83,7 +83,7 @@ export function UsersAdminClient({
       <Container>
         <main className="space-y-6 py-8">
           <header className="space-y-1">
-            <h1 className="text-[1.6rem] font-bold text-strong">مدیریت کاربران</h1>
+            <h1 className="text-[1.6rem] font-black text-strong">مدیریت کاربران</h1>
             <p className="text-[0.85rem] text-muted">
               {faNum(users.length)} کاربر — مسدودسازی و تغییر نقش
             </p>
@@ -95,11 +95,11 @@ export function UsersAdminClient({
               value={term}
               onChange={(e) => setTerm(e.target.value)}
               placeholder="جستجو با نام، نام‌کاربری یا شماره…"
-              className="min-h-11 text-[16px] w-full rounded-lg border border-glass-border bg-paper px-4 py-2.5  text-strong outline-none transition-colors placeholder:text-muted focus:border-mint"
+              className="w-full rounded-xl border border-glass-border bg-white/[0.03] px-4 py-2.5 text-[15px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-mint"
             />
             <button
               type="submit"
-              className="min-h-11 min-w-11 shrink-0 rounded-lg border border-glass-border bg-paper px-5 py-2.5 text-[14px] font-bold text-strong transition-colors hover:bg-canvas"
+              className="shrink-0 rounded-xl border border-glass-border bg-white/5 px-5 py-2.5 text-[14px] font-bold text-white transition-colors hover:bg-white/10"
             >
               جستجو
             </button>
@@ -124,12 +124,12 @@ export function UsersAdminClient({
                           {user.display_name}
                         </span>
                         {user.role === "admin" && (
-                          <span className="rounded-lg border border-lapis/40 px-2 py-0.5 text-[0.7rem] font-bold text-lapis">
+                          <span className="rounded-full border border-lapis/40 px-2 py-0.5 text-[0.7rem] font-bold text-lapis">
                             ادمین
                           </span>
                         )}
                         {user.is_banned && (
-                          <span className="rounded-lg border border-pomegr/45 px-2 py-0.5 text-[0.7rem] font-bold text-pomegr">
+                          <span className="rounded-full border border-pomegr/45 px-2 py-0.5 text-[0.7rem] font-bold text-pomegr">
                             مسدود
                           </span>
                         )}
@@ -147,7 +147,7 @@ export function UsersAdminClient({
                         type="button"
                         onClick={() => toggleRole(user)}
                         disabled={busy}
-                        className="min-h-11 min-w-11 rounded-lg border border-glass-border bg-paper px-3.5 py-2 text-[13px] font-bold text-strong transition-colors hover:bg-canvas disabled:opacity-50"
+                        className="rounded-lg border border-glass-border bg-white/5 px-3.5 py-2 text-[13px] font-bold text-white transition-colors hover:bg-white/10 disabled:opacity-50"
                       >
                         {user.role === "admin" ? "حذف ادمین" : "ارتقا به ادمین"}
                       </button>
@@ -155,7 +155,7 @@ export function UsersAdminClient({
                         type="button"
                         onClick={() => toggleBan(user)}
                         disabled={busy}
-                        className={`min-h-11 min-w-11 rounded-lg border px-3.5 py-2 text-[13px] font-bold transition-colors disabled:opacity-50 ${
+                        className={`rounded-lg border px-3.5 py-2 text-[13px] font-bold transition-colors disabled:opacity-50 ${
                           user.is_banned
                             ? "border-mint/40 text-mint hover:bg-mint/10"
                             : "border-pomegr/45 text-pomegr hover:bg-pomegr/10"

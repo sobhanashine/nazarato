@@ -28,6 +28,8 @@
       "vars": {
         "NEXT_PUBLIC_NAZARATO_ENV": "staging",
         "NAZARATO_DEPLOYMENT_ENV": "staging",
+        "NAZARATO_STAGING_DATABASE_MODE": "shared-main",
+        "NAZARATO_STAGING_SUPABASE_REF": "sdlmjdxrfyhuiegjysac",
         "NEXT_PUBLIC_SMFLOW_ENABLED": "false"
       }
     }

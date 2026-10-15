@@ -80,14 +80,14 @@ export default async function CategoryDetailPage({
       <Link
         href={categoryHref(slug, { sort, sub: subcategory, page: target })}
         aria-label={label}
-        className="h-11 min-w-11 px-2 rounded-full inline-flex items-center justify-center text-[0.95rem] tabular-nums border border-glass-border bg-glass text-strong hover:border-mint/50 hover:text-mint hover:bg-glass-hover transition-colors duration-200 [&_svg]:h-3.5 [&_svg]:w-3.5"
+        className="h-10 min-w-10 px-2 rounded-full inline-flex items-center justify-center text-[0.95rem] tabular-nums border border-glass-border bg-glass text-strong hover:border-mint/50 hover:text-mint hover:bg-glass-hover transition-colors duration-200 [&_svg]:h-3.5 [&_svg]:w-3.5"
       >
         {icon}
       </Link>
     ) : (
       <span
         aria-hidden
-        className="h-11 min-w-11 px-2 rounded-full inline-flex items-center justify-center text-[0.95rem] tabular-nums border border-glass-border bg-glass text-muted opacity-40 [&_svg]:h-3.5 [&_svg]:w-3.5"
+        className="h-10 min-w-10 px-2 rounded-full inline-flex items-center justify-center text-[0.95rem] tabular-nums border border-glass-border bg-glass text-muted opacity-40 [&_svg]:h-3.5 [&_svg]:w-3.5"
       >
         {icon}
       </span>
@@ -106,13 +106,13 @@ export default async function CategoryDetailPage({
         />
       </Container>
 
-      <main className="pb-20 lg:pb-32">
       <PageBanner
         title={cat.title}
         subtitle={cat.desc}
       />
 
       <Container>
+        <main className="pb-20 lg:pb-32">
           {/* Subcategory Filter Chips */}
           {subcategories.length > 1 && (
             <div className="mb-8 flex flex-wrap items-center gap-2 justify-center">
@@ -122,9 +122,9 @@ export default async function CategoryDetailPage({
                   <Link
                     key={subcat}
                     href={categoryHref(slug, { sort, sub: subcat, page: 1 })}
-                    className={`inline-flex min-h-11 items-center px-4 py-2 rounded-xl text-sm font-medium border transition-all duration-200 ${
+                    className={`px-4 py-2 rounded-xl text-[14px] font-medium border transition-all duration-200 ${
                       isActive
-                        ? "border-forest bg-forest text-white font-semibold"
+                        ? "border-mint bg-mint/10 text-mint font-semibold shadow-[0_0_12px_rgba(91,230,178,0.15)]"
                         : "border-glass-border bg-glass text-muted hover:text-strong hover:border-glass-border-hi"
                     }`}
                   >
@@ -161,7 +161,7 @@ export default async function CategoryDetailPage({
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <nav className="mt-10 flex flex-wrap items-center justify-center gap-2" aria-label="صفحه‌بندی نتایج">
+                <nav className="mt-10 flex items-center justify-center gap-2" aria-label="صفحه‌بندی نتایج">
                   {paginationStep(page - 1, "صفحه قبلی", <ChevronRightIcon />, page > 1)}
                   {pages.map((p) =>
                     p === page ? (
@@ -169,7 +169,7 @@ export default async function CategoryDetailPage({
                         key={p}
                         aria-current="page"
                         aria-label={`صفحه ${fa(p)}`}
-                        className="h-11 min-w-11 px-2 rounded-full inline-flex items-center justify-center text-[0.95rem] tabular-nums font-bold text-white bg-forest"
+                        className="h-10 min-w-10 px-2 rounded-full inline-flex items-center justify-center text-[0.95rem] tabular-nums font-bold text-[#06231b] bg-[linear-gradient(135deg,#5BE6B2_0%,#3FBF92_100%)] shadow-[0_6px_18px_-4px_rgba(91,230,178,0.55),inset_0_1px_0_rgba(255,255,255,0.45)]"
                       >
                         {fa(p)}
                       </span>
@@ -178,7 +178,7 @@ export default async function CategoryDetailPage({
                         key={p}
                         href={categoryHref(slug, { sort, sub: subcategory, page: p })}
                         aria-label={`صفحه ${fa(p)}`}
-                        className="h-11 min-w-11 px-2 rounded-full inline-flex items-center justify-center text-[0.95rem] tabular-nums border border-glass-border bg-glass text-strong hover:border-mint/50 hover:text-mint hover:bg-glass-hover transition-colors duration-200"
+                        className="h-10 min-w-10 px-2 rounded-full inline-flex items-center justify-center text-[0.95rem] tabular-nums border border-glass-border bg-glass text-strong hover:border-mint/50 hover:text-mint hover:bg-glass-hover transition-colors duration-200"
                       >
                         {fa(p)}
                       </Link>
@@ -189,8 +189,8 @@ export default async function CategoryDetailPage({
               )}
             </>
           ) : (
-            <div className={`${GLASS} flex flex-col items-center justify-center px-6 py-16 text-center max-w-xl mx-auto`}>
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-glass-border bg-glass-strong text-mint [&_svg]:h-7 [&_svg]:w-7">
+            <div className={`${GLASS} flex flex-col items-center justify-center px-6 py-16 text-center max-w-xl mx-auto rounded-3xl border border-glass-border-hi shadow-xl`}>
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-glass-border bg-glass-strong text-mint [&_svg]:h-7 [&_svg]:w-7 animate-pulse">
                 <SparklesIcon />
               </div>
               <h3 className="mb-3 text-[18px] font-bold text-strong">هنوز کسب‌وکاری در این دسته‌بندی معرفی نشده است</h3>
@@ -198,16 +198,16 @@ export default async function CategoryDetailPage({
                 شما می‌توانید اولین نفری باشید که کسب‌وکار یا فروشگاهی را در دسته‌بندی «{cat.title}» معرفی می‌کند و درباره آن نظر می‌نویسد.
               </p>
               <Link
-                href="/contact#contact-form"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-white bg-forest min-h-11 transition-colors duration-150 hover:bg-[#174539]"
+                href="/write-review"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-[#06231b] bg-[linear-gradient(135deg,#5BE6B2_0%,#3FBF92_100%)] hover:shadow-[0_0_20px_rgba(91,230,178,0.4)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 <SparklesIcon className="w-4 h-4 shrink-0" />
                 <span>اولین کسب‌وکار را معرفی کن</span>
               </Link>
             </div>
           )}
+        </main>
       </Container>
-      </main>
       <Footer />
     </>
   );

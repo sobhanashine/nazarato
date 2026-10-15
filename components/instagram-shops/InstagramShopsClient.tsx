@@ -22,11 +22,11 @@ export function InstagramShopsSortSelect({
           onChange={(e) =>
             router.push(instagramShopsHref({ niche, sort: e.target.value, page: 1 }))
           }
-          className="min-h-11 appearance-none cursor-pointer rounded-xl border border-glass-border bg-paper py-2 ps-3 pe-8 text-base font-medium text-strong transition-colors hover:border-mint/40 focus-visible:border-mint"
+          className="appearance-none cursor-pointer rounded-xl border border-glass-border bg-[#10141f] py-2 ps-3 pe-8 text-[13px] font-medium text-strong outline-none transition-colors hover:border-mint/40 focus-visible:border-mint/60"
         >
-          <option value="rating">بیشترین امتیاز</option>
-          <option value="reviews">بیشترین نظر</option>
-          <option value="newest">جدیدترین</option>
+          <option value="rating" className="bg-[#10141f] text-strong">بیشترین امتیاز</option>
+          <option value="reviews" className="bg-[#10141f] text-strong">بیشترین نظر</option>
+          <option value="newest" className="bg-[#10141f] text-strong">جدیدترین</option>
         </select>
         <ChevronLeftIcon
           aria-hidden

@@ -1,20 +1,24 @@
 "use client";
 
-import Link from "next/link";
+/**
+ * The homepage hero search bar — a pill-shaped `<form method="GET">` that
+ * posts to `/search`, now with the same live company typeahead as the
+ * `/search` page's `SearchBox`. Suggestions appear from the 2nd character;
+ * pressing Enter (or the icon button) runs the full search.
+ */
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SearchIcon } from "@/components/icons";
-import { suggestBusinesses } from "@/lib/search";
-import type { Business } from "@/lib/data/businesses";
+import { SearchSuggestions } from "@/components/search/SearchSuggestions";
 import type { SearchArea } from "@/lib/local-area";
+import { suggestBusinesses } from "@/lib/search";
 
-export function HeroSearch({ businesses, area }: { businesses: Business[]; area: SearchArea }) {
+export function HeroSearch({ businesses, area }: { businesses?: import("@/lib/data/businesses").Business[]; area: SearchArea }) {
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  const suggestionPointer = useRef(false);
-  const suggestions = useMemo(() => suggestBusinesses(value, 6, businesses), [value, businesses]);
-  const showDropdown = open && value.trim().length >= 2 && suggestions.length > 0;
 
+  const suggestionPointer = useRef(false);
   useEffect(() => {
     if (!open) return;
     const closeOutside = (event: PointerEvent) => {
@@ -24,37 +28,63 @@ export function HeroSearch({ businesses, area }: { businesses: Business[]; area:
       }
     };
     document.addEventListener("pointerdown", closeOutside);
-    return () => {
-      suggestionPointer.current = false;
-      document.removeEventListener("pointerdown", closeOutside);
-    };
+    return () => { suggestionPointer.current = false; document.removeEventListener("pointerdown", closeOutside); };
   }, [open]);
 
+  const suggestions = useMemo(() => suggestBusinesses(value, 6, businesses), [value, businesses]);
+  const showDropdown = open && value.trim().length >= 2;
+
   return (
-    <form ref={formRef} action="/search" method="GET" role="search" className="relative w-full"
-      onBlur={event => {
-        if (!suggestionPointer.current && !formRef.current?.contains(event.relatedTarget)) setOpen(false);
-      }}>
-      <label htmlFor="home-place-search" className="mb-2 block text-[13px] font-semibold text-strong">نام کافه یا رستوران</label>
+    <form
+      ref={formRef}
+      action="/search"
+      method="GET"
+      role="search"
+      className="relative w-full max-w-[620px] h-[60px] mt-2 sm:h-16"
+      onBlur={(e) => {
+        // Stay open while focus moves into the dropdown or the submit button.
+        if (!suggestionPointer.current && !formRef.current?.contains(e.relatedTarget)) setOpen(false);
+      }}
+    >
       <input type="hidden" name="area" value={area} />
-      <div className="flex min-h-14 rounded-lg border border-glass-border-hi bg-paper focus-within:border-mint focus-within:ring-2 focus-within:ring-mint/15">
-        <input id="home-place-search" type="search" name="q" value={value} autoComplete="off"
-          onChange={event => { setValue(event.target.value); setOpen(true); }} onFocus={() => setOpen(true)}
-          onKeyDown={event => { if (event.key === "Escape") setOpen(false); }}
-          placeholder="نام مکان را بنویس" className="min-w-0 flex-1 bg-transparent px-4 py-3 text-[16px] text-strong outline-none placeholder:text-muted" />
-        <button type="submit" aria-label="جستجوی مکان" className="m-1 grid min-h-11 w-12 shrink-0 place-items-center rounded-md bg-forest text-white hover:opacity-90 [&_svg]:h-5 [&_svg]:w-5"><SearchIcon /></button>
-      </div>
-      {showDropdown && <ul aria-label="مکان‌های مطابق جستجو"
-        onPointerDown={() => { suggestionPointer.current = true; }}
-        onClick={() => { suggestionPointer.current = false; setOpen(false); }}
-        onPointerCancel={() => { suggestionPointer.current = false; setOpen(false); }}
-        className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-30 divide-y divide-glass-border rounded-lg border border-glass-border bg-paper">
-        {suggestions.map(suggestion => <li key={suggestion.href}><Link href={suggestion.href} className="block min-h-12 px-4 py-3 hover:bg-canvas">
-          <span className="block text-[15px] font-semibold text-strong">{suggestion.name}</span>
-          <span className="mt-1 block text-[12px] text-muted">{suggestion.meta}</span>
-        </Link></li>)}
-      </ul>}
-      <span aria-live="polite" className="sr-only">{showDropdown ? `${suggestions.length.toLocaleString("fa-IR")} مکان مطابق جستجو` : ""}</span>
+      {/* Soft gradient glow behind the input */}
+      <div
+        aria-hidden
+        className="absolute inset-[-3px] rounded-full blur-[16px] opacity-75 z-[-1] bg-[linear-gradient(135deg,rgba(91,230,178,0.45),rgba(123,137,255,0.45),rgba(255,107,149,0.30))]"
+      />
+      <input
+        type="search"
+        name="q"
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setOpen(false);
+        }}
+        autoComplete="off"
+        placeholder="کسب و کار، فروشگاه یا دسته‌بندی..."
+        aria-label="جستجو"
+        className="w-full h-full pr-7 pl-[3.25rem] bg-[rgba(13,17,28,0.65)] backdrop-blur-[18px] backdrop-saturate-[180%] border border-glass-border-hi rounded-full text-[16px] text-strong outline-none transition-[box-shadow,border-color] duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] placeholder:text-[#6b7385] focus:border-mint/55 focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_0_4px_rgba(91,230,178,0.18),0_12px_40px_rgba(0,0,0,0.45)]"
+      />
+      <button
+        type="submit"
+        aria-label="جستجو"
+        className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center text-mint transition-transform duration-200 hover:scale-110"
+      >
+        <SearchIcon />
+      </button>
+      {showDropdown && <div onPointerDownCapture={() => { suggestionPointer.current = true; }} onClickCapture={() => { suggestionPointer.current = false; }} onPointerCancel={() => { suggestionPointer.current = false; setOpen(false); }}><SearchSuggestions suggestions={suggestions} /></div>}
+
+      <span aria-live="polite" className="sr-only">
+        {showDropdown
+          ? suggestions.length > 0
+            ? `${suggestions.length.toLocaleString("fa-IR")} پیشنهاد`
+            : "پیشنهادی نیست"
+          : ""}
+      </span>
     </form>
   );
 }

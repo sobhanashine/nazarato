@@ -1,7 +1,11 @@
 # Nazarato: active product and delivery status
 
-Updated: 2026-10-06. Recovery branch: `codex/product-recovery`.
-Tracking: [recovery task 29](https://trello.com/c/3pXvWcUi).
+Updated: 2026-10-15. Integration branch: `codex/main-design-dev`, targeting `dev`.
+Tracking: [task 31](https://trello.com/c/NiG1G2HJ); prior [recovery task 29](https://trello.com/c/3pXvWcUi).
+
+The founder selected **main's original dark/glass design** and authorized staging
+to share this project's main Supabase database. The light redesign is superseded.
+Read `main-design-dev-verification.md` for current delivery and database limits.
 
 ## Active product contract
 
@@ -40,7 +44,7 @@ until its deliverable is accepted. Do not infer deployment from a passing build.
 | Capability | Recovery delivery | Public/pilot gate |
 |---|---|---|
 | Discovery and approved-source profiles | Existing `main` behavior retained; shared read/write eligibility restored | Approved factual supply; no source approval is granted by this PR |
-| Mobile RTL design | Existing isolated redesign preserved and integrated on this branch | Review, merge and provider verification |
+| Mobile RTL design | Main Persian Aurora restored; recovered mobile behavior retained | Review, merge and provider verification |
 | Five contextual choices → result (`/nabz`) | Real UUIDs, server-stored votes, versioned signals and cited result implemented | Four eligible businesses; adequate current first-party evidence |
 | Private account save/restore | Server-scoped real model, service-only transactional save implemented | Existing signed account; new public login remains closed |
 | Persian customer voice | Deterministic versioned baseline and persistence recovered | Synthetic evaluation is not evidence of real-language/pilot accuracy |
@@ -50,8 +54,9 @@ until its deliverable is accepted. Do not infer deployment from a passing build.
 | Community trends, broader social/gamification and monetization | Roadmap/backlog only | Separate product decisions; not activated by recovery |
 
 The dated [recovery verification record](product-recovery-verification.md)
-records the checks. Deployment, a remote migration apply, real SMS delivery,
-publication approval and owner pilot validation were not performed in this task.
+records the checks. Task 29 did not deploy or apply remote migrations. Task 30 deployed DEV staging;
+task 31 restores main design. Remote migrations, real SMS delivery, publication
+approval and owner pilot validation remain separate gates.
 
 ## Audit closure map
 
@@ -62,7 +67,7 @@ publication approval and owner pilot validation were not performed in this task.
 | F3: schema cannot be rebuilt from main | Restore six September migrations; add four bounded recovery migrations and rollback files | Fresh local PostgreSQL verification; [reconciliation plan](migration-reconciliation.md) |
 | F4: real choices stop before payoff | `/api/nabz/result` reconstructs only the caller's accepted votes; `/nabz` displays traceable current evidence | Real-result engine/API tests and isolated account restore journey |
 | F5: owner observation has no writer | Authorized measurement/cancellation; stable denominator, windows and model/metric versions; sparse samples stay active | Follow-up unit/actions tests and isolated owner UI |
-| F6: redesign remains uncommitted | Reuse the existing lighter mobile design; mount the real Nabz journey in its navigation | Mobile width/input checks and inspected screenshots |
+| F6: redesign remains uncommitted | Superseded by task 31: main dark/glass design with Nabz and recovered workflows | Mobile width/input checks and inspected screenshots |
 | F7: conflicting status/specs | Dated supersession notes and this stage vocabulary | README, PROJECT, Pages Master, data model and agent instructions |
 | F8: tests miss the connected journey | Default Playwright run uses a loopback-only substitute with dummy credentials; separate fresh SQL harness | Isolated browser happy/failure cases; legacy remote-write tests require explicit opt-in |
 

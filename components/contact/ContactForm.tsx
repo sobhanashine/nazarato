@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import { submitContact } from "@/app/contact/actions";
+import { BTN_PRIMARY } from "@/components/ui/styles";
 import { SendIcon } from "@/components/icons";
 
 type Field = "name" | "email" | "subject" | "message";
@@ -158,7 +159,7 @@ export function ContactForm() {
   const messageLeft = MESSAGE_MAX - values.message.length;
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-5">
+    <form id="contact-form" ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-5">
       <div className="grid gap-5 sm:grid-cols-2">
         {/* Name */}
         <div className="flex flex-col gap-2">
@@ -272,7 +273,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="flex min-h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-forest px-8 py-3 text-base font-bold text-white transition-colors hover:bg-[#174539] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+        className={`${BTN_PRIMARY} min-h-12 w-full px-8 py-3 text-base disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto`}
       >
         {status === "submitting" ? (
           <span className="animate-pulse">در حال ارسال...</span>

@@ -1,13 +1,21 @@
-export default function Loading() {
+const block = "rounded-glass border border-glass-border bg-glass";
+
+/** Skeleton for the `/profile` dashboard — the `(user)` layout chrome stays. */
+export default function ProfileLoading() {
   return (
-    <div aria-busy="true">
-      <p role="status" className="text-[14px] leading-7 text-muted">در حال دریافت حساب…</p>
-      <div aria-hidden className="mt-5 divide-y divide-glass-border border-y border-glass-border">
-        {[0, 1, 2].map(row => <div key={row} className="flex min-h-24 flex-col justify-center gap-3 py-5">
-          <div className="h-5 w-2/3 max-w-xs rounded-sm bg-line/65" />
-          <div className="h-3 w-1/3 max-w-40 rounded-sm bg-line/65" />
-        </div>)}
+    <div className="flex animate-pulse flex-col gap-5" aria-hidden>
+      <div className={`${block} h-[108px] w-full sm:h-[124px]`} />
+      <div className="grid grid-cols-3 gap-3">
+        <div className={`${block} h-[92px]`} />
+        <div className={`${block} h-[92px]`} />
+        <div className={`${block} h-[92px]`} />
       </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className={`${block} h-[88px]`} />
+        <div className={`${block} h-[88px]`} />
+        <div className={`${block} h-[88px]`} />
+      </div>
+      <span className="sr-only">در حال بارگذاری…</span>
     </div>
   );
 }

@@ -24,7 +24,11 @@ export function supabaseAdmin(): SupabaseClient {
   }
 
   if (IS_STAGING || process.env.NAZARATO_DEPLOYMENT_ENV === "staging") {
-    assertStagingDatabaseIsolation(url, process.env.NAZARATO_STAGING_SUPABASE_REF);
+    assertStagingDatabaseIsolation(
+      url,
+      process.env.NAZARATO_STAGING_SUPABASE_REF,
+      process.env.NAZARATO_STAGING_DATABASE_MODE,
+    );
   }
   if (client) return client;
   client = createClient(url, serviceKey, {

@@ -1,3 +1,7 @@
+> Historical task 30 spec. The founder explicitly superseded its isolated-only
+> database policy and its previous DEV design on 2026-10-15. Follow
+> `main-design-dev-spec.md` and `staging-release.md` for the current contract.
+
 # Spec: review the DEV release on staging
 
 Authorized 2026-10-14: deploy the latest changes from this chat to

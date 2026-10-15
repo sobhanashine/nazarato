@@ -220,7 +220,7 @@ export function ReviewSheet({
         if (confirmClose) setConfirmClose(false);
         else requestClose();
       }}
-      className="fixed inset-x-0 top-0 m-0 h-dvh max-h-none w-full max-w-none overflow-hidden border-0 bg-transparent p-0 text-strong backdrop:bg-[#1F3029]/45"
+      className="fixed inset-x-0 top-0 m-0 h-dvh max-h-none w-full max-w-none overflow-hidden border-0 bg-transparent p-0 text-strong backdrop:bg-black/70 backdrop:backdrop-blur-sm"
       style={viewport ? { height: viewport.height, top: viewport.top } : undefined}
     >
       <div
@@ -229,7 +229,7 @@ export function ReviewSheet({
           if (event.target === event.currentTarget) requestClose();
         }}
       >
-        <div className="flex max-h-full min-h-0 w-full flex-col overflow-hidden rounded-2xl border border-glass-border bg-glass shadow-xl sm:max-w-[480px]">
+        <div className="flex max-h-full min-h-0 w-full flex-col overflow-hidden rounded-[28px] border border-glass-border-hi bg-[#101623] shadow-[var(--shadow-lg)] sm:max-w-[520px]">
           <div className="flex shrink-0 items-start gap-3 border-b border-glass-border px-4 py-3">
             {canGoBack && !confirmClose ? (
               <button

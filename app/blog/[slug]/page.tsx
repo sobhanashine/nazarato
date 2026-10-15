@@ -86,17 +86,15 @@ export default async function BlogPostPage({
         <Breadcrumb
           items={[
             { label: "خانه", href: "/" },
-            { label: "راهنماهای نظراتو", href: "/blog" },
+            { label: "بلاگ", href: "/blog" },
             { label: post.title },
           ]}
         />
       </Container>
-      <main>
-        <PostContent post={post} />
-        <Container>
-          <RelatedPosts posts={related} />
-        </Container>
-      </main>
+      <PostContent post={post} />
+      <Container>
+        <RelatedPosts posts={related} />
+      </Container>
       <Footer />
     </>
   );

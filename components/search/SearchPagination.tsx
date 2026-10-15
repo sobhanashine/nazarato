@@ -9,12 +9,14 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@/components/icons";
 import { searchHref, type SearchQuery } from "@/lib/search";
 
 const cell =
-  "h-11 min-w-11 px-2 rounded-lg inline-flex items-center justify-center " +
+  "h-10 min-w-10 px-2 rounded-full inline-flex items-center justify-center " +
   "text-[0.95rem] tabular-nums border transition-colors duration-200 [&_svg]:h-3.5 [&_svg]:w-3.5";
 const idle =
   "border-glass-border bg-glass text-strong hover:border-mint/50 hover:text-mint hover:bg-glass-hover";
 const current =
-  "border-forest bg-forest font-bold text-white";
+  "border-transparent font-bold text-[#06231b] " +
+  "bg-[linear-gradient(135deg,#5BE6B2_0%,#3FBF92_100%)] " +
+  "shadow-[0_6px_18px_-4px_rgba(91,230,178,0.55),inset_0_1px_0_rgba(255,255,255,0.45)]";
 const disabled = "border-glass-border bg-glass text-muted opacity-40";
 
 export function SearchPagination({
@@ -48,7 +50,7 @@ export function SearchPagination({
 
   return (
     <nav
-      className="mt-8 flex flex-wrap items-center justify-center gap-2"
+      className="mt-10 flex items-center justify-center gap-2"
       aria-label="صفحه‌بندی نتایج"
     >
       {step(page - 1, "صفحه قبلی", <ChevronRightIcon />, page > 1)}

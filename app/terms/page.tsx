@@ -33,25 +33,25 @@ export default function TermsPage() {
 
         <main className="pb-24">
           {/* ── Hero Section ── */}
-          <section className="relative pt-6 pb-8 sm:pt-9 lg:pb-12">
-            <div className="mb-6 inline-flex items-center gap-2.5 rounded-lg border border-glass-border bg-paper px-3 py-2">
+          <section className="relative pt-10 pb-12 text-center lg:pt-16">
+            <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-mint/25 bg-mint/[0.07] px-4 py-1.5 backdrop-blur-md">
               <ScaleIcon className="w-5 h-5 text-mint" />
               <span className="text-[13px] font-bold text-mint">قوانین و تعهدات</span>
             </div>
-            <h1 className="max-w-[24ch] text-[2rem] font-extrabold leading-[1.5] text-strong sm:text-[2.5rem]">
+            <h1 className="text-[2.25rem] font-black leading-[1.2] tracking-tight text-white sm:text-[3rem]">
               قوانین و مقررات استفاده
             </h1>
-            <p className="mt-4 max-w-[60ch] text-[15px] leading-[1.95] text-muted sm:text-[17px]">
+            <p className="mx-auto mt-4 max-w-[50ch] text-[15px] leading-[1.95] text-muted sm:text-[17px]">
               لطفاً پیش از ثبت‌نام و استفاده از نظراتو، قوانین و ضوابط زیر را به دقت مطالعه فرمایید. آخرین به‌روزرسانی: خرداد ۱۴۰۵
             </p>
           </section>
 
           {/* ── Page Layout: Sidebar + Content ── */}
           <div className="grid gap-8 lg:grid-cols-[280px_1fr] items-start">
-            
+
             {/* Sidebar Navigation */}
-            <aside className={`p-5 lg:sticky lg:top-24 lg:p-6 ${GLASS}`}>
-              <h4 className="mb-4 text-[15px] font-black text-strong border-b border-glass-border pb-3">
+            <aside className={`hidden lg:block sticky top-24 p-6 ${GLASS}`}>
+              <h4 className="mb-4 text-[15px] font-black text-white border-b border-glass-border pb-3">
                 فهرست مطالب
               </h4>
               <nav className="flex flex-col gap-1.5">
@@ -59,7 +59,7 @@ export default function TermsPage() {
                   <a
                     key={s.id}
                     href={`#${s.id}`}
-                    className="inline-flex min-h-11 items-center text-sm font-medium text-muted hover:text-mint transition-colors duration-150 py-2"
+                    className="text-[13px] font-medium text-muted hover:text-mint transition-colors duration-200 py-1"
                   >
                     {s.title}
                   </a>
@@ -68,11 +68,11 @@ export default function TermsPage() {
             </aside>
 
             {/* Main Content Card */}
-            <article className={`p-5 sm:p-8 ${GLASS} space-y-10 text-base leading-8 text-muted font-normal`}>
-              
+            <article className={`p-6 sm:p-10 ${GLASS} space-y-10 text-[15px] leading-[2.1] text-muted-more font-medium`}>
+
               {/* Section 1 */}
               <section id="intro" className="scroll-mt-24 space-y-4">
-                <h2 className="text-xl font-bold leading-8 text-strong flex items-center gap-2 border-b border-glass-border pb-2">
+                <h2 className="text-[20px] font-black text-white flex items-center gap-2 border-b border-glass-border pb-2">
                   <span className="text-mint">#</span> ۱. مقدمه و پذیرش قوانین
                 </h2>
                 <p>
@@ -85,7 +85,7 @@ export default function TermsPage() {
 
               {/* Section 2 */}
               <section id="account" className="scroll-mt-24 space-y-4">
-                <h2 className="text-xl font-bold leading-8 text-strong flex items-center gap-2 border-b border-glass-border pb-2">
+                <h2 className="text-[20px] font-black text-white flex items-center gap-2 border-b border-glass-border pb-2">
                   <span className="text-mint">#</span> ۲. شرایط عضویت و حساب کاربری
                 </h2>
                 <p>
@@ -100,7 +100,7 @@ export default function TermsPage() {
 
               {/* Section 3 */}
               <section id="reviews" className="scroll-mt-24 space-y-4">
-                <h2 className="text-xl font-bold leading-8 text-strong flex items-center gap-2 border-b border-glass-border pb-2">
+                <h2 className="text-[20px] font-black text-white flex items-center gap-2 border-b border-glass-border pb-2">
                   <span className="text-mint">#</span> ۳. ضوابط و قوانین ثبت نظر
                 </h2>
                 <p>
@@ -116,7 +116,7 @@ export default function TermsPage() {
 
               {/* Section 4 */}
               <section id="proof" className="scroll-mt-24 space-y-4">
-                <h2 className="text-xl font-bold leading-8 text-strong flex items-center gap-2 border-b border-glass-border pb-2">
+                <h2 className="text-[20px] font-black text-white flex items-center gap-2 border-b border-glass-border pb-2">
                   <span className="text-mint">#</span> ۴. اسناد اثبات خرید (نقد تأییدشده)
                 </h2>
                 <p>
@@ -131,7 +131,7 @@ export default function TermsPage() {
 
               {/* Section 5 */}
               <section id="reply" className="scroll-mt-24 space-y-4">
-                <h2 className="text-xl font-bold leading-8 text-strong flex items-center gap-2 border-b border-glass-border pb-2">
+                <h2 className="text-[20px] font-black text-white flex items-center gap-2 border-b border-glass-border pb-2">
                   <span className="text-mint">#</span> ۵. حق پاسخ‌گویی کسب‌وکارها
                 </h2>
                 <p>
@@ -146,7 +146,7 @@ export default function TermsPage() {
 
               {/* Section 6 */}
               <section id="copyright" className="scroll-mt-24 space-y-4">
-                <h2 className="text-xl font-bold leading-8 text-strong flex items-center gap-2 border-b border-glass-border pb-2">
+                <h2 className="text-[20px] font-black text-white flex items-center gap-2 border-b border-glass-border pb-2">
                   <span className="text-mint">#</span> ۶. مالکیت فکری و معنوی
                 </h2>
                 <p>
@@ -159,7 +159,7 @@ export default function TermsPage() {
 
               {/* Section 7 */}
               <section id="liability" className="scroll-mt-24 space-y-4">
-                <h2 className="text-xl font-bold leading-8 text-strong flex items-center gap-2 border-b border-glass-border pb-2">
+                <h2 className="text-[20px] font-black text-white flex items-center gap-2 border-b border-glass-border pb-2">
                   <span className="text-mint">#</span> ۷. سلب مسئولیت و قوانین حاکم
                 </h2>
                 <p>

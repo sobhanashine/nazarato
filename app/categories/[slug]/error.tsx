@@ -14,7 +14,7 @@ export default function CategoryError({
       error={error}
       reset={reset}
       logLabel="categories/[slug]"
-      message="مکان‌های این دسته دریافت نشد. دوباره تلاش کن."
+      message="نتونستیم این دسته‌بندی رو بارگذاری کنیم. دوباره تلاش کن."
     />
   );
 }

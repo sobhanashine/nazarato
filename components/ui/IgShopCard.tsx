@@ -1,8 +1,14 @@
+/**
+ * An Instagram shop as a horizontal glass card with the IG gradient ring.
+ * Lifted from the inline `<Link>` in `InstagramShops.tsx` — see pages-master.md §5.2.
+ * Used on `/instagram-shops`, `/shop/[handle]`, `/saved`.
+ */
+
 import Link from "next/link";
-import { ShieldCheckIcon, StarIcon } from "@/components/icons";
-import { BookmarkButton } from "@/components/ui/BookmarkButton";
-import { IgAvatar } from "@/components/ui/IgAvatar";
+import { StarIcon } from "@/components/icons";
+import { GLASS } from "@/components/ui/styles";
 import type { InstagramShop } from "@/lib/data/instagram-shops";
+import { BookmarkButton } from "@/components/ui/BookmarkButton";
 
 type IgShopCardProps = {
   shop: InstagramShop;
@@ -10,28 +16,52 @@ type IgShopCardProps = {
 };
 
 export function IgShopCard({ shop, isBookmarked }: IgShopCardProps) {
-  const hasReviews = shop.score !== "—" && shop.reviews !== "۰" && shop.reviews !== "0";
+  const s = shop;
   return (
-    <article className="flex h-full min-w-0 items-start gap-2 rounded-xl border border-glass-border bg-paper transition-colors hover:border-glass-border-hi">
-      <Link href={shop.href} className="flex min-w-0 flex-1 items-start gap-3 p-4 sm:p-5">
-        <IgAvatar initial={shop.initial} color={shop.color} />
-        <span className="min-w-0 flex-1">
-          <span className="flex items-start gap-2 text-base font-bold leading-7 text-strong">
-            <span className="break-words">{shop.name}</span>
-            {shop.verified && <span role="img" className="mt-1 shrink-0 text-forest" aria-label="فروشگاه تأیید شده"><ShieldCheckIcon className="h-4 w-4" aria-hidden /></span>}
-          </span>
-          <span className="mt-1 block break-all text-right text-sm leading-6 text-muted" dir="ltr">{shop.handle}</span>
-          {hasReviews ? (
-            <span className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-strong">
-              <StarIcon className="h-4 w-4 fill-saffron text-saffron" aria-hidden />
-              <span className="font-bold tabular-nums">{shop.score}</span>
-              <span className="text-muted">از {shop.reviews} تجربه</span>
-            </span>
-          ) : <span className="mt-2 block text-[13px] leading-6 text-muted">هنوز تجربه‌ای منتشر نشده</span>}
+    <Link
+      href={s.href}
+      className={`${GLASS} flex items-center gap-4 px-[1.35rem] py-5 cursor-pointer transition-[transform,background,border-color] duration-300 ease-out hover:bg-glass-hover hover:border-glass-border-hi hover:-translate-y-[2px] relative group`}
+    >
+      <div className="w-[60px] h-[60px] rounded-full p-[3px] [background:conic-gradient(from_45deg,#feda75_0%,#fa7e1e_20%,#d62976_45%,#962fbf_70%,#4f5bd5_90%,#feda75_100%)] flex items-center justify-center shrink-0 shadow-[0_4px_14px_rgba(214,41,118,0.35)]">
+        <div
+          className="w-full h-full rounded-full border-[2.5px] border-[#0a0e18] flex items-center justify-center text-white text-[1.2rem] font-bold leading-none"
+          style={{ background: s.color }}
+        >
+          {s.initial}
+        </div>
+      </div>
+      <div className="min-w-0 flex flex-col gap-[3px] flex-1">
+        <span className="inline-flex items-center gap-1.5 text-[0.95rem] font-semibold text-strong whitespace-nowrap overflow-hidden text-ellipsis">
+          {s.name}
+          {s.verified && <span
+            className="inline-flex w-[14px] h-[14px] text-lapis [filter:drop-shadow(0_0_6px_rgba(123,137,255,0.55))] shrink-0 [&_svg]:w-[14px] [&_svg]:h-[14px]"
+            aria-label="فروشگاه تایید شده"
+            title="تایید شده"
+          >
+            <svg viewBox="0 0 14 14" aria-hidden>
+              <path d="M7 .8l1.6 1.4 2.1-.2.6 2 1.9 1-.8 2 .8 2-1.9 1-.6 2-2.1-.2L7 13.2 5.4 11.8l-2.1.2-.6-2-1.9-1 .8-2-.8-2 1.9-1 .6-2 2.1.2z" fill="currentColor" />
+              <path d="M4.4 7.1l1.9 1.8 3.3-3.6" fill="none" stroke="#06121f" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>}
         </span>
-        <span aria-hidden className="mt-1 text-lg text-forest">←</span>
-      </Link>
-      {typeof isBookmarked === "boolean" && <BookmarkButton businessSlug={shop.slug} initialIsBookmarked={isBookmarked} className="my-3 me-2 h-11 w-11 shrink-0 text-forest" />}
-    </article>
+        <span className="text-[0.8rem] text-muted ltr text-right whitespace-nowrap overflow-hidden text-ellipsis opacity-90" dir="ltr">
+          {s.handle}
+        </span>
+        <div className="flex items-center gap-1.5 mt-[2px] [&>svg]:w-[14px] [&>svg]:h-[14px] [&>svg]:text-saffron [&>svg]:shrink-0 [&>svg]:[fill:currentColor] [&>svg]:[filter:drop-shadow(0_0_4px_rgba(245,181,68,0.45))]">
+          <StarIcon />
+          <span className="tabular-nums text-[0.9rem] font-bold text-strong leading-none">
+            {s.score}
+          </span>
+          <span className="tabular-nums text-[0.78rem] text-muted font-normal not-italic">
+            ({s.reviews} نظر)
+          </span>
+        </div>
+      </div>
+      {typeof isBookmarked === "boolean" && (
+        <div className="absolute left-4 top-1/2 -translate-y-1/2">
+          <BookmarkButton businessSlug={s.slug} initialIsBookmarked={isBookmarked} className="p-2 -m-2" />
+        </div>
+      )}
+    </Link>
   );
 }

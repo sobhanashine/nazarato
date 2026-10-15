@@ -1,16 +1,21 @@
 const PRODUCTION_PROJECT_REF = "sdlmjdxrfyhuiegjysac";
 
-/** Only an explicitly selected, separate Supabase project can serve staging. */
+/** The target and sharing mode must both be explicitly selected for staging. */
 export function assertStagingDatabaseIsolation(
   url: string,
   stagingProjectRef: string | undefined,
+  mode: string | undefined = "isolated",
 ): void {
+  const sharedMain = mode === "shared-main";
   if (
     !stagingProjectRef ||
     !/^[a-z]{20}$/.test(stagingProjectRef) ||
-    stagingProjectRef === PRODUCTION_PROJECT_REF
+    (mode !== "isolated" && !sharedMain) ||
+    (sharedMain
+      ? stagingProjectRef !== PRODUCTION_PROJECT_REF
+      : stagingProjectRef === PRODUCTION_PROJECT_REF)
   ) {
-    throw new Error("Staging requires a separate NAZARATO_STAGING_SUPABASE_REF");
+    throw new Error("Staging database target does not match its explicit sharing mode");
   }
   let parsed: URL;
   try {
@@ -23,6 +28,6 @@ export function assertStagingDatabaseIsolation(
     parsed.username || parsed.password || parsed.pathname !== "/" ||
     parsed.search || parsed.hash
   ) {
-    throw new Error("Staging database URL does not match the isolated project");
+    throw new Error("Staging database URL does not match the selected project");
   }
 }

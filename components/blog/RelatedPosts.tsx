@@ -64,22 +64,27 @@ function RelatedCard({ post }: { post: BlogPost }) {
         shrink-0 w-[78vw] max-w-[320px] snap-start
         md:w-auto md:max-w-none
         rounded-2xl overflow-hidden
-        bg-paper border border-glass-border
-        transition-colors duration-150 hover:border-mint/50
+        bg-glass border border-glass-border backdrop-blur-[14px]
+        transition-[border-color,transform,box-shadow] duration-200
+        hover:border-mint/50 hover:-translate-y-0.5
+        hover:shadow-[0_10px_30px_-12px_rgba(91,230,178,0.35)]
         focus-visible:outline focus-visible:outline-2 focus-visible:outline-mint focus-visible:outline-offset-2
       "
     >
-      {post.image && <div className="relative w-full aspect-[16/10] overflow-hidden">
-        <Image
+      <div className="relative w-full aspect-[16/10] overflow-hidden">
+        {post.image ? <Image
           src={post.image}
           alt=""
           fill
           sizes="(min-width: 768px) 320px, 78vw"
-          className="object-cover"
-        />
-      </div>}
-      <div className="p-4 flex flex-col gap-2 min-h-[88px]">
-        <span className="text-xs font-medium text-forest">{post.category}</span>
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+        /> : <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-mint/15 to-lapis/15" />}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,rgba(6,8,15,0.7))] pointer-events-none" />
+        <span className="absolute top-3 right-3 text-[11px] font-medium text-mint bg-[rgba(6,8,15,0.7)] border border-mint/30 backdrop-blur-sm rounded-full px-2.5 py-1">
+          {post.category}
+        </span>
+      </div>
+      <div className="px-4 pb-4 flex flex-col gap-2 min-h-[88px]">
         <h3 className="text-[15px] font-semibold leading-[1.55] text-strong line-clamp-2 group-hover:text-mint transition-colors duration-200">
           {post.title}
         </h3>

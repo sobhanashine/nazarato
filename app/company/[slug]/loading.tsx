@@ -1,23 +1,34 @@
-import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { Header } from "@/components/layout/Header";
 import { Container } from "@/components/ui/Container";
 
-export default function Loading() {
+const block = "rounded-glass border border-glass-border bg-glass";
+
+export default function CompanyLoading() {
   return (
     <>
       <Header />
-      <main aria-busy="true" className="py-8 md:py-12">
-        <Container>
-          <h1 className="text-[28px] font-bold leading-10 text-strong">اطلاعات مکان</h1>
-          <p role="status" className="mt-3 text-[14px] leading-7 text-muted">در حال دریافت نشانی و تجربه‌ها…</p>
-          <div aria-hidden className="mt-6 divide-y divide-glass-border border-y border-glass-border">
-            {[0, 1, 2].map(row => <div key={row} className="flex min-h-28 flex-col justify-center gap-3 py-5">
-              <div className="h-5 w-2/3 max-w-xs rounded-sm bg-line/65" />
-              <div className="h-3 w-1/3 max-w-40 rounded-sm bg-line/65" />
-            </div>)}
+      <Container>
+        <div className="animate-pulse py-8" aria-hidden>
+          <div className={`${block} h-36 w-full sm:h-52`} />
+          <div className="-mt-12 flex items-end gap-4 sm:-mt-14">
+            <div className={`${block} h-24 w-24 !rounded-3xl sm:h-28 sm:w-28`} />
+            <div className="flex-1 space-y-2 pb-2">
+              <div className={`${block} h-6 w-2/3`} />
+              <div className={`${block} h-4 w-1/3`} />
+            </div>
           </div>
-        </Container>
-      </main>
+          <div className="mt-6 flex gap-3">
+            <div className={`${block} h-10 w-32`} />
+            <div className={`${block} h-10 w-24`} />
+          </div>
+          <div className="mt-7 grid gap-5 lg:grid-cols-3">
+            <div className={`${block} h-64 lg:col-span-2`} />
+            <div className={`${block} h-64`} />
+          </div>
+        </div>
+        <span className="sr-only">در حال بارگذاری…</span>
+      </Container>
       <Footer />
     </>
   );

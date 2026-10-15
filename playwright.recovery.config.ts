@@ -2,12 +2,12 @@ import { defineConfig, devices } from "@playwright/test";
 const port = Number(process.env.NAZARATO_RECOVERY_PORT || 4321);
 export default defineConfig({
   testDir: "./e2e",
-  testMatch: ["product-recovery.spec.ts", "mobile-redesign.spec.ts"],
+  testMatch: ["product-recovery.spec.ts", "mobile-redesign.spec.ts", "main-design.spec.ts"],
   fullyParallel: false,
   workers: 1,
   retries: 0,
   timeout: 60_000,
-  globalTimeout: 180_000,
+  globalTimeout: 300_000,
   forbidOnly: Boolean(process.env.CI),
   reporter: "list",
   use: {

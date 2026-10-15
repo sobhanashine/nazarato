@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Container } from "@/components/ui/Container";
+import { PageBanner } from "@/components/ui/PageBanner";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { PostCard } from "@/components/blog/PostCard";
@@ -81,20 +82,47 @@ export default async function BlogCategoryPage({
     <>
       <Header />
       <Container>
-        <Breadcrumb items={[{ label: "خانه", href: "/" }, { label: "راهنماهای نظراتو", href: "/blog" }, { label: category }]} />
-        <main className="pb-20 pt-6 sm:pt-9">
-          <header className="mb-8 border-b border-glass-border pb-7">
-            <h1 className="text-[28px] font-extrabold leading-[1.5] text-strong sm:text-[38px]">{`مطالب «${category}»`}</h1>
-            <p className="mt-3 text-base leading-8 text-muted">{filtered.length === 0 ? "هنوز نوشته‌ای در این دسته منتشر نشده." : `${filtered.length.toLocaleString("fa-IR")} نوشته در این دسته`}</p>
-          </header>
-          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-10">
-            <section aria-label="نوشته‌ها" className="min-w-0">
-              {visible.length === 0 ? <p className="rounded-xl border border-glass-border bg-paper p-6 text-base leading-8 text-muted">هیچ نوشته‌ای در این دسته یافت نشد.</p> : <div className="flex flex-col gap-5">{visible.map(post => <PostCard key={post.slug} post={post} />)}</div>}
-              <Pagination basePath={basePath} totalPages={totalPages} currentPage={page} />
-            </section>
-            <BlogSidebar />
-          </div>
-        </main>
+        <Breadcrumb
+          items={[
+            { label: "خانه", href: "/" },
+            { label: "بلاگ", href: "/blog" },
+            { label: category },
+          ]}
+        />
+      </Container>
+      <PageBanner
+        title={`دسته: ${category}`}
+        subtitle={
+          filtered.length === 0
+            ? "هنوز نوشته‌ای در این دسته منتشر نشده."
+            : `${filtered.length.toLocaleString("fa-IR")} نوشته در این دسته`
+        }
+      />
+
+      <Container>
+        <div className="flex flex-col gap-8 mb-16 lg:flex-row-reverse lg:justify-between lg:gap-12 lg:mb-20">
+          <main className="w-full lg:w-[58%]">
+            {visible.length === 0 ? (
+              <div className="text-center py-20 text-muted">
+                هیچ نوشته‌ای در این دسته یافت نشد.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-8">
+                {visible.map((post) => (
+                  <PostCard key={post.slug} post={post} />
+                ))}
+              </div>
+            )}
+
+            <Pagination
+              basePath={basePath}
+              totalPages={totalPages}
+              currentPage={page}
+            />
+          </main>
+
+          <BlogSidebar />
+        </div>
       </Container>
       <Footer />
     </>

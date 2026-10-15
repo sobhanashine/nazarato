@@ -11,7 +11,7 @@
  * hidden inputs so a fresh text search keeps them.
  */
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeftIcon, SearchIcon } from "@/components/icons";
 import { SearchSuggestions } from "@/components/search/SearchSuggestions";
 import { suggestBusinesses, type SearchQuery } from "@/lib/search";
@@ -20,6 +20,19 @@ export function SearchBox({ query, businesses }: { query: SearchQuery; businesse
   const [value, setValue] = useState(query.q);
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  const suggestionPointer = useRef(false);
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !wrapRef.current?.contains(event.target)) {
+        suggestionPointer.current = false;
+        setOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    return () => { suggestionPointer.current = false; document.removeEventListener("pointerdown", closeOutside); };
+  }, [open]);
 
   const suggestions = useMemo(() => suggestBusinesses(value, 6, businesses), [value, businesses]);
   const showDropdown = open && value.trim().length >= 2;
@@ -31,7 +44,7 @@ export function SearchBox({ query, businesses }: { query: SearchQuery; businesse
         className="relative"
         onBlur={(e) => {
           // Keep the dropdown open while focus moves into it or the button.
-          if (!wrapRef.current?.contains(e.relatedTarget)) setOpen(false);
+          if (!suggestionPointer.current && !wrapRef.current?.contains(e.relatedTarget)) setOpen(false);
         }}
       >
         <span
@@ -53,19 +66,19 @@ export function SearchBox({ query, businesses }: { query: SearchQuery; businesse
             if (e.key === "Escape") setOpen(false);
           }}
           autoComplete="off"
-          placeholder="نام مکان یا نشانی…"
-          aria-label="نام مکان یا نشانی"
-          className="h-14 w-full rounded-xl border border-glass-border-hi bg-paper ps-12 pe-16 text-base text-strong outline-none transition-colors placeholder:text-muted focus:border-forest focus:ring-2 focus:ring-forest/15"
+          placeholder="نام کسب‌وکار یا فروشگاه…"
+          aria-label="جستجو"
+          className="h-14 w-full rounded-2xl border border-glass-border-hi bg-glass ps-12 pe-16 text-base text-strong outline-none backdrop-blur-[18px] transition-[box-shadow,border-color] duration-300 placeholder:text-muted/55 focus:border-mint/55 focus:shadow-[0_0_0_4px_rgba(91,230,178,0.13)]"
         />
         <button
           type="submit"
           aria-label="جستجو"
-          className="absolute end-1.5 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-lg bg-forest text-white transition-colors hover:bg-[#174539] [&_svg]:h-5 [&_svg]:w-5"
+          className="absolute end-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-xl bg-[linear-gradient(135deg,#5BE6B2_0%,#3FBF92_100%)] text-[#06231b] shadow-[0_6px_16px_-6px_rgba(91,230,178,0.6),inset_0_1px_0_rgba(255,255,255,0.4)] transition-[transform,filter] duration-200 hover:brightness-105 active:scale-95 [&_svg]:h-[17px] [&_svg]:w-[17px]"
         >
           <ArrowLeftIcon />
         </button>
 
-        {showDropdown && <SearchSuggestions suggestions={suggestions} />}
+        {showDropdown && <div onPointerDownCapture={() => { suggestionPointer.current = true; }} onClickCapture={() => { suggestionPointer.current = false; }} onPointerCancel={() => { suggestionPointer.current = false; setOpen(false); }}><SearchSuggestions suggestions={suggestions} /></div>}
       </div>
 
       {/* Carry the active filters through a fresh text search. */}

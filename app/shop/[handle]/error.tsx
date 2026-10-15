@@ -14,7 +14,7 @@ export default function ShopError({
       error={error}
       reset={reset}
       logLabel="shop/[handle]"
-      message="اطلاعات این کسب‌وکار دریافت نشد. دوباره تلاش کن."
+      message="نتونستیم صفحه این فروشگاه اینستاگرامی رو بارگذاری کنیم. دوباره تلاش کن."
     />
   );
 }

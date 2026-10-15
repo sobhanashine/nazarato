@@ -1,26 +1,38 @@
 import Link from "next/link";
-import { Container } from "@/components/ui/Container";
+import { ChatBubbleIcon, MailIcon } from "@/components/icons";
 
 export function Footer() {
   return (
-    <footer className="mt-12 border-t border-glass-border pb-24 md:pb-0">
-      <Container className="flex flex-col gap-6 py-8 md:flex-row md:items-start md:justify-between">
-        <div className="max-w-sm">
-          <Link href="/" className="inline-flex min-h-11 items-center text-[22px] font-extrabold text-forest">نظراتو<span aria-hidden className="text-pomegr">.</span></Link>
-          <p className="mt-2 text-[13px] leading-7 text-muted">تجربه‌ای که به انتخاب آدم‌ها و بهتر شدن کسب‌وکارها کمک کند؛ از کافه و رستوران‌های رشت شروع می‌کنیم.</p>
-          <p className="mt-4 text-[12px] text-muted">© نظراتو</p>
+    <footer className="mt-16 relative bg-[rgba(8,11,20,0.6)] backdrop-blur-[20px] backdrop-saturate-[160%] border-t border-glass-border">
+      <div className="flex flex-col px-5 py-5 md:flex-row-reverse md:justify-between md:items-center md:max-w-[1280px] md:mx-auto md:px-12 xl:px-16">
+        <div className="flex items-center justify-center md:justify-end gap-6 pb-4 mb-4 border-b border-glass-border md:border-b-0 md:pb-0 md:mb-0">
+          <h5 className="text-strong text-[15px] font-medium whitespace-nowrap">
+            همراه نظراتو
+          </h5>
+          <div className="flex gap-[0.2rem]">
+            <Link href="/contact" className="flex items-center justify-center w-11 h-11 rounded-full text-strong transition-colors duration-200 hover:bg-glass-hover hover:text-mint" aria-label="تماس با ما"><MailIcon className="h-5 w-5" /></Link>
+            <Link href="/help" className="flex items-center justify-center w-11 h-11 rounded-full text-strong transition-colors duration-200 hover:bg-glass-hover hover:text-mint" aria-label="راهنمای نظراتو"><ChatBubbleIcon className="h-5 w-5" /></Link>
+          </div>
         </div>
-        <nav aria-label="پیوندهای پایانی" className="grid grid-cols-2 gap-x-8 gap-y-1 text-[13px] md:gap-x-12">
-          {[
-            { href: "/about", label: "مسیر نظراتو" },
-            { href: "/for-business", label: "برای کسب‌وکارها" },
-            { href: "/contact", label: "تماس و اصلاح اطلاعات" },
-            { href: "/help", label: "راهنما" },
-            { href: "/terms", label: "قوانین" },
-            { href: "/privacy", label: "حریم خصوصی" },
-          ].map(item => <Link key={item.href} href={item.href} className="inline-flex min-h-11 items-center text-muted hover:text-forest">{item.label}</Link>)}
-        </nav>
-      </Container>
+        <div className="flex flex-col items-center gap-3 md:flex-row md:gap-6">
+          <p className="text-sm text-muted text-center">
+            © تمامی حقوق برای nazarato.ir محفوظ است.
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-4 text-[13px] text-muted font-medium">
+            <Link href="/for-business" className="hover:text-mint transition-colors duration-200 inline-flex items-center min-h-11 py-2">
+              برای کسب‌وکارها
+            </Link>
+            <span className="text-glass-border" aria-hidden>·</span>
+            <Link href="/terms" className="hover:text-mint transition-colors duration-200 inline-flex items-center min-h-11 py-2">
+              قوانین و مقررات
+            </Link>
+            <span className="text-glass-border" aria-hidden>·</span>
+            <Link href="/privacy" className="hover:text-mint transition-colors duration-200 inline-flex items-center min-h-11 py-2">
+              حریم خصوصی
+            </Link>
+          </div>
+        </div>
+      </div>
     </footer>
   );
 }

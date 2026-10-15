@@ -32,10 +32,10 @@ test("owner observation is authorized and visible with a fixed denominator",asyn
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({path:testInfo.outputPath("owner-observation-desktop.png"),fullPage:true});
   await page.getByRole("link", {name:"منبع ↗", exact:true}).first().click();
-  await expect(page.getByRole("tab", {name:"تجربه‌ها",exact:true})).toHaveAttribute("aria-selected","true");
+  await expect(page.getByRole("tab", {name:"نظرات",exact:true})).toHaveAttribute("aria-selected","true");
 });
 test("public profile carries attribution and citation links open reviews",async({page})=>{
-  await page.goto(`/company/isolated-cafe-1?review=${id(101)}`);await expect(page.getByRole("complementary",{name:"منبع اطلاعات کسب‌وکار"})).toContainText("منبع مصنوعی آزمون");await expect(page.getByRole("tab",{name:"تجربه‌ها",exact:true})).toHaveAttribute("aria-selected","true");
+  await page.goto(`/company/isolated-cafe-1?review=${id(101)}`);await expect(page.getByRole("complementary",{name:"منبع اطلاعات کسب‌وکار"})).toContainText("منبع مصنوعی آزمون");await expect(page.getByRole("tab",{name:"نظرات",exact:true})).toHaveAttribute("aria-selected","true");
 });
 
 test("hidden public profiles do not reveal their identity in metadata", async ({page,request}) => {
@@ -48,7 +48,7 @@ test("hidden public profiles do not reveal their identity in metadata", async ({
 test("experience intake reaches moderation, versioned correction and a new owner action", async ({page, context}) => {
   await context.addCookies([{name:"nzr_session",value:sessionCookie(id(901)),url:`http://127.0.0.1:${port}`}]);
   await page.goto("/company/isolated-cafe-1");
-  await page.getByRole("button", {name:"نوشتن تجربه",exact:true}).click();
+  await page.getByRole("button", {name:"نوشتن نظر",exact:true}).click();
   const dialog = page.getByRole("dialog", {name:"ثبت نظر"});
   await dialog.getByRole("radio", {name:"۲ ستاره",exact:true}).click();
   await dialog.getByRole("button", {name:"ادامه",exact:true}).click();

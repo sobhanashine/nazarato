@@ -1,33 +1,68 @@
+/**
+ * A registered business as a horizontal glass card.
+ * New for pages-master.md §5.2 — used on `/search`, `/categories/[slug]`,
+ * `/saved`, `/admin/businesses`. Links to `/company/[slug]`.
+ *
+ * `score` is an average (e.g. "۴.۲"), so it renders as a numeral next to a
+ * single star rather than as `<RatingStars />`, which only takes whole ratings.
+ */
+
 import Link from "next/link";
 import { LocationIcon, ShieldCheckIcon, StarIcon } from "@/components/icons";
+import { GLASS } from "@/components/ui/styles";
 import type { Business } from "@/lib/data/businesses";
 import { BookmarkButton } from "@/components/ui/BookmarkButton";
 
-export function BusinessCard({ business: b, isBookmarked }: { business: Business; isBookmarked?: boolean }) {
-  const hasReviews = b.score !== "—" && b.reviews !== "۰" && b.reviews !== "0";
+type BusinessCardProps = {
+  business: Business;
+  isBookmarked?: boolean;
+};
+
+export function BusinessCard({ business, isBookmarked }: BusinessCardProps) {
+  const b = business;
   return (
-    <article className="relative flex h-full min-w-0 items-start gap-2 rounded-xl border border-glass-border bg-paper transition-colors hover:border-glass-border-hi">
-      <Link href={`/company/${b.slug}`} className="flex min-w-0 flex-1 items-start gap-3 p-4 sm:p-5">
-        <span aria-hidden className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-mint/15 bg-mint/5 text-xl font-bold text-forest">{b.initial}</span>
-        <span className="min-w-0 flex-1">
-          <span className="flex items-center gap-2 text-base font-bold leading-7 text-strong">
-            <span className="break-words">{b.name}</span>
-            {b.verified && <ShieldCheckIcon className="h-4 w-4 shrink-0 text-forest" aria-label="کسب‌وکار تأیید شده" />}
-          </span>
-          <span className="mt-1 flex items-start gap-1 text-sm leading-6 text-muted">
-            <LocationIcon className="mt-1 h-3.5 w-3.5 shrink-0" />
-            <span>{b.category} · {b.city}</span>
-          </span>
-          {b.address && <span dir="auto" className="mt-1 block line-clamp-2 break-words text-sm leading-6 text-muted">{b.address}</span>}
-          {hasReviews ? <span className="mt-2 flex items-center gap-1.5 text-sm text-strong">
-            <StarIcon className="h-4 w-4 fill-saffron text-saffron" />
-            <span className="font-bold tabular-nums">{b.score}</span>
-            <span className="text-muted">از {b.reviews} تجربه</span>
-          </span> : <span className="mt-2 block text-[13px] leading-6 text-muted">هنوز تجربه‌ای منتشر نشده</span>}
+    <Link
+      href={`/company/${b.slug}`}
+      className={`${GLASS} flex items-center gap-4 px-[1.35rem] py-5 cursor-pointer transition-[transform,background,border-color] duration-300 ease-out hover:bg-glass-hover hover:border-glass-border-hi hover:-translate-y-[2px] relative group`}
+    >
+      <div
+        className="w-[60px] h-[60px] rounded-2xl flex items-center justify-center text-white text-[1.3rem] font-bold leading-none shrink-0 shadow-[0_6px_18px_-4px_rgba(0,0,0,0.45)]"
+        style={{ background: b.color }}
+      >
+        {b.initial}
+      </div>
+      <div className="min-w-0 flex flex-col gap-[3px] flex-1">
+        <span className="inline-flex items-center gap-1.5 text-[0.95rem] font-semibold text-strong whitespace-nowrap overflow-hidden text-ellipsis">
+          {b.name}
+          {b.verified && (
+            <span
+              className="inline-flex w-[14px] h-[14px] text-mint [filter:drop-shadow(0_0_6px_rgba(91,230,178,0.55))] shrink-0 [&_svg]:w-[14px] [&_svg]:h-[14px]"
+              aria-label="کسب‌وکار تایید شده"
+              title="تایید شده"
+            >
+              <ShieldCheckIcon />
+            </span>
+          )}
         </span>
-        <span aria-hidden className="mt-1 text-lg text-forest">←</span>
-      </Link>
-      {typeof isBookmarked === "boolean" && <BookmarkButton businessSlug={b.slug} initialIsBookmarked={isBookmarked} className="my-3 me-2 h-11 w-11 shrink-0 text-forest" />}
-    </article>
+        <span className="inline-flex items-center gap-1 text-[0.8rem] text-muted whitespace-nowrap overflow-hidden text-ellipsis [&>svg]:w-[12px] [&>svg]:h-[12px] [&>svg]:shrink-0 [&>svg]:opacity-80">
+          <LocationIcon />
+          {b.category} · {b.city}
+        </span>
+        {b.reviewCount === 0 ? <span className="mt-[2px] text-[0.78rem] text-muted">هنوز نظری ثبت نشده</span> : <div className="flex items-center gap-1.5 mt-[2px] [&>svg]:w-[14px] [&>svg]:h-[14px] [&>svg]:text-saffron [&>svg]:shrink-0 [&>svg]:[fill:currentColor] [&>svg]:[filter:drop-shadow(0_0_4px_rgba(245,181,68,0.45))]">
+          <StarIcon />
+          <span className="tabular-nums text-[0.9rem] font-bold text-strong leading-none">
+            {b.score}
+          </span>
+          <span className="tabular-nums text-[0.78rem] text-muted font-normal not-italic">
+            ({b.reviews} نظر)
+          </span>
+        </div>}
+      </div>
+      {typeof isBookmarked === "boolean" && (
+        <div className="absolute left-4 top-1/2 -translate-y-1/2">
+          <BookmarkButton businessSlug={b.slug} initialIsBookmarked={isBookmarked} className="p-2 -m-2" />
+        </div>
+      )}
+    </Link>
   );
 }

@@ -13,7 +13,7 @@ for (const width of widths) {
     for (const route of ["/", "/search?area=tohid", "/categories?area=tohid", "/for-business", "/about", "/contact", "/login"]) {
       await page.goto(route);
       await expect(page.locator("main")).toHaveCount(1);
-      await expect(page.locator("main h1")).toBeVisible();
+      await expect(page.getByRole("heading", {level:1})).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       const fields = page.locator('main input:is([type="text"], [type="tel"], [type="email"], [type="search"], [type="number"], [type="password"]), main textarea, main select');
       for (const field of await fields.all()) {
@@ -30,17 +30,16 @@ test("choosing a neighborhood survives the homepage search", async ({ page }) =>
   await page.goto("/");
   await page.getByRole("combobox", { name: "محدودهٔ جستجو" }).selectOption("tohid");
   await expect(page.locator('form[role="search"] input[name="area"]')).toHaveValue("tohid");
-  await page.getByRole("button", { name: "جستجوی مکان", exact: true }).click();
+  await page.getByRole("button", { name: "جستجو", exact: true }).click();
   await expect(page).toHaveURL(/area=tohid/);
   await expect(page.getByRole("combobox", { name: "محدودهٔ جستجو" })).toHaveValue("tohid");
 });
 
 test("a restaurant link remains a restaurant search when only cafes exist", async ({ page }) => {
-  test.skip(process.env.NAZARATO_LOCAL_PREVIEW !== "true", "Explicit private local catalog only.");
   await page.goto("/categories?area=tohid");
   await page.locator('main a[href*="category=%D8%B1%D8%B3%D8%AA%D9%88%D8%B1%D8%A7%D9%86"]').click();
   await expect(page).toHaveURL(/area=tohid/);
-  await expect(page.getByText("برای این انتخاب، مکانی پیدا نشد", { exact: true })).toBeVisible();
+  await expect(page.getByText("چیزی پیدا نشد", { exact: true })).toBeVisible();
   await expect(page.locator('main a[href^="/company/"]')).toHaveCount(0);
 });
 
@@ -57,19 +56,17 @@ test("the owner path reaches contact and invalid input never posts", async ({ pa
 });
 
 test("profile tab keyboard works and a failed share falls back to copying", async ({ page }) => {
-  test.skip(process.env.NAZARATO_LOCAL_PREVIEW !== "true", "Private local profile; no service mutations.");
-  await page.goto("/search?area=golsar");
-  await page.locator('main a[href^="/company/"]').first().click();
-  await page.getByRole("tab", { name: "دربارهٔ مکان" }).focus();
+  await page.goto("/company/isolated-cafe-1");
+  await page.getByRole("tab", { name: "نمای کلی" }).focus();
   await page.keyboard.press("ArrowLeft");
-  await expect(page.getByRole("tab", { name: "تجربه‌ها", exact: true })).toBeFocused();
-  await expect(page.getByRole("tabpanel")).toContainText("هنوز تجربه‌ای منتشر نشده");
+  await expect(page.getByRole("tab", { name: "نظرات", exact: true })).toBeFocused();
+  await expect(page.getByRole("tabpanel")).toContainText("نظرات");
   await page.keyboard.press("End");
-  await expect(page.getByRole("tab", { name: "مکان‌های دیگر", exact: true })).toBeFocused();
+  await expect(page.getByRole("tab", { name: "مشابه", exact: true })).toBeFocused();
   await page.evaluate(() => {
     Object.defineProperty(navigator, "share", { configurable: true, value: async () => { throw new DOMException("Unavailable", "NotAllowedError"); } });
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: async () => {} } });
   });
-  await page.getByRole("button", { name: "اشتراک‌گذاری", exact: true }).click();
+  await page.getByRole("button", { name: "اشتراک", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("لینک کپی شد");
 });
