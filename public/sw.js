@@ -93,8 +93,11 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const target =
-    (event.notification.data && event.notification.data.url) || "/";
+  let target = "/notifications";
+  try {
+    const url = new URL(event.notification.data?.url || target, self.location.origin);
+    if (url.origin === self.location.origin) target = url.href;
+  } catch { /* Fall back to this site's notifications. */ }
 
   event.waitUntil(
     self.clients

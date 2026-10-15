@@ -13,7 +13,7 @@ const FIELD_BASE =
 const LABEL = "text-[13px] font-bold text-muted";
 const ERR_TEXT = "text-[12px] font-bold text-pomegr";
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({ next, enabled = true }: { next: string; enabled?: boolean }) {
   const [state, action, pending] = useActionState(startOtp, initial);
   const phoneError = state.field === "phone" ? state.error : undefined;
   const formError = state.error && state.field !== "phone" ? state.error : undefined;
@@ -24,7 +24,7 @@ export function LoginForm({ next }: { next: string }) {
         ورود یا ثبت‌نام
       </h1>
       <p className="mt-2 text-[14px] leading-[1.9] text-muted">
-        شماره موبایلت را وارد کن تا کد تأیید برایت پیامک شود.
+        {enabled ? "شماره موبایلت را وارد کن تا کد تأیید برایت پیامک شود." : "ورود پیامکی هنوز آماده نیست. پس از راه‌اندازی سرویس پیامک می‌توانی وارد حساب شوی."}
       </p>
 
       <form action={action} noValidate className="mt-6 space-y-4">
@@ -94,7 +94,7 @@ export function LoginForm({ next }: { next: string }) {
 
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || !enabled}
           className={`${BTN_PRIMARY} w-full py-3.5 text-[15px] disabled:cursor-not-allowed disabled:opacity-50`}
         >
           {pending ? "در حال ارسال…" : "ارسال کد"}

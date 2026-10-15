@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { LoginForm } from "./LoginForm";
+import { isLoginEnabled } from "@/lib/auth/login-policy";
 
 export const metadata: Metadata = {
   title: "ورود یا ثبت‌نام — نظراتو",
@@ -27,5 +28,5 @@ export default async function LoginPage({
     redirect(dest);
   }
 
-  return <LoginForm next={rawNext} />;
+  return <LoginForm next={rawNext} enabled={isLoginEnabled()} />;
 }

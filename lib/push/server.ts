@@ -1,124 +1,73 @@
 import webpush from "web-push";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { listSubscriptions, removeSubscription } from "./store";
+import { parseSubscription } from "./subscription";
 
-let configured = false;
-let configureFailed = false;
-function configure(): boolean {
-  if (configured) return true;
-  if (configureFailed) return false;
+export type PushPayload = { title: string; body?: string; link?: string; tag?: string };
+export type PushResult = { accepted: number; failed: number; unavailable: boolean };
+
+export function pushConfiguration() {
   const publicKey = process.env.VAPID_PUBLIC_KEY;
   const privateKey = process.env.VAPID_PRIVATE_KEY;
   const subject = process.env.VAPID_SUBJECT;
-  if (!publicKey || !privateKey || !subject) {
-    configureFailed = true;
-    return false;
-  }
+  return publicKey && privateKey && subject ? { publicKey, privateKey, subject } : null;
+}
+
+/** Exercise Worker signing/encryption locally; this never dispatches a message. */
+export function pushRuntimeReady(): boolean {
+  const vapidDetails = pushConfiguration();
+  if (!vapidDetails) return false;
   try {
-    webpush.setVapidDetails(subject, publicKey, privateKey);
-    configured = true;
+    webpush.generateRequestDetails({
+      endpoint: "https://fcm.googleapis.com/fcm/send/configuration-check",
+      keys: { p256dh: vapidDetails.publicKey, auth: Buffer.alloc(16).toString("base64url") },
+    }, "configuration check", { vapidDetails, TTL: 0 });
     return true;
-  } catch (err) {
-    console.error("[push] setVapidDetails failed", err);
-    configureFailed = true;
+  } catch {
+    console.error("[push] runtime configuration check failed");
     return false;
   }
 }
 
-export type PushPayload = {
-  title: string;
-  body?: string;
-  link?: string;
-  tag?: string;
-};
-
-export type StoredSubscription = {
-  id: string;
-  endpoint: string;
-  p256dh: string;
-  auth: string;
-};
-
-async function listUserSubscriptions(
-  userId: string
-): Promise<StoredSubscription[]> {
-  const { data, error } = await supabaseAdmin()
-    .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth")
-    .eq("user_id", userId);
-  if (error) {
-    console.error("[push] listUserSubscriptions failed", {
-      userId,
-      error: error.message,
-    });
-    return [];
-  }
-  return data ?? [];
-}
-
-async function deleteSubscription(id: string): Promise<void> {
-  await supabaseAdmin().from("push_subscriptions").delete().eq("id", id);
-}
-
-/**
- * Send a push to every device subscribed by the given user.
- * Prunes subscriptions that the push service reports as gone (404/410).
- */
-export async function sendPushToUser(
-  userId: string,
-  payload: PushPayload
-): Promise<void> {
+/** Provider acceptance is reported separately from actual device display. */
+export async function sendPushToUser(userId: string, payload: PushPayload, endpoint?: string): Promise<PushResult> {
+  const result: PushResult = { accepted: 0, failed: 0, unavailable: false };
+  const vapidDetails = pushConfiguration();
+  if (!vapidDetails) return { ...result, unavailable: true };
   try {
-    if (!configure()) {
-      return;
-    }
-
-    const subs = await listUserSubscriptions(userId);
-    if (subs.length === 0) return;
-
-    const body = JSON.stringify(payload);
-
-    await Promise.all(
-      subs.map(async (sub) => {
-        try {
-          await webpush.sendNotification(
-            {
-              endpoint: sub.endpoint,
-              keys: { p256dh: sub.p256dh, auth: sub.auth },
-            },
-            body
-          );
-        } catch (err: unknown) {
-          const statusCode =
-            typeof err === "object" && err && "statusCode" in err
-              ? (err as { statusCode: number }).statusCode
-              : 0;
-          if (statusCode === 404 || statusCode === 410) {
-            await deleteSubscription(sub.id).catch(() => {});
-          } else {
-            console.error("[push] sendNotification failed", {
-              userId,
-              subscriptionId: sub.id,
-              statusCode,
-            });
-          }
+    const subscriptions = (await listSubscriptions(userId)).filter((s) => !endpoint || s.endpoint === endpoint);
+    await Promise.all(subscriptions.map(async (stored) => {
+      const sub = parseSubscription({ endpoint: stored.endpoint, keys: { p256dh: stored.p256dh, auth: stored.auth } });
+      if (!sub) { result.failed++; return; }
+      try {
+        // web-push handles encryption/VAPID; native fetch is supported by Workers.
+        const request = webpush.generateRequestDetails(sub, JSON.stringify(payload), { vapidDetails, TTL: 60 });
+        const response = await fetch(request.endpoint, {
+          method: request.method,
+          headers: request.headers as Record<string, string>,
+          body: request.body ? new Uint8Array(request.body).buffer : undefined,
+          signal: AbortSignal.timeout(10_000),
+          redirect: "error",
+        });
+        if (response.ok) result.accepted++;
+        else {
+          result.failed++;
+          if (response.status === 404 || response.status === 410) await removeSubscription(userId, sub.endpoint);
+          console.error("[push] provider rejected delivery", { userId, status: response.status });
         }
-      })
-    );
-  } catch (err) {
-    // Web-push delivery must never break the caller (review submission,
-    // moderation action, etc). Log loudly but absorb the exception.
-    console.error("[push] sendPushToUser threw", { userId, err });
+        await response.body?.cancel();
+      } catch (error) {
+        result.failed++;
+        console.error("[push] delivery failed", { userId, errorType: error instanceof Error ? error.name : "unknown" });
+      }
+    }));
+  } catch (error) {
+    result.unavailable = true;
+    console.error("[push] subscription lookup failed", { userId, errorType: error instanceof Error ? error.name : "unknown" });
   }
+  return result;
 }
 
-/** Send a push to many users in parallel. Never throws. */
-export async function sendPushToUsers(
-  userIds: string[],
-  payload: PushPayload
-): Promise<void> {
-  try {
-    await Promise.all(userIds.map((id) => sendPushToUser(id, payload)));
-  } catch (err) {
-    console.error("[push] sendPushToUsers threw", { count: userIds.length, err });
-  }
+/** Delivery errors never break review/moderation actions. */
+export async function sendPushToUsers(userIds: string[], payload: PushPayload): Promise<void> {
+  await Promise.all(userIds.map((id) => sendPushToUser(id, payload)));
 }

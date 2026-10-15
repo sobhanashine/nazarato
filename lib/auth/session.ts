@@ -1,8 +1,8 @@
 /**
- * Signed-cookie sessions — dev-grade auth state.
+ * HMAC-signed sessions and OTP challenge references.
  *
- * Both the session and the short-lived OTP challenge are stored as HMAC-signed,
- * HTTP-only cookies (no database yet). The payload is *signed, not encrypted* —
+ * Cookies are HTTP-only; staging reloads OTP state from its isolated D1 store
+ * and checks session expiry server-side. The payload is *signed, not encrypted* —
  * the user can read it, they just can't forge it. Never put anything more
  * sensitive than an id / phone / display name in it.
  *
@@ -13,6 +13,8 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import type { OtpChallenge } from "./otp";
+import { isStaging } from "./login-policy";
+import { readStagingOtp } from "./staging-otp";
 
 const SESSION_COOKIE = "nzr_session";
 const OTP_COOKIE = "nzr_otp";
@@ -107,7 +109,7 @@ const baseCookie = {
 /** Issue a session cookie for `user`. */
 export async function setSession(user: SessionUser): Promise<void> {
   const store = await cookies();
-  store.set(SESSION_COOKIE, sign(user), {
+  store.set(SESSION_COOKIE, sign({ ...user, expiresAt: Date.now() + SESSION_MAX_AGE * 1000 }), {
     ...baseCookie,
     maxAge: SESSION_MAX_AGE,
   });
@@ -117,6 +119,9 @@ export async function setSession(user: SessionUser): Promise<void> {
 export async function getSession(): Promise<SessionUser | null> {
   const store = await cookies();
   const v = unsign(store.get(SESSION_COOKIE)?.value);
+  if (isStaging()) {
+    if (!v || typeof v !== "object" || !("expiresAt" in v) || typeof v.expiresAt !== "number" || v.expiresAt <= Date.now()) return null;
+  }
   return isSessionUser(v) ? v : null;
 }
 
@@ -140,6 +145,10 @@ export async function getOtpChallenge(): Promise<OtpChallenge | null> {
   const store = await cookies();
   const v = unsign(store.get(OTP_COOKIE)?.value);
   if (!isOtpChallenge(v) || v.expiresAt <= Date.now()) return null;
+  if (isStaging()) {
+    try { return await readStagingOtp(v.id); }
+    catch { console.error("[auth] staging challenge store unavailable"); return null; }
+  }
   return v;
 }
 
