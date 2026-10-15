@@ -12,7 +12,7 @@ describe("getSmflowConfig", () => {
   });
 
   it("returns null when the kill switch is missing", () => {
-    delete process.env.NEXT_PUBLIC_SMFLOW_ENABLED;
+    Reflect.deleteProperty(process.env, "NEXT_PUBLIC_SMFLOW_ENABLED");
     process.env.NEXT_PUBLIC_SMFLOW_BUSINESS_ID = "x";
     process.env.SMFLOW_WIDGET_SECRET = "y";
     expect(getSmflowConfig()).toBeNull();

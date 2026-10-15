@@ -5,6 +5,7 @@ import { BTN_PRIMARY, GLASS } from "@/components/ui/styles";
 import { getDevelopmentOtpCode, formatPhone } from "@/lib/auth/otp";
 import { getOtpChallenge, getSession } from "@/lib/auth/session";
 import { VerifyForm } from "./VerifyForm";
+import { isLoginEnabled } from "@/lib/auth/login-policy";
 
 export const metadata: Metadata = {
   title: "تأیید کد — نظراتو",
@@ -15,6 +16,7 @@ export default async function VerifyPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  if (!isLoginEnabled()) redirect("/login");
   const params = await searchParams;
   const rawNext = typeof params.next === "string" ? params.next : "";
 

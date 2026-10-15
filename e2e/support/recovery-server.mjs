@@ -11,7 +11,7 @@ const businesses = [1,2,3,4].map(n => {
   const facts = {name:`مکان آزمایشی جدا ${n}`,category_slug:"cafe",city:"رشت",neighborhood_slug:"golsar",contact:{address:"نشانی آزمایشی گلسار"}};
   return {id:id(n),slug:`isolated-cafe-${n}`,type:"company",status:"active",...facts,initial:"م",color:"#20584B",info:[{label:"نشانی",value:facts.contact.address}],description:"رکورد مصنوعیِ آزمون جدا",verified:false,claimed:false,owner_id:n===1?id(900):null,review_count:n===1?6:0,rating_avg:4,created_at:"2026-09-01T12:00:00Z",business_sources:[{status:"approved",source_type:"open_dataset",permission_basis:"open_license",source_ref:"https://example.invalid/test-only",license_name:"Test-only source",license_url:"https://example.invalid/license",attribution_text:"منبع مصنوعی آزمون",field_payload:facts}]};
 });
-const users = [900,901,902].map(n=>({id:id(n),phone:"+989000000001",display_name:"کاربر آزمون جدا",username:`isolated-${n}`,avatar_color:"#20584B",role:n===902?"admin":"consumer",public_profile:true,is_banned:false,created_at:"2026-09-01",reviews_count:0}));
+const users = [900,901,902].map(n=>({id:id(n),phone:`+98900000000${n-899}`,display_name:"کاربر آزمون جدا",username:`isolated-${n}`,avatar_color:"#20584B",role:n===902?"admin":"consumer",public_profile:true,is_banned:false,created_at:"2026-09-01",reviews_count:0}));
 const initialReviews = [1,2,3,4,5,6].map(n => {
   const negative=n<=3;
   const body=negative?"سرویس بد بود؛ فضای آرام و خوب":"سرویس خوب بود؛ فضای آرام و خوب";

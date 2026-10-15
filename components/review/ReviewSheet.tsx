@@ -321,7 +321,7 @@ function AuthGate() {
     url.searchParams.set("review", "1");
     setReturnPath(url.pathname + url.search + url.hash);
   }, []);
-  const publicLoginClosed = process.env.NODE_ENV === "production";
+  const publicLoginClosed = process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_NAZARATO_ENV !== "staging";
   return (
     <div>
       <h3 className="text-base font-bold text-strong">ثبت تجربه با ورود</h3>

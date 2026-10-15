@@ -49,7 +49,7 @@ remaining shared-database access dependency. Main promotion is not authorized.
 - Manifest is generated at `app/manifest.ts` (Next 16 `Metadata` route).
 - Service worker lives at `public/sw.js`, registered by `components/pwa/RegisterSW.tsx`. Includes event handlers for `push` and `notificationclick` to show native background popups.
 - Install prompt: `components/pwa/InstallPrompt.tsx`.
-- Web Push notifications are implemented using VAPID keys. User subscriptions are saved to the `push_subscriptions` table (`supabase/migrations/0006_create_push_subscriptions.sql`).
+- Web Push uses runtime VAPID keys. Staging subscriptions live only in the dedicated `nazarato-staging-services` D1 database; the production code path retains Supabase `push_subscriptions`. The server passes the public key to the UI at request time, validates provider endpoints and offers an authenticated staging-only device test. Provider acceptance does not prove device display.
 - Dispatching pushes runs through `lib/push/server.ts`, which catches and logs push service failures to prevent blocking primary transactions (e.g., review submissions).
 - `next.config.ts:42-53` sets `Cache-Control: no-cache` and `Service-Worker-Allowed: /` for `sw.js`.
 
@@ -79,7 +79,7 @@ remaining shared-database access dependency. Main promotion is not authorized.
 - The existing Worker is `nazarato`; its Git integration deploys `main`. OpenNext 1.20.7 adapts the regular Next build, and Wrangler 4.145.0 uploads `.open-next/worker.js` plus ASSETS. Run `npm run build:cloudflare`, then `npm run preview:cloudflare`; `npm run deploy:cloudflare` builds and publishes. Dashboard build command is `npm run build:cloudflare`, deploy command is `npx wrangler deploy`.
 - DEV review uses the separate `nazarato-staging` Worker and `staging.nazarato.ir`. `npm run deploy:staging` requires clean DEV source, builds with the staging flag, selects the explicit Wrangler environment and stamps the checkout SHA. It does not promote main. Staging blocks indexing. On 2026-10-15 the founder explicitly authorized sharing the exact main Supabase project through `shared-main` mode. Runtime secrets/schema still need verification; automated mutation tests use loopback only. See `docs/staging-release.md`.
 - Dashboard variables are preserved with `keep_vars`. Supabase service-role and JWT signing key stay in Cloudflare Secrets. The alias to `cloudflare/runtime-env.mjs` prevents OpenNext from bundling `.env*` fallbacks into uploaded code; local Worker tests use ignored `.dev.vars`. See `docs/cloudflare-release.md` for settings and verification.
-- OTP start, resend, verification, and profile completion reject outside development. Per-challenge keyed digests, expiry/replay checks and Kavenegar integration code are recovered; public login stays closed pending real provider verification and launch approval. `GEMINI_API_KEY` is needed only for AI chat; missing configuration returns 503. Voice input is retired and `/api/transcribe` returns 410 without processing audio.
+- Real OTP is available only in explicitly enabled staging with valid Kavenegar settings, a strong signing key and isolated D1 state; production login remains closed. D1 enforces atomic attempts, one-use challenges and global/IP/phone send limits; staging sessions expire server-side. The checked-in SMS flag remains false until provider validation. Gemini uses server-only header credentials, an optional `GEMINI_MODEL`, a timeout and durable staging request limits; missing configuration returns 503. `/api/services/status` exposes staging configuration health only. Voice input remains retired.
 
 ### Public domain and early SEO
 
@@ -175,12 +175,13 @@ Set globally in `next.config.ts:31-40`:
 
 ## 3. Open items / known gaps
 
-- **Web Push (VAPID) keys** must be generated and set in the deployment environment (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) for Web Push notifications to function. See `config/env.example` for details.
-- **AI chat** needs a production `GEMINI_API_KEY`. Voice input is removed and needs no service.
+- **Staging Push:** a separate VAPID pair is retained in macOS Keychain and its non-secret manifest under `~/.config/nazarato/access/staging-vapid.json`. Deploy only to `nazarato-staging`; real device delivery remains unverified until an authenticated browser subscribes. See `docs/staging-services-spec.md` and `config/env.example`.
+- **AI chat** still needs a valid `GEMINI_API_KEY` and a model available to that key. No key was found in the scoped existing credentials/history; the founder has deferred providing it. Voice input is removed and needs no service.
 - **Auth — remaining activation.** `/login` works in isolated development.
-  The fixed local code is never accepted in production; recovered challenge/
-  Kavenegar code still needs real provider verification. Sessions remain
-  HMAC-signed app cookies. Distributed abuse controls are separate launch work.
+  The fixed local code is never accepted on staging or production; Kavenegar
+  key/template and real SMS verification remain blocked on provider access.
+  Staging now has isolated durable abuse controls and HMAC-signed expiring
+  sessions; no production launch is authorized by this work.
   Reconcile existing remote history before applying the canonical migration set.
 - **Contact intake** validates and persists to `contact_submissions` (migration 0013); DB errors are shown to the user. Email notifications are separate and optional. The configured database table was read-verified on 2026-10-02.
 - **Launch/pilot gates.** Remote migration/history and review-origin
@@ -199,6 +200,7 @@ Each task appended by the `project-loop` skill. Newest first. One bullet per
 task: what shipped, where to look, and any new decision worth remembering.
 
 <!-- project-loop:changelog:start -->
+- **2026-10-15** — Prepared staging-only SMS/Gemini activation and isolated Web Push with retained VAPID credentials, durable D1 OTP/rate/subscription state, safe provider requests and explicit unavailable states. Files: `lib/auth/staging-otp.ts`, `lib/push/`, `lib/chat/gemini.ts`, `wrangler.jsonc`, `docs/staging-services-spec.md`. Gates: 395 unit tests, TypeScript, lint, Worker build and isolated browser login/settings verification; real SMS/Gemini and device delivery remain gated separately.
 - **2026-10-14** — Prepared DEV staging with a separate Worker/domain, Persian review label, crawler exclusion, exact revision reporting and isolated-database enforcement; local checks passed, remote readiness is tracked separately. Files: `wrangler.jsonc`, `scripts/deploy-staging.mjs`, `lib/site.ts`, `lib/supabase/staging-isolation.ts`, `docs/staging-release.md`.
 - **2026-10-15** — Rebuilt DEV presentation from main@86b70d4 while preserving recovery history and product/backend behavior. Added Nabz entry/scenario links, restored glass mobile/desktop UI, retained review drafts/focus/receipts, attribution, private taste and owner action/correction/measurement flows. Added explicit shared-main DB mode per founder request; no remote migration applied (admin access Forbidden, keys deferred by user). Verified 378 unit tests, 19 isolated browser passes (no skips), tsc and lint; see `main-design-dev-verification.md` for release gates.
 - **2026-10-06** — Integrated the recovered Nabz/intelligence/owner/source workflows and existing mobile redesign on `codex/product-recovery`; completed real five-choice results/private save, owner measurement/cancellation, first-party origin/counters, shared public/privacy gates and visible licence credit. Added canonical migration/rollback reconciliation, current product/status docs and default isolated browser/SQL harnesses. Gates: 363 unit tests (71 files), TypeScript, full lint, 13 browser passes (two private-catalog skips), 22 fresh local migrations/four rollback checks and Next/OpenNext Cloudflare build. Review delivery only: no remote SQL, provider activation, merge/deployment or real pilot.

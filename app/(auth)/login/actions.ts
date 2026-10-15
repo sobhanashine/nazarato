@@ -4,11 +4,15 @@
  * Auth server actions — the phone-OTP flow boundary.
  *
  * Every action validates its input here (untrusted `FormData`) before touching
- * any state. OTP attempts live in the signed challenge so a restart cannot
- * reset them; the bounded send limiter protects this pilot's single process.
+ * any state. Staging uses durable, atomic D1 challenges and send limits;
+ * the signed-cookie implementation is retained for local development only.
  */
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { isLoginEnabled, isStaging } from "@/lib/auth/login-policy";
+import { consumeStagingOtp, storeStagingOtp, verifyStagingOtp } from "@/lib/auth/staging-otp";
+import { consumeLimit, stagingDatabase } from "@/lib/staging/database";
 import {
   createOtpChallenge,
   createOtpCode,
@@ -54,6 +58,15 @@ const sendLimiter = new OtpSendRateLimiter({
   maxEntries: 10_000,
 });
 
+async function allowSend(phoneFingerprint: string): Promise<boolean> {
+  if (!isStaging()) return sendLimiter.consume(phoneFingerprint).allowed;
+  const db = await stagingDatabase();
+  const ip = (await headers()).get("cf-connecting-ip") ?? "unknown";
+  return await consumeLimit(db, "sms:global", 20, 3_600_000)
+    && await consumeLimit(db, `sms:ip:${fingerprintPhone(ip)}`, 5, 900_000)
+    && await consumeLimit(db, `sms:phone:${phoneFingerprint}`, 3, 900_000, 60_000);
+}
+
 const faNum = (n: number) => n.toLocaleString("fa-IR");
 
 /** Coerce an untrusted form value to a trimmed string. */
@@ -62,7 +75,7 @@ function asString(value: FormDataEntryValue | null): string {
 }
 
 function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "unknown error";
+  return error instanceof Error ? error.name : "unknown error";
 }
 
 /** Only allow same-origin relative paths as a post-login redirect target. */
@@ -89,7 +102,7 @@ export async function startOtp(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  if (process.env.NODE_ENV !== "development") return LOGIN_UNAVAILABLE;
+  if (!isLoginEnabled()) return LOGIN_UNAVAILABLE;
   const rawPhone = asString(formData.get("phone"));
   if (!formData.get("terms")) {
     return { ok: false, error: "برای ادامه باید قوانین و حریم خصوصی را بپذیری.", phone: rawPhone };
@@ -104,15 +117,10 @@ export async function startOtp(
   let phoneFingerprint: string | null = null;
   try {
     phoneFingerprint = fingerprintPhone(phone);
-    const limit = sendLimiter.consume(phoneFingerprint);
-    if (!limit.allowed) {
-      const wait = faNum(Math.max(1, Math.ceil(limit.retryAfterSeconds / 60)));
+    if (!(await allowSend(phoneFingerprint))) {
       return {
         ok: false,
-        error:
-          limit.reason === "cooldown"
-            ? "کد به‌تازگی ارسال شده — کمی صبر کن."
-            : `سقف ارسال موقتاً پر شده است — حدود ${wait} دقیقه‌ی دیگر تلاش کن.`,
+        error: "سقف ارسال موقتاً پر شده است؛ کمی صبر کن و دوباره تلاش کن.",
         phone: rawPhone,
       };
     }
@@ -120,6 +128,7 @@ export async function startOtp(
     const code = createOtpCode();
     challenge = createOtpChallenge({ phone, code });
     await sendOtp(phone, code);
+    if (isStaging()) await storeStagingOtp(challenge);
     await setOtpChallenge(challenge);
     await recordSecurityEvent({
       eventType: "otp_sent",
@@ -155,7 +164,7 @@ export async function resendOtp(
   _prev: FormState,
   _formData: FormData,
 ): Promise<FormState> {
-  if (process.env.NODE_ENV !== "development") return LOGIN_UNAVAILABLE;
+  if (!isLoginEnabled()) return LOGIN_UNAVAILABLE;
   void _prev;
   void _formData;
   const challenge = await getOtpChallenge();
@@ -181,8 +190,7 @@ export async function resendOtp(
   let phoneFingerprint: string | null = null;
   try {
     phoneFingerprint = fingerprintPhone(challenge.phone);
-    const limit = sendLimiter.consume(phoneFingerprint);
-    if (!limit.allowed) {
+    if (!(await allowSend(phoneFingerprint))) {
       return {
         ok: false,
         error: "سقف ارسال موقتاً پر شده است. کمی بعد دوباره تلاش کن.",
@@ -197,6 +205,7 @@ export async function resendOtp(
       deliveryCount: challenge.deliveryCount + 1,
     });
     await sendOtp(challenge.phone, code);
+    if (isStaging()) await storeStagingOtp(nextChallenge);
     await setOtpChallenge(nextChallenge);
     await recordSecurityEvent({
       eventType: "otp_resent",
@@ -230,16 +239,22 @@ export async function verifyOtp(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  if (process.env.NODE_ENV !== "development") return LOGIN_UNAVAILABLE;
+  if (!isLoginEnabled()) return LOGIN_UNAVAILABLE;
   const challenge = await getOtpChallenge();
   if (!challenge) {
     return { ok: false, reason: "expired", error: "کد منقضی شده است." };
   }
 
-  const result = verifyOtpChallenge({
-    challenge,
-    code: asString(formData.get("code")),
-  });
+  let result;
+  try {
+    result = isStaging() ? await verifyStagingOtp(challenge, asString(formData.get("code"))) : verifyOtpChallenge({
+      challenge,
+      code: asString(formData.get("code")),
+    });
+  } catch {
+    console.error("[auth] challenge verification unavailable", { route: "/login/verify" });
+    return LOGIN_UNAVAILABLE;
+  }
   if (result.status === "invalid_format") {
     return { ok: false, error: "کد ۶ رقمی را کامل وارد کن." };
   }
@@ -285,6 +300,14 @@ export async function verifyOtp(
         error: "این حساب مسدود شده است. برای پیگیری با پشتیبانی تماس بگیر.",
       };
     }
+    if (isStaging()) {
+      try {
+        if (!(await consumeStagingOtp(challenge.id))) return { ok: false, reason: "expired", error: "این کد قبلاً استفاده شده است." };
+      } catch {
+        console.error("[auth] challenge consumption unavailable", { route: "/login/verify" });
+        return LOGIN_UNAVAILABLE;
+      }
+    }
     await setSession({
       id: existing.id,
       phone: existing.phone,
@@ -315,15 +338,13 @@ export async function verifyOtp(
 /**
  * Step 3 — `/login/verify`: collect the display name, open the session.
  *
- * DEV NOTE: with no users table, every verified phone reaches this step. Once
- * Supabase is wired, look the phone up first and skip straight to the session
- * for a returning user instead of always asking for a name.
+ * A durable staging challenge is consumed before opening the account/session.
  */
 export async function completeProfile(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  if (process.env.NODE_ENV !== "development") return LOGIN_UNAVAILABLE;
+  if (!isLoginEnabled()) return LOGIN_UNAVAILABLE;
   const challenge = await getOtpChallenge();
   if (!challenge || challenge.verifiedAt === null) {
     return { ok: false, reason: "expired", error: "نشست منقضی شده. دوباره وارد شو." };
@@ -339,16 +360,24 @@ export async function completeProfile(
 
   let user: UserRow;
   try {
+    if (isStaging() && !(await consumeStagingOtp(challenge.id))) {
+      return { ok: false, reason: "expired", error: "این کد قبلاً استفاده شده است." };
+    }
     // Defensive: a parallel tab may have created the row already.
     user =
       (await getUserByPhone(challenge.phone)) ??
       (await createUser({ phone: challenge.phone, displayName: name }));
   } catch (err) {
     console.error("[auth] account creation failed", {
-      phone: challenge.phone,
-      err,
+      route: "/login/verify",
+      errorType: err instanceof Error ? err.name : "unknown",
     });
     return { ok: false, error: "ثبت حساب با خطا مواجه شد. کمی بعد دوباره تلاش کن." };
+  }
+
+  if (user.is_banned) {
+    await clearOtpChallenge();
+    return { ok: false, error: "این حساب مسدود شده است." };
   }
 
   await setSession({ id: user.id, phone: user.phone, name: user.display_name });

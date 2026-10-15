@@ -5,11 +5,14 @@ import toast from "react-hot-toast";
 import {
   removePushSubscription,
   savePushSubscription,
+  hasPushSubscription,
+  testPushSubscription,
 } from "@/app/(user)/settings/notifications/push-actions";
 import { GLASS } from "@/components/ui/styles";
 
 interface PushToggleProps {
   vapidPublicKey: string | null;
+  allowTest?: boolean;
 }
 
 function urlBase64ToArrayBuffer(base64: string): ArrayBuffer {
@@ -29,7 +32,7 @@ type Status =
   | "subscribed"
   | "available";
 
-export function PushToggle({ vapidPublicKey }: PushToggleProps) {
+export function PushToggle({ vapidPublicKey, allowTest = false }: PushToggleProps) {
   const [status, setStatus] = useState<Status>("loading");
   const [busy, setBusy] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -45,7 +48,7 @@ export function PushToggle({ vapidPublicKey }: PushToggleProps) {
           true
     );
 
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
       setStatus("unsupported");
       return;
     }
@@ -56,8 +59,8 @@ export function PushToggle({ vapidPublicKey }: PushToggleProps) {
 
     navigator.serviceWorker.ready.then(async (reg) => {
       const sub = await reg.pushManager.getSubscription();
-      setStatus(sub ? "subscribed" : "available");
-    });
+      setStatus(sub && await hasPushSubscription(sub.endpoint) ? "subscribed" : "available");
+    }).catch(() => setStatus("unsupported"));
   }, []);
 
   async function subscribe() {
@@ -118,7 +121,8 @@ export function PushToggle({ vapidPublicKey }: PushToggleProps) {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
       if (sub) {
-        await removePushSubscription(sub.endpoint);
+        const result = await removePushSubscription(sub.endpoint);
+        if (!result.ok) throw new Error(result.error);
         await sub.unsubscribe();
       }
       toast.success("اعلان‌های فوری غیرفعال شد.", { position: "bottom-center" });
@@ -133,6 +137,18 @@ export function PushToggle({ vapidPublicKey }: PushToggleProps) {
 
   const on = status === "subscribed";
   const iosNeedsInstall = isIos && !isStandalone;
+
+  async function testNotification() {
+    setBusy(true);
+    try {
+      const sub = await (await navigator.serviceWorker.ready).pushManager.getSubscription();
+      if (!sub) throw new Error("Missing subscription");
+      const result = await testPushSubscription(sub.endpoint);
+      if (!result.ok) { toast.error(result.error ?? "ارسال انجام نشد."); return; }
+      toast.success("سرویس ارسال را پذیرفت؛ نمایش اعلان را روی دستگاه بررسی کن.");
+    } catch { toast.error("آزمون اعلان انجام نشد."); }
+    finally { setBusy(false); }
+  }
 
   return (
     <div className={`${GLASS} flex flex-col gap-4 p-5 sm:p-6`}>
@@ -151,12 +167,14 @@ export function PushToggle({ vapidPublicKey }: PushToggleProps) {
             onClick={on ? unsubscribe : subscribe}
             disabled={
               busy ||
+              !vapidPublicKey ||
               status === "loading" ||
               status === "unsupported" ||
               status === "denied" ||
               iosNeedsInstall
             }
             aria-pressed={on}
+            aria-label="اعلان‌های فوری روی این دستگاه"
             className="block disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span
@@ -172,6 +190,9 @@ export function PushToggle({ vapidPublicKey }: PushToggleProps) {
           </button>
         </div>
       </div>
+
+      {!vapidPublicKey && <p className="text-[0.8rem] text-muted">سرویس اعلان هنوز آماده نیست.</p>}
+      {allowTest && on && <button type="button" disabled={busy} onClick={testNotification} className="self-start rounded-xl border border-mint/30 px-4 py-2 text-[0.8rem] text-mint disabled:opacity-50">ارسال اعلان آزمایشی به این دستگاه</button>}
 
       {status === "unsupported" && (
         <p className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-[0.78rem] text-amber-200">

@@ -12,6 +12,10 @@
 
 import { NextResponse } from "next/server";
 import { getSession, type SessionUser } from "../../../lib/auth/session";
+import { isStaging } from "../../../lib/auth/login-policy";
+import { fingerprintPhone } from "../../../lib/auth/otp";
+import { consumeLimit, stagingDatabase } from "../../../lib/staging/database";
+import { requestGemini } from "../../../lib/chat/gemini";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // Max execution timeout for streaming response
@@ -19,9 +23,6 @@ export const maxDuration = 60; // Max execution timeout for streaming response
 const LIMIT_ANON = 5;         // 5 requests per window for anonymous users
 const LIMIT_USER = 15;        // 15 requests per window for logged-in users
 const RATE_WINDOW_MS = 60_000; // 1 minute window
-
-const GEMINI_MODEL = "gemini-2.5-flash";
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent`;
 
 export interface ChatMessage {
   role: "user" | "model";
@@ -184,31 +185,40 @@ async function crawlWeb(query: string): Promise<{ text: string; sources: SearchS
 }
 
 export async function POST(req: Request): Promise<Response> {
+  const origin = req.headers.get("origin");
+  if (origin && origin !== new URL(req.url).origin) return NextResponse.json({ error: "درخواست مجاز نیست." }, { status: 403 });
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return NextResponse.json({ error: "سرویس چت هوشمند در حال حاضر در دسترس نیست." }, { status: 503 });
   const session = await getSession();
   
   // Rate-limiting
   const rateLimitKey = getRateLimitKey(session, req);
   const limit = session ? LIMIT_USER : LIMIT_ANON;
-  if (!checkRateLimit(rateLimitKey, limit)) {
+  let allowed = false;
+  try {
+    if (isStaging()) {
+      const db = await stagingDatabase();
+      const key = session ? `user:${session.id}` : `ip:${fingerprintPhone(req.headers.get("cf-connecting-ip") ?? "unknown")}`;
+      allowed = await consumeLimit(db, "chat:global", 100, 3_600_000)
+        && await consumeLimit(db, `chat:${key}`, limit, RATE_WINDOW_MS);
+    } else allowed = checkRateLimit(rateLimitKey, limit);
+  } catch {
+    console.error("[chat-api] rate limit storage unavailable");
+    return NextResponse.json({ error: "سرویس چت موقتاً در دسترس نیست." }, { status: 503 });
+  }
+  if (!allowed) {
     return NextResponse.json(
       { error: "تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً لحظاتی صبر کنید." },
       { status: 429 }
     );
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    console.error("[chat-api] GEMINI_API_KEY is not set");
-    return NextResponse.json(
-      { error: "سرویس چت هوشمند در حال حاضر در دسترس نیست." },
-      { status: 503 }
-    );
-  }
-
   // Parse and validate payload
   let body: unknown;
   try {
-    body = await req.json();
+    const raw = await req.text();
+    if (new TextEncoder().encode(raw).byteLength > 350_000) return NextResponse.json({ error: "درخواست بسیار بزرگ است." }, { status: 413 });
+    body = JSON.parse(raw) as unknown;
   } catch {
     return NextResponse.json(
       { error: "درخواست نامعتبر است." },
@@ -305,15 +315,11 @@ export async function POST(req: Request): Promise<Response> {
 
   let geminiResponse: Response;
   try {
-    geminiResponse = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(geminiPayload)
-    });
+    geminiResponse = await requestGemini(apiKey, geminiPayload);
   } catch (err) {
     console.error("[chat-api] Fetch to Gemini failed", {
       userId: session?.id,
-      err: err instanceof Error ? err.message : String(err)
+      errorType: err instanceof Error ? err.name : "unknown"
     });
     return NextResponse.json(
       { error: "خطا در ارتباط با سرور هوش مصنوعی." },
@@ -322,10 +328,9 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   if (!geminiResponse.ok) {
-    const errorText = await geminiResponse.text().catch(() => "");
+    await geminiResponse.body?.cancel();
     console.error("[chat-api] Gemini returned non-2xx status", {
-      status: geminiResponse.status,
-      body: errorText.slice(0, 500)
+      status: geminiResponse.status
     });
     return NextResponse.json(
       { error: "سرویس چت با خطا مواجه شد. لطفاً دوباره تلاش کنید." },

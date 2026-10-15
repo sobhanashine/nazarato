@@ -25,11 +25,18 @@
       "preview_urls": false,
       "routes": [{ "pattern": "staging.nazarato.ir", "custom_domain": true }],
       "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+      "d1_databases": [{
+        "binding": "STAGING_SERVICES",
+        "database_name": "nazarato-staging-services",
+        "database_id": "5fbc8f41-101a-4e7d-ad70-bfc482c719ef",
+        "migrations_dir": "cloudflare/migrations"
+      }],
       "vars": {
         "NEXT_PUBLIC_NAZARATO_ENV": "staging",
         "NAZARATO_DEPLOYMENT_ENV": "staging",
         "NAZARATO_STAGING_DATABASE_MODE": "shared-main",
         "NAZARATO_STAGING_SUPABASE_REF": "sdlmjdxrfyhuiegjysac",
+        "NAZARATO_SMS_ENABLED": "false",
         "NEXT_PUBLIC_SMFLOW_ENABLED": "false"
       }
     }
