@@ -13,6 +13,7 @@ import { getSession } from "@/lib/auth/session";
 import { getUserById } from "@/lib/data/users";
 import { recordSecurityEvent } from "@/lib/security/audit";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { storageBucket } from "@/lib/supabase/environment";
 import { sendPushToUser } from "@/lib/push/server";
 
 const UUID_PATTERN =
@@ -131,7 +132,7 @@ export async function approveClaim(claimId: string) {
 
   if (row.proof_url) {
     const { error: storageError } = await supabase.storage
-      .from("claim-proofs")
+      .from(storageBucket("claim-proofs"))
       .remove([row.proof_url]);
     if (storageError) {
       console.error("[claims] approveClaim proof deletion failed", {
@@ -258,7 +259,7 @@ export async function rejectClaim(claimId: string, rejectionReason?: string) {
 
   if (row.proof_url) {
     const { error: storageError } = await supabase.storage
-      .from("claim-proofs")
+      .from(storageBucket("claim-proofs"))
       .remove([row.proof_url]);
     if (storageError) {
       console.error("[claims] rejectClaim proof deletion failed", {
@@ -338,7 +339,7 @@ export async function getSignedClaimProofUrl(claimId: string) {
   }
 
   const { data, error } = await supabase.storage
-    .from("claim-proofs")
+    .from(storageBucket("claim-proofs"))
     .createSignedUrl(claim.proof_url, 300);
 
   if (error || !data) {

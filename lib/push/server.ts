@@ -46,7 +46,8 @@ export async function sendPushToUser(userId: string, payload: PushPayload, endpo
           headers: request.headers as Record<string, string>,
           body: request.body ? new Uint8Array(request.body).buffer : undefined,
           signal: AbortSignal.timeout(10_000),
-          redirect: "error",
+          // Never forward credentials/body across a redirect; workerd supports manual.
+          redirect: "manual",
         });
         if (response.ok) result.accepted++;
         else {

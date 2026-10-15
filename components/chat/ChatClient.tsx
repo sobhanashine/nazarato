@@ -546,10 +546,10 @@ export function ChatClient() {
                           <span className="text-[10px] font-bold text-muted">
                             {isUser ? "کاربر" : "دستیار نظراتو"}
                           </span>
-                          {!isUser && (
+                          {!isUser && !!msg.sources?.length && (
                             <span className="inline-flex items-center gap-1 py-0.5 px-2 rounded-md bg-mint/[0.08] border border-mint/20 text-[9.5px] font-bold text-mint">
                               <SearchIcon className="w-2.5 h-2.5" />
-                              مستند به نتایج زنده وب
+                              همراه با منابع وب
                             </span>
                           )}
                         </div>
@@ -672,7 +672,7 @@ export function ChatClient() {
 
             {/* Grounding and Data Provenance Disclaimer */}
             <p className="text-[10px] text-muted text-center leading-relaxed select-none">
-              اطلاعات ارائه شده توسط هوش مصنوعی بر اساس خریدهای واقعی و نتایج جستجوی زنده در وب فارسی (توسط گوگل) استخراج می‌شوند. احتمال خطا وجود دارد.
+              پاسخ هوش مصنوعی ممکن است خطا داشته باشد. منابع موجود کنار پاسخ نمایش داده می‌شوند؛ این پاسخ‌ها گواه خرید یا تجربهٔ واقعی مشتری نیستند.
             </p>
           </div>
         </div>

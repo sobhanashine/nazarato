@@ -142,6 +142,7 @@ function parseBaseCandidate(value: unknown): BaseCandidate | null {
   if (!id || !slug || !name || !kind) return null;
 
   const payloads = sourcePayloads(value.business_sources);
+  if (payloads.some(payload => payload.reported_closed === true)) return null;
   const hasIdentitySource = payloads.some(
     (payload) =>
       readTrimmedString(payload.name, 200) === name &&

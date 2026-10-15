@@ -39,6 +39,12 @@ const rashtBusiness = (
 });
 
 describe("evaluateNabzBusinessPool", () => {
+  it("excludes a venue whose source reports closure from pair choices", () => {
+    const row = rashtBusiness("closed");
+    row.business_sources[0].field_payload.reported_closed = true;
+    const result = evaluateNabzBusinessPool({ businesses: [row], votes: [], reviewEvidence: [] });
+    expect(result.businesses).toHaveLength(0);
+  });
   it("builds a duel-ready pool and marks only sufficiently evidenced businesses recommendation-ready", () => {
     const result = evaluateNabzBusinessPool({
       businesses: [rashtBusiness("a"), rashtBusiness("b")],

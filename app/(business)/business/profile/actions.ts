@@ -22,8 +22,9 @@ import { Buffer } from "node:buffer";
 import { getSession } from "@/lib/auth/session";
 import { assertOwnsBusiness } from "@/lib/data/owner";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { storageBucket } from "@/lib/supabase/environment";
 
-const BUCKET = "business-photos";
+const photoBucket = () => storageBucket("business-photos");
 const MAX_PHOTO_BYTES = 3 * 1024 * 1024; // 3 MB; matches the bucket-level limit
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
 const DESCRIPTION_MAX = 1500;
@@ -81,7 +82,7 @@ async function maybeUploadPhoto(
 
   const arrayBuf = await file.arrayBuffer();
   const supabase = supabaseAdmin();
-  const { error } = await supabase.storage.from(BUCKET).upload(path, Buffer.from(arrayBuf), {
+  const { error } = await supabase.storage.from(photoBucket()).upload(path, Buffer.from(arrayBuf), {
     contentType: file.type,
     upsert: false,
   });
@@ -90,7 +91,7 @@ async function maybeUploadPhoto(
     throw new Error("photo_upload_failed");
   }
 
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  const { data } = supabase.storage.from(photoBucket()).getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -101,11 +102,11 @@ async function maybeUploadPhoto(
  */
 async function deletePhotoIfOurs(url: string | null): Promise<void> {
   if (!url) return;
-  const marker = `/storage/v1/object/public/${BUCKET}/`;
+  const marker = `/storage/v1/object/public/${photoBucket()}/`;
   const idx = url.indexOf(marker);
   if (idx === -1) return;
   const path = url.slice(idx + marker.length);
-  await supabaseAdmin().storage.from(BUCKET).remove([path]).catch((err) => {
+  await supabaseAdmin().storage.from(photoBucket()).remove([path]).catch((err) => {
     console.warn("[owner] failed to remove old photo", { path, err });
   });
 }

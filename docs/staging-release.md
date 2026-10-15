@@ -1,7 +1,7 @@
 # DEV staging
 
 Review target: https://staging.nazarato.ir.
-Current task: [31 — main design integration](https://trello.com/c/NiG1G2HJ).
+Current task: [34 — Golsar data and staging capabilities](https://trello.com/c/L7OhGwkq).
 
 ## Deployment contract
 
@@ -32,22 +32,71 @@ requirement. Runtime configuration is explicit:
 The guard rejects unknown modes, mismatched projects, and non-origin URLs.
 Without `shared-main`, the default isolated mode still rejects the main
 project. Never put secrets in source, build logs, or public environment vars.
-Sharing the DB means real staging writes affect the same records used by main.
-Run automated mutation tests exclusively against the loopback substitute.
+On October 16 the application tables/routines were reproduced in the separate
+`nazarato_staging` schema inside this same project. Staging now also requires
+`NAZARATO_DATABASE_SCHEMA=nazarato_staging`; a missing value fails closed.
+Production continues to use `public`. All 18 application tables, foreign keys,
+triggers and RPCs remain inside their selected namespace. No production rows
+were copied. Storage uses `claim-proofs-staging` and `business-photos-staging`;
+OTP, rate limits and Push subscriptions use the existing staging D1 binding.
 
-Read-only REST access to this exact project was verified on October 15.
-Administrative Supabase access still returns Forbidden. The founder asked
-us to continue the UI release and will supply access later. No SQL or fixture
-import was executed. The schema currently lacks `save_real_taste_profile`,
-`reviews.origin_kind`, and `business_improvement_actions.metric_version`.
-Read `migration-reconciliation.md` and inspect migration history/policies
-before applying the prepared October migrations. Never blindly replay all
-migrations or approve source records to make the UI appear populated.
+The earlier four approved public migrations are already reflected in the
+inspected remote schema. Do not replay them. The new bootstrap is deliberately
+outside public migration history under `supabase/staging/`. A private custom
+backup and row fingerprints were captured before the additive schema work.
+PostgREST exposes the new schema, but only `service_role` has access; anonymous
+and authenticated database roles do not. Application authorization still runs
+in the server routes/actions.
 
-Until runtime secrets and schema are verified, report UI delivery separately
-from database readiness. A 503 health response is not a fully ready product.
-Public-source approval, first-party review rules, private profiles and
-production-mode authentication remain enforced.
+## Selected cafe dataset and provenance
+
+The founder authorized the existing screened 22-cafe Golsar dataset for staging.
+The import projects factual names, addresses, business contacts and coordinates
+with stable IDs; it imports no opinions, ratings, photos or reviewer identities.
+One source-reported closed cafe remains inspectable with an explicit warning
+and is excluded from Nabz pair supply. All imported review counters start at 0.
+
+`internal_preview` source status means approved for **staging use only**. Its
+permission basis remains unknown, production publication remains unapproved,
+and no owner verification is implied. These records are not a production data
+approval. The older 37-row research sheet and ambiguous same-name matches were
+not auto-merged. The raw source, generated COPY SQL and DB backups remain in
+ignored private directories; they are never bundled or committed.
+
+Prepare and validate from inspected private inputs:
+
+```sh
+node scripts/prepare-staging-schema.mjs <schema-only.sql> <bootstrap.sql>
+node scripts/prepare-staging-golsar.mts <selected-cafes.json> <import.sql>
+PG_BIN=<postgres-bin> node scripts/check-staging-schema-local.mjs <schema-only.sql> <bootstrap.sql> <import.sql>
+```
+
+The local disposable database check covers idempotent import, isolated foreign
+keys/routines, access grants, review counters, bookmarks, taste RPC, unchanged
+production sentinels and guarded rollback. It accepts no remote connection URL.
+For rollback, first disable staging traffic and export staging submissions.
+Remove only this schema from PostgREST exposure, reload configuration, verify
+public REST still succeeds and staging REST returns 406, then use the guarded
+`supabase/staging/rollback.sql`. Never drop a still-exposed schema or overwrite
+schema settings added by other work.
+
+## Provider status — 2026-10-16
+
+- Gemini credential retained in macOS Keychain and deployed only to staging.
+  `GEMINI_MODEL=gemini-3.7-flash` is a retained Worker binding, not a production
+  default. The key lists models and returned a simple response, but grounded
+  requests hit provider quota (429) and some requests return busy (503).
+  This is not proof of complete chat readiness; no new key is required merely
+  for that quota issue.
+- Gemini and Push now use `redirect: manual`: workerd rejects `redirect: error`
+  before sending. Non-success/redirect responses are rejected without following
+  them. `node scripts/check-gemini-worker.mjs` verifies this in actual workerd
+  with a mock outbound provider, without sending credentials externally.
+- Kavenegar API key and exact approved template name are still absent. The SMS
+  flag stays false. Signing in, authenticated saves and a real device Push test
+  remain blocked until those values and provider/device verification exist.
+- Push keys and staging D1 are retained; provider acceptance and visible device
+  receipt remain separate checks. No new VAPID pair was generated.
 
 ## Verification before handover
 
