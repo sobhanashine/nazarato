@@ -6,14 +6,23 @@
  * Client Component. Auth is app-managed (see `lib/auth/`), so Supabase is used
  * purely as the database here; this client carries no user session.
  */
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import { IS_STAGING } from "@/lib/site";
 import { assertStagingDatabaseIsolation } from "./staging-isolation";
+import { databaseSchema } from "./environment";
 
-let client: SupabaseClient | undefined;
+function createServerClient(url: string, serviceKey: string) {
+  return createClient(url, serviceKey, {
+    db: { schema: databaseSchema(process.env, IS_STAGING) },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+export type ServerDatabaseClient = ReturnType<typeof createServerClient>;
+let client: ServerDatabaseClient | undefined;
 
 /** Lazily-created, process-cached service-role client. */
-export function supabaseAdmin(): SupabaseClient {
+export function supabaseAdmin(): ServerDatabaseClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceKey) {
@@ -31,8 +40,6 @@ export function supabaseAdmin(): SupabaseClient {
     );
   }
   if (client) return client;
-  client = createClient(url, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  client = createServerClient(url, serviceKey);
   return client;
 }

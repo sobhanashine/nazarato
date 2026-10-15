@@ -15,6 +15,7 @@ import { getSession } from "@/lib/auth/session";
 import { getUserById } from "@/lib/data/users";
 import { PUBLIC_BUSINESS_SOURCE_GATE_SELECT, PUBLIC_BUSINESS_STATUSES } from "@/lib/data/businesses";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { storageBucket } from "@/lib/supabase/environment";
 import { sendPushToUsers } from "@/lib/push/server";
 import {
   CLAIM_NOTES_MAX,
@@ -171,7 +172,7 @@ export async function submitClaim(
       }
       const filePath = `${session.id}/${crypto.randomUUID()}.${inspected.extension}`;
       const { error: uploadError } = await supabase.storage
-        .from("claim-proofs")
+        .from(storageBucket("claim-proofs"))
         .upload(filePath, inspected.buffer, {
           contentType: inspected.contentType,
           cacheControl: "3600",
@@ -209,7 +210,7 @@ export async function submitClaim(
 
   if (insertError) {
     if (proofUrl) {
-      await supabase.storage.from("claim-proofs").remove([proofUrl]);
+      await supabase.storage.from(storageBucket("claim-proofs")).remove([proofUrl]);
     }
     // Unique partial index on (business_id, user_id) where status='pending'.
     if (insertError.code === "23505") {

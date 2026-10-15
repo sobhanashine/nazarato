@@ -333,8 +333,10 @@ export async function POST(req: Request): Promise<Response> {
       status: geminiResponse.status
     });
     return NextResponse.json(
-      { error: "سرویس چت با خطا مواجه شد. لطفاً دوباره تلاش کنید." },
-      { status: 502 }
+      { error: geminiResponse.status === 429
+        ? "سهمیهٔ سرویس هوش مصنوعی فعلاً در دسترس نیست. لطفاً بعداً دوباره تلاش کنید."
+        : "سرویس چت با خطا مواجه شد. لطفاً دوباره تلاش کنید." },
+      { status: geminiResponse.status === 429 ? 503 : 502 }
     );
   }
 

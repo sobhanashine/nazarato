@@ -3,7 +3,8 @@
  * Existing businesses are never overwritten by an import; a new approved
  * source is retained as provenance and owner edits stay canonical.
  */
-import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { ServerDatabaseClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "../supabase/server.ts";
 import {
   executeBusinessImport,
@@ -28,7 +29,7 @@ function failImport(
 }
 
 export function createSupabaseBusinessImportRepository(
-  client: SupabaseClient,
+  client: ServerDatabaseClient,
 ): BusinessImportRepository {
   return {
     async upsertBusiness(business: PreparedBusinessRow) {

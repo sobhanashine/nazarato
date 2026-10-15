@@ -7,6 +7,7 @@ export async function requestGemini(apiKey: string, payload: unknown): Promise<R
     headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
     body: JSON.stringify(payload),
     signal: AbortSignal.timeout(35_000),
-    redirect: "error",
+    // workerd rejects redirect:"error" before sending. Callers reject non-2xx.
+    redirect: "manual",
   });
 }
