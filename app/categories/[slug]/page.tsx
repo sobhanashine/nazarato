@@ -15,7 +15,8 @@ import {
   categorySubcategories,
   type BusinessSortKey,
 } from "@/lib/data/businesses";
-import { CategorySortSelect, categoryHref } from "@/components/categories/CategoryDetailClient";
+import { CategorySortSelect } from "@/components/categories/CategoryDetailClient";
+import { categoryHref } from "@/lib/category-url";
 
 type Params = { slug: string };
 type SearchParams = {
